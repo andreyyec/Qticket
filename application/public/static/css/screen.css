@@ -1,0 +1,17 @@
+.container-fluid .page-header {
+
+}
+
+.container-fluid .page-header h1 {
+
+}
+
+.container-fluid .page-header p {
+    font-size: 18px;
+    font-weight: 200;
+    margin-bottom: 15px;
+}
+
+.container-fluid .image-container img {
+    width: 100%;
+}
