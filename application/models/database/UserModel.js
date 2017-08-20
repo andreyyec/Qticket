@@ -5,6 +5,7 @@ let UserSchema = new Schema({
 	name: String,
 	username: String,
 	password: String,
+	active: Boolean,
 	author: {     
 	  type: mongoose.Schema.Types.ObjectId,
 	  ref: "Role"

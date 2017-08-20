@@ -3,9 +3,10 @@ const 	mongoose = require('mongoose'),
 
 let RoleSchema = new Schema({
 	name: String,
+	active: Boolean,
 	allowedModules: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Module'
+        ref: 'Module',
     }]
 });
 

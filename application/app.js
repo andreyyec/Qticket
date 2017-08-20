@@ -1,36 +1,43 @@
 const	express = require('express'),
-		expressLayouts = require('express-ejs-layouts'),
+		ejsLayouts = require('express-ejs-layouts'),
 		app = express(),
 		bodyParser = require("body-parser"),
 		http = require('http').Server(app),
 		io = require('socket.io')(http),
 		port = process.env.PORT || 3000,
-		dbMng = require('./scripts/DBManager.js');
+		dbMng = require(__dirname+'/models/DBManager.js');
 
-//DB manager settings
+//DB settings
 let dbManager = new dbMng();
 
 //App settings
 app.set('views', __dirname+'/views');
 app.set('view engine', 'ejs');
-app.set('layout extractScripts', true)
-app.set('layout extractStyles', true)
+app.set('layout extractScripts', true);
+app.set('layout extractStyles', true);
 
-app.use(expressLayouts);
+app.use(ejsLayouts);
 app.use(bodyParser.json());
-app.use('/public', express.static('public'));
+app.use('/public', express.static(__dirname+'/public'));
 
+// --> Routes
 
-function orderUpdate() {
-	let recordsCountRequest = dbManager.getTollboothRecordsCount();
+//Rest Routes
+app.get('/rest/getusers', (req, res) => {
+	
+});
 
-    /*recordsCountRequest.then(function(count) {
-    	io.emit('orderUpdate', count);
-    });*/
-}
+app.post('/rest/deleteuser', (req, res) => {
+	
+});
 
+//Application Routes
 app.get('/', (req, res) => {
-	res.render('index', {
+
+	//res.render('login', {
+	//	layout: false,
+
+	res.render('dashboard', {
 		activeTab : 1,
     	tabTitle: 'Dashboard - Qticket',
     	mainTitle: 'Dashboard',
@@ -40,40 +47,13 @@ app.get('/', (req, res) => {
 });
 
 app.get('/settings', (req, res) => {
-	let fareRequest = dbManager.getFare();
-
-	fareRequest.then(function(data) {
-		res.render('settings', {
-	    	activeTab : 2,
-		    tabTitle: 'Settings - TCSb',
-		    mainTitle: 'Settings',
-		    subTitle: '',
-		    jsfiles: ['bootstrap-modal.js','settings.js'],
-		    fare: data[0].value
-	  	}); 
-    });
-});
-
-app.get('/rest/getusers', (req, res) => {
-	let usersRequest = dbManager.getUsers();
-
-	usersRequest.then(function(data) {
-		res.json({"data": data});
-    });
-});
-
-app.post('/rest/deleteuser', (req, res) => {
-	let userDeleteRequest = dbManager.deleteUser(req.body.id);
-
-	userDeleteRequest.then(function(data) {
-		if (data.result.deletedCount > 0) {
-			res.status(200).end('{"status":200, "deleted":true, "msj":"User deleted Successfully"}');
-		} else {
-			res.status(200).end('{"status":500, "deleted":false, "msj":"Error while trying to remove user from database"}');
-		}
-	});
-
-	res.status(200).end('{"status":200, "modified":false, "msj":"Rest service working"}');
+	res.render('settings', {
+    	activeTab : 2,
+	    tabTitle: 'Settings - TCSb',
+	    mainTitle: 'Settings',
+	    subTitle: '',
+	    jsfiles: ['bootstrap-modal.js','settings.js']
+  	});
 });
 
 app.get('*', function(req, res){
@@ -85,11 +65,13 @@ app.get('*', function(req, res){
   	});
 });
 
+//Web Socket Settings
 io.on('connection', function(socket){
-  	sendCounter();
-  	sendFare();
+
 });
 
+
+//Web Server Settings
 http.listen(port, function(){
   	console.log('listening on *:' + port);
 });

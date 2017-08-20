@@ -1,13 +1,14 @@
 
 //const MongoClient = require('mongodb').MongoClient;
 const   Mongoose = require('mongoose'),
-        db = Mongoose.connection;
+        db = Mongoose.connection,
+        moduleModel = require('./database/ModuleModel');
 
 var self;
 
 class DBManager {
 
-    setup(){
+    constructor() {
         self = this;
 
         Mongoose.connect('mongodb://localhost:27017/qticket');
@@ -17,19 +18,33 @@ class DBManager {
             console.log('DB Connection established');
         });
 
-        /*MongoClient.connect('mongodb://localhost:27017/tcsdb', (err, database) => {
-            if (err) {
-                console.log('=> Debug => Database connection error');
-                return console.log(err);
-            }
-            self.db = database;
-        });*/
-    }
+        console.log(moduleModel);
 
-    
-    constructor() {
-        this.setup(); 
-    }
+        
+
+        let newTestModule = new moduleModel();
+        newTestModule.name = 'TestModule';
+        newTestModule.restricted = false;
+
+        newTestModule.save(function(err, data) {
+            if (err) {
+                console.log('Error:' + err);
+            } else {
+                console.log(data);
+            }
+        });
+
+        //newTestModule.create()
+
+        moduleModel.find({}).exec(function(err, data){
+            if (err) {
+                console.log('Error');
+            }else{
+                console.log(data);
+            }
+        });
+
+    }    
 }
 
 module.exports = DBManager;
