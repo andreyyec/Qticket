@@ -13,15 +13,15 @@ class DBManager {
 
         Mongoose.connect('mongodb://localhost:27017/qticket');
 
+        self.db = db;
+
         db.on('error', console.error.bind(console, 'connection error:'));
         db.once('open', function() {
             console.log('DB Connection established');
         });
+    }
 
-        console.log(moduleModel);
-
-        
-
+    exampleFunctions() {
         let newTestModule = new moduleModel();
         newTestModule.name = 'TestModule';
         newTestModule.restricted = false;
@@ -43,8 +43,7 @@ class DBManager {
                 console.log(data);
             }
         });
-
-    }    
+    }
 }
 
 module.exports = DBManager;

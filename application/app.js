@@ -1,7 +1,10 @@
 const	express = require('express'),
 		ejsLayouts = require('express-ejs-layouts'),
 		app = express(),
-		bodyParser = require("body-parser"),
+		bodyParser = require('body-parser'),
+		validator = require('express-validator'),
+		session = require('express-session'),
+		MongoStore = require('connect-mongo')(session);
 		http = require('http').Server(app),
 		io = require('socket.io')(http),
 		port = process.env.PORT || 3000,
@@ -18,7 +21,15 @@ app.set('layout extractStyles', true);
 
 app.use(ejsLayouts);
 app.use(bodyParser.json());
+app.use(validator());
+app.use(session({
+  secret: 'Secret String',
+  resave: false,
+  store: new MongoStore({ mongooseConnection: dbManager.db }),
+  saveUninitialized: true
+}));
 app.use('/public', express.static(__dirname+'/public'));
+
 
 // --> Routes
 
@@ -69,7 +80,6 @@ app.get('*', function(req, res){
 io.on('connection', function(socket){
 
 });
-
 
 //Web Server Settings
 http.listen(port, function(){
