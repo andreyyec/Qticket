@@ -1,17 +1,16 @@
-
-//const MongoClient = require('mongodb').MongoClient;
 const   Mongoose = require('mongoose'),
         db = Mongoose.connection,
-        moduleModel = require('./database/ModuleModel');
+        moduleModel = require(constants.dbModelsPath+'ModuleModel'),
+        userModel = require(constants.dbModelsPath+'UserModel');
 
-var self;
+let self;
 
 class DBManager {
 
     constructor() {
         self = this;
 
-        Mongoose.connect('mongodb://localhost:27017/qticket');
+        Mongoose.connect(constants.database.mongooseConnectionString);
 
         self.db = db;
 
@@ -20,6 +19,8 @@ class DBManager {
             console.log('DB Connection established');
         });
     }
+
+
 
     exampleFunctions() {
         let newTestModule = new moduleModel();
