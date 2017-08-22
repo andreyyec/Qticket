@@ -10,7 +10,7 @@ const   express = require('express'),
         port = process.env.PORT || 3000,
         constants = require('./config/constants'),
         routes = require('./config/routes'),
-        dbMng = require(constants.modelsPath + 'DBManager'),;
+        dbMng = require(constants.modelsPath + 'DBManager');
 
 
 //DB settings
