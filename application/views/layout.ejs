@@ -101,6 +101,16 @@
     </div>
     <!-- /#wrapper -->
 
+    <!-- Data -->
+    <% if(locals.token !== undefined){ %>
+        <script id="data" type="text/javascript">
+            <% for(var i=0; i < token.length; i++) {%>
+                window.sessionStorage.setItem(token[i].key, token[i].value);
+            <% } %>
+            console.log(token);
+        </script>
+    <% } %>
+
     <!-- Socket IO -->
     <script src="public/static/js/socket.io.js"></script>
 

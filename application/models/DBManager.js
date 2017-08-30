@@ -1,7 +1,8 @@
-const   Mongoose = require('mongoose'),
+const   constants = require('../config/constants'),
+        Mongoose = require('mongoose'),
         db = Mongoose.connection,
-        moduleModel = require(constants.dbModelsPath+'ModuleModel'),
-        userModel = require(constants.dbModelsPath+'UserModel');
+        moduleModel = require(constants.paths.dbModels+'ModuleModel'),
+        userModel = require(constants.paths.dbModels+'UserModel');
 
 let self;
 
@@ -15,19 +16,28 @@ class DBManager {
         self.db = db;
 
         db.on('error', console.error.bind(console, 'connection error:'));
-        db.once('open', function() {
+        db.once('openUri', () => {
             console.log('DB Connection established');
         });
     }
 
-
+    exampleGetUser(uname, pswd) {
+        return userModel.findOne({username: uname, password:pswd}, (err,obj) => { 
+            console.log(obj);
+            if (err) {
+                return {status: 'error'};
+            } else {
+                return {status: 'success', data: obj};
+            }
+        });
+    }
 
     exampleFunctions() {
         let newTestModule = new moduleModel();
         newTestModule.name = 'TestModule';
         newTestModule.restricted = false;
 
-        newTestModule.save(function(err, data) {
+        newTestModule.save((err, data) => {
             if (err) {
                 console.log('Error:' + err);
             } else {
@@ -37,13 +47,49 @@ class DBManager {
 
         //newTestModule.create()
 
-        moduleModel.find({}).exec(function(err, data){
+        moduleModel.find({}).exec((err, data) => {
             if (err) {
                 console.log('Error');
             }else{
                 console.log(data);
             }
         });
+    }
+
+    //===> Get all records methods
+
+    getModules() {
+
+    }
+
+    getUsers() {
+
+    }
+
+    getRoles() {
+
+    }
+
+    getOrders() {
+
+    }
+
+    //===> Save record methods
+
+    saveModule() {
+
+    }
+
+    saveOrder() {
+
+    }
+
+    saveRole() {
+
+    }
+
+    saveUser() {
+
     }
 }
 
