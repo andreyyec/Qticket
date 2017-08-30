@@ -3,7 +3,8 @@ const 	constants = require('./constants'),
 	 	router = express.Router(),
 	 	sessMng = require(constants.paths.models + 'SessionManager');
 
-let sessionManager = new sessMng();
+let sessionData,
+    sessionManager = new sessMng();
 
 
 // ====> Rest EndPoints
@@ -39,28 +40,30 @@ router.post('/session/login', (req, res) => {
     });
 });
 
-router.post('/session/logout', (req, res) => {
-    
+router.get('/session/logout', (req, res) => {
+    req.session.destroy(function(err) {
+        // cannot access session here
+        res.redirect('/login');
+    })
 });
 
 // ====> Page Routes
 
 router.get('/login', (req, res) => {
-    console.log('=>Query:');
-    console.log(req.query);
     if (sessionManager.isValidSession(req.session)) {
         res.redirect('/');
     } else {
         res.render('login', {
             layout: false,
+            errorMsg: (req.query.error !== undefined) ? 'Invalid Username or Password' : undefined 
         });
     }
 });
 
-
 // middleware to check for a valid user session
 router.use(function checkUserSession (req, res, next) {
     if (sessionManager.isValidSession(req.session)) {
+        sessionData = req.session;
         next();
     } else {
         res.redirect('/login');
@@ -68,22 +71,19 @@ router.use(function checkUserSession (req, res, next) {
 });
 
 router.get('/', (req, res) => {
-    if (sessionManager.isValidSession(req.session)) {
-        res.render('dashboard', {
-            activeTab : 1,
-            tabTitle: 'Dashboard - Qticket',
-            mainTitle: 'Dashboard',
-            subTitle: 'Orders',
-            jsfiles: ['io-handler.js'],
-            sessionData: req.session
-        });
-    } else {
-        res.redirect('/login');
-    }
+    res.render('dashboard', {
+        session: sessionData,
+        activeTab : 1,
+        tabTitle: 'Dashboard - Qticket',
+        mainTitle: 'Dashboard',
+        subTitle: 'Orders',
+        jsfiles: ['io-handler.js']
+    });
 });
 
 router.get('/settings', (req, res) => {
     res.render('settings', {
+        session: sessionData,
         activeTab : 2,
         tabTitle: 'Settings - TCSb',
         mainTitle: 'Settings',
@@ -96,6 +96,7 @@ router.get('/settings', (req, res) => {
 // 404 default route
 router.get('*', (req, res) => {
     res.render('404', {
+        session: sessionData,
         activeTab : 0,
         tabTitle: 'Not found error - TCSb',
         mainTitle: '',
