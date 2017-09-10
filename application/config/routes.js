@@ -77,7 +77,7 @@ router.get('/', (req, res) => {
         tabTitle: 'Dashboard - Qticket',
         mainTitle: 'Orders',
         subTitle: 'Dashboard',
-        jsfiles: ['io-handler.js']
+        //jsfiles: []
     });
 });
 
@@ -88,7 +88,7 @@ router.get('/search', (req, res) => {
         tabTitle: 'Orders - Qticket',
         mainTitle: 'Search',
         subTitle: '',
-        jsfiles: ['bootstrap-modal.js','settings.js'],
+        //jsfiles: [],
         sessionData: req.session
     });
 });
@@ -100,7 +100,7 @@ router.get('/reports', (req, res) => {
         tabTitle: 'Reports - Qticket',
         mainTitle: 'Reports',
         subTitle: '',
-        jsfiles: ['bootstrap-modal.js','settings.js'],
+        //jsfiles: [],
         sessionData: req.session
     });
 });
@@ -112,7 +112,7 @@ router.get('/settings', (req, res) => {
         tabTitle: 'Settings - Qticket',
         mainTitle: 'Settings',
         subTitle: '',
-        jsfiles: ['bootstrap-modal.js','settings.js'],
+        //jsfiles: [],
         sessionData: req.session
     });
 });
