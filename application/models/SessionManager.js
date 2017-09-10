@@ -1,7 +1,8 @@
 const   constants = require('../config/constants'),
         odooSettings = constants.odooParams,
         dbMng = require(constants.paths.models + 'DBManager'),
-        http = require('http');
+        http = require('http'),
+        request = require('request');
 
 let self,
     dbManager = new dbMng();
@@ -13,100 +14,89 @@ class SessionManager {
     }
 
     isValidSession(session) {
-        return (session.uid && session.username) ? true : false;
+        return (session !== undefined && session.user !== undefined && session.user.uid && session.user.username) ? true : false;
     }
 
-    auth(username, password, session) {
-        let authPromise,
-            req,
-            params = {
-                'db': odooSettings.db, 
-                'login': username,
-                'password': password,
-                'base_location': odooSettings.protocol+'://'+odooSettings.host+':'+odooSettings.port,
-                //'session_id': "",
-                'context': {}
-            },
-            json = JSON.stringify({
-                'jsonrpc': '2.0',
-                'method': 'call',
-                'params': params
+    auth(username, password) {
+        let json = JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'call',
+                params: {
+                    db: odooSettings.db, 
+                    login: username,
+                    password: password,
+                    base_location: odooSettings.protocol+'://'+odooSettings.host+':'+odooSettings.port,
+                    context: {}
+                }
             }),
             options = {
-                'host': odooSettings.host,
-                'port': odooSettings.port,
-                'path': '/web/session/authenticate',
-                'method': 'POST',
-                'headers': {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
-                    "Content-Length": json.length,
+                host: odooSettings.host,
+                port: odooSettings.port,
+                path: '/web/session/authenticate',
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'Content-Length': json.length,
                 }
             };
 
-        return authPromise = new Promise((resolve, reject) => {
-            req = http.request(options, (res) => {
-                let err, response,
-                    sid = res.headers['set-cookie'][0].split(';')[0];
-
-                res.setEncoding('utf8');
+        return new Promise((resolve, reject) => {
+            let request = http.request(options, (response) => {
+                response.setEncoding('utf8');
                 
-                res.on('data', (data) => {
+                response.on('data', (data) => {
                     let jsonData = JSON.parse(data),
                         user = jsonData.result;
 
                     if (user.uid !== false) {
-                        session.uid = user.uid;
-                        session.username = user.username;
-                        session.userData = user;
-                       resolve();
+                        resolve(user);      
                     }else{
                         reject({error: "Invalid Username or password"});
                     }
                 });
 
-                res.on('error', (data) => {
+                response.on('error', (data) => {
                     reject();
                 });
             });
-
-            req.write(json);
+            request.write(json);
         });
     }
 
-    userAuthExample() {
+    getUserData(user, session) {
+        return new Promise((resolve, reject) => {
+            let restServPath = '/rest/users/get/'+user.username,
+                cookie = request.cookie('session_id='+user.session_id),
+                opts = {
+                    url : odooSettings.protocol+'://'+odooSettings.host+':'+odooSettings.port + restServPath,
+                    method: 'GET',
+                    headers: {
+                        Cookie: cookie
+                    },
+                };
 
-        // find the user
-        User.findOne({
-            name: req.body.name
-        }, function(err, user) {
+            request.get(opts, function (error, response, body) {
+                if (error === null) {
+                    let jsonData = JSON.parse(body),
+                        userData = jsonData[0];
 
-            if (err) throw err;
+                    session.user = {
+                        uid: user.uid,
+                        username: userData.login,
+                        displayname: userData.display_name,
+                        role: userData.purchase_type_user,
+                        userData: userData
+                    };
 
-            if (!user) {
-                res.json({ success: false, message: 'Authentication failed. User not found.' });
-            } else if (user) {
-                // check if password matches
-                if (user.password != req.body.password) {
-                    res.json({ success: false, message: 'Authentication failed. Wrong password.' });
+                    resolve();
+
                 } else {
-                    // if user is found and password is right
-                    // create a token
-                    var token = jwt.sign(user, app.get('superSecret'), {
-                        expiresInMinutes: 1440 // expires in 24 hours
-                    });
-
-                    // return the information including token as JSON
-                    res.json({
-                        success: true,
-                        message: 'Enjoy your token!',
-                        token: token
-                    });
+                    reject();
                 }
-            }
+            });
         });
     }
-
 }
 
 module.exports = SessionManager;

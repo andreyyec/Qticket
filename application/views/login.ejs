@@ -30,7 +30,7 @@
     <link href="public/static/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 </head>
 
-<body>
+<body class="login">
     <% if(locals.errorMsg !== undefined){ %>
         <div class="callout"><%= errorMsg %></div>
     <% } %>
@@ -45,7 +45,7 @@
                         <form role="form" method="POST" action="/session/login">
                             <fieldset>
                                 <div class="form-group">
-                                    <input class="form-control" placeholder="Username" name="username" type="text" autofocus>
+                                    <input class="form-control" placeholder="Username or Email" name="username" type="text" autofocus>
                                 </div>
                                 <div class="form-group">
                                     <input class="form-control" placeholder="Password" name="password" type="password" value="">

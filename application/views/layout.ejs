@@ -49,7 +49,7 @@
             <!-- Top Menu Items -->
             <ul class="nav navbar-right top-nav">
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true"><i class="fa fa-user"></i>  <%= session.userData.username %> <b class="caret"></b></a>
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true"><i class="fa fa-user"></i>  <%= session.user.displayname %> <b class="caret"></b></a>
                     <ul class="dropdown-menu">
                         <li>
                             <a href="/session/logout"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
@@ -61,10 +61,23 @@
             <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav side-nav">
+
+                <% if (activeTab === 1) { %> 
+                    <li class="active"> 
+                <% } else { %> 
+                    <li> 
+
+                <% } %>
                     <% if (activeTab === 1) { %> <li class="active"> <% } else { %> <li> <% } %>
-                        <a href="/"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
+                        <a href="/"><i class="fa fa-fw fa-shopping-cart"></i> Orders</a>
                     </li>
                     <% if (activeTab === 2) { %> <li class="active"> <% } else { %> <li> <% } %>
+                        <a href="/search"><i class="fa fa-fw fa-search"></i> Search</a>
+                    </li>
+                    <% if (activeTab === 3) { %> <li class="active"> <% } else { %> <li> <% } %>
+                        <a href="/reports"><i class="fa fa-fw fa-bar-chart"></i> Reports</a>
+                    </li>
+                    <% if (activeTab === 4) { %> <li class="active"> <% } else { %> <li> <% } %>
                         <a href="/settings"><i class="fa fa-fw fa-gear"></i> Settings</a>
                     </li>
                 </ul>

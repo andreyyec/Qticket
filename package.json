@@ -42,6 +42,7 @@
     "jsonwebtoken": "^7.4.3",
     "mongodb": "^2.2.25",
     "mongoose": "^4.11.7",
+    "request": "^2.81.0",
     "socket.io": "^1.7.3"
   }
 }

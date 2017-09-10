@@ -31,7 +31,8 @@ app.use(session({
     secret: constants.secure.secret,
     resave: false,
     store: new MongoStore({mongooseConnection:dbManager.db}),
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie: {expires: new Date(Date.now() + 3600000)}
 }));
 
 //App Router
