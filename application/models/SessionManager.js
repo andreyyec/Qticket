@@ -4,7 +4,7 @@ const   constants = require('../config/constants'),
         http = require('http'),
         request = require('request');
 
-let self,
+let self, cookie
     dbManager = new dbMng();
 
 class SessionManager {
@@ -14,7 +14,7 @@ class SessionManager {
     }
 
     isValidSession(session) {
-        return (session !== undefined && session.user !== undefined && session.user.uid && session.user.username) ? true : false;
+        return (session !== undefined && session.user !== undefined && session.products !== undefined) ? true : false;
     }
 
     auth(username, password) {
@@ -65,9 +65,10 @@ class SessionManager {
     }
 
     getUserData(user, session) {
+        cookie = request.cookie('session_id='+user.session_id);
+
         return new Promise((resolve, reject) => {
             let restServPath = '/rest/users/get/'+user.username,
-                cookie = request.cookie('session_id='+user.session_id),
                 opts = {
                     url : odooSettings.protocol+'://'+odooSettings.host+':'+odooSettings.port + restServPath,
                     method: 'GET',
@@ -81,6 +82,7 @@ class SessionManager {
                     let jsonData = JSON.parse(body),
                         userData = jsonData[0];
 
+                    session.session_id = user.session_id;
                     session.user = {
                         uid: user.uid,
                         username: userData.login,
@@ -91,6 +93,42 @@ class SessionManager {
 
                     resolve();
 
+                } else {
+                    reject();
+                }
+            });
+        });
+    }
+
+    getProductsData(session) {
+        return new Promise((resolve, reject) => {
+            let restServPath = '/rest/products/all/',
+                opts = {
+                    url : odooSettings.protocol+'://'+odooSettings.host+':'+odooSettings.port + restServPath,
+                    method: 'GET',
+                    headers: {
+                        Cookie: cookie
+                    },
+                };
+
+            request.get(opts, function (error, response, body) {
+                if (error === null) {
+                    let sessionProductsArray = [],
+                        productsDataArray = JSON.parse(body);
+
+                    for (var i in productsDataArray) {
+                        let odooProductObject = productsDataArray[i],
+                            productObject = {
+                                name: odooProductObject.display_name,
+                                price: odooProductObject.standard_price,
+                                image: odooProductObject.image_medium
+                            };
+                        sessionProductsArray.push(productObject);
+                    }
+
+                    session.products = sessionProductsArray;
+
+                    resolve();
                 } else {
                     reject();
                 }

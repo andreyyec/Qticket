@@ -14,21 +14,21 @@ let sessionData,
 // ====> Session Routes
 
 router.post('/session/login', (req, res) => {
-    let userData = req.body,
-        userRequestProcess,
+    let userDataRequest, productsDataRequest,
+        userData = req.body,
         authProcess = sessionManager.auth(userData.username, userData.password);
 
     authProcess.then((loginData) => {
-        userRequestProcess = sessionManager.getUserData(loginData, req.session);
+        userDataRequest = sessionManager.getUserData(loginData, req.session);
 
-        userRequestProcess.then(() => {
-            res.redirect('/');
+        userDataRequest.then(() => {
+            res.redirect(307, '/session/start');
         })
         .catch((data) => {
             if (data.error) {
-                res.redirect('/login?error=2');
-            }else{
                 res.redirect('/login?error=3');
+            }else{
+                res.redirect('/login?error=4');
             }
         });
     })
@@ -36,9 +36,30 @@ router.post('/session/login', (req, res) => {
         if (data.error) {
             res.redirect('/login?error=1');
         }else{
-            res.redirect('/login?error=3');
+            res.redirect('/login?error=2');
         }
     });
+});
+
+router.post('/session/start', (req, res) => {
+    let productsDataRequest;
+
+    if (req.session.user !== undefined) {
+        productsDataRequest = sessionManager.getProductsData(req.session);
+
+        productsDataRequest.then(() => {
+            res.redirect('/');
+        })
+        .catch((data) => {
+            if (data.error) {
+                res.redirect('/login?error=5');
+            }else{
+                res.redirect('/login?error=6');
+            }
+        });    
+    } else{
+        res.redirect('/login?error=1');
+    }
 });
 
 router.get('/login', (req, res) => {
@@ -71,17 +92,20 @@ router.use(function checkUserSession (req, res, next) {
 });
 
 router.get('/', (req, res) => {
-    res.render('orders_dashboard', {
+
+    res.render('orders', {
         session: sessionData,
         activeTab : 1,
         tabTitle: 'Dashboard - Qticket',
         mainTitle: 'Orders',
         subTitle: 'Dashboard',
+        products: req.session.products
         //jsfiles: []
     });
 });
 
 router.get('/search', (req, res) => {
+
     res.render('search', {
         session: sessionData,
         activeTab : 2,
@@ -94,6 +118,7 @@ router.get('/search', (req, res) => {
 });
 
 router.get('/reports', (req, res) => {
+
     res.render('reports', {
         session: sessionData,
         activeTab : 3,
@@ -106,6 +131,7 @@ router.get('/reports', (req, res) => {
 });
 
 router.get('/settings', (req, res) => {
+
     res.render('settings', {
         session: sessionData,
         activeTab : 4,

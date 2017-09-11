@@ -1,0 +1,23 @@
+<%- contentFor('breadcrumb') %>
+	<!-- <ol class="breadcrumb">
+	    <li class="active">
+	        <i class="fa fa-dashboard"></i> Dashboard
+	    </li>
+	</ol> -->
+
+<%- contentFor('body') %>
+	<div class="content-container dashboard">
+	    <div class="row">
+	        <div class="col-xs-12">
+	            <% for(var i=0; i < products.length; i++) {%>
+	                <div>
+	                	<% if (products[i].image !== false) { %> 
+	                		<img class="product_image" src="data:image/png;base64, <%= products[i].image %>">
+	                	 <% } %>
+	                	<h2><%= products[i].name %></h2>
+	                	<span><%= products[i].price %></span>
+	                </div>
+	            <% } %>  
+	    	</div>
+    	</div>
+	</div>
