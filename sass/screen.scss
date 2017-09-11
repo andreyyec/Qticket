@@ -1,0 +1,15 @@
+//Main scss file
+
+//Global Files
+@import 'global/variables';
+@import 'global/mixins';
+@import 'global/colors';
+
+//Components
+@import 'components/order-cards';
+
+//Pages
+@import 'pages/orders';
+@import 'pages/search';
+@import 'pages/reports';
+@import 'pages/settings';

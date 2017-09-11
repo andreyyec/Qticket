@@ -3,8 +3,8 @@ var gulp = require('gulp'),
 	sass = require('gulp-sass');
 
 gulp.task('sass', function() {
-  gulp.src('sass/main.scss')
+  gulp.src('sass/screen.scss')
   .pipe(sass({style: 'expanded'}))
-    .on('error', gutil.log)
-  .pipe(gulp.dest('public/static/css/main.css'))
+    .on('error', console.error.bind(console))
+  .pipe(gulp.dest('application/public/static/css/'))
 });
