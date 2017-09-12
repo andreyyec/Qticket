@@ -1,11 +1,11 @@
 const 	constants = require('./constants'),
         express = require('express'),
 	 	router = express.Router(),
-	 	sessMng = require(constants.paths.models + 'SessionManager');
+	 	sessMng = require(constants.paths.models + 'SessionManager'),
+        ordersMng = require(constants.paths.models + 'OrdersManager');
 
-let sessionData,
+let sessionData, ordersManager, 
     sessionManager = new sessMng();
-
 
 // ====> Rest EndPoints
 
@@ -76,7 +76,20 @@ router.get('/login', (req, res) => {
 router.get('/session/logout', (req, res) => {
     req.session.destroy(function(err) {
         res.redirect('/login');
+    });
+});
+
+router.get('/test', (req, res) => {
+    ordersManager = new ordersMng(req.session);
+    
+    let testRequest = ordersManager.requestOrderList(req.session);
+
+    testRequest.then(() => {
+        res.write('OK');
     })
+    .catch((data) => {
+         res.write('CATCH');
+    });    
 });
 
 // ====> Application Routes

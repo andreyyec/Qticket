@@ -1,30 +1,30 @@
-.content-container.orders .orders-screen {
+html body #wrapper #page-wrapper .container-fluid .content-container.orders .screen-holder .orders-screen {
   display: none; }
 
-.content-container.orders .order-detail .product-cards-container {
+html body #wrapper #page-wrapper .container-fluid .content-container.orders .screen-holder .order-detail .product-cards-container {
   display: flex;
-  justify-content: fspace-around;
+  justify-content: space-around;
   flex-wrap: wrap; }
-  .content-container.orders .order-detail .product-cards-container .product-card {
+  html body #wrapper #page-wrapper .container-fluid .content-container.orders .screen-holder .order-detail .product-cards-container .product-card {
     display: inline-block;
     width: 122px;
     margin-right: 10px; }
-    .content-container.orders .order-detail .product-cards-container .product-card .panel {
+    html body #wrapper #page-wrapper .container-fluid .content-container.orders .screen-holder .order-detail .product-cards-container .product-card .panel {
       height: 122px;
       position: relative; }
-      .content-container.orders .order-detail .product-cards-container .product-card .panel .badge {
+      html body #wrapper #page-wrapper .container-fluid .content-container.orders .screen-holder .order-detail .product-cards-container .product-card .panel .badge {
         background-color: green;
         position: absolute;
         top: 5px;
         right: 5px; }
-      .content-container.orders .order-detail .product-cards-container .product-card .panel .panel-body img {
+      html body #wrapper #page-wrapper .container-fluid .content-container.orders .screen-holder .order-detail .product-cards-container .product-card .panel .panel-body img {
         width: 100%; }
-      .content-container.orders .order-detail .product-cards-container .product-card .panel .panel-heading {
+      html body #wrapper #page-wrapper .container-fluid .content-container.orders .screen-holder .order-detail .product-cards-container .product-card .panel .panel-heading {
         bottom: 0;
         padding: 4px;
         position: absolute;
         width: 100%; }
-        .content-container.orders .order-detail .product-cards-container .product-card .panel .panel-heading .panel-title {
+        html body #wrapper #page-wrapper .container-fluid .content-container.orders .screen-holder .order-detail .product-cards-container .product-card .panel .panel-heading .panel-title {
           font-size: 12px; }
 
 #page-wrapper .page-header {

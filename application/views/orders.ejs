@@ -7,31 +7,33 @@
 
 <%- contentFor('body') %>
 	<div class="content-container orders">
-	    <div class="row orders-screen">
+		<div class="screen-holder">
+			<div class="row orders-screen">
 	        
-    	</div>
-    	<div class="row order-detail">
-	        <div class="col-xs-4">
-
-	        </div>
-	        <div class="col-xs-8 product-cards-container">
-	            <% for(var i=0; i < products.length; i++) {%>
-	                <div class="product-card">
-	            		<div class="panel panel-default">
-	            			<span class="badge"><%= products[i].price %></span>
-					        <div class="panel-body">
-					            <% if (products[i].image !== false) { %> 
-		                			<img class="product_image" src="data:image/png;base64, <%= products[i].image %>">
-		                	 	<% } %>
-					        </div>
-					        <div class="panel-heading">
-					            <h3 class="panel-title"> <%= products[i].name %></h3>
-					        </div>
-					    </div>
-					 </div>
-	            <% } %>  
 	    	</div>
-    	</div>
+	    	<div class="row order-detail">
+		        <div class="col-xs-4">
+		        	
+		        </div>
+		        <div class="col-xs-8 product-cards-container">
+		            <% for(var i=0; i < products.length; i++) {%>
+		                <div class="product-card">
+		            		<div class="panel panel-default">
+		            			<span class="badge"><%= products[i].price %></span>
+						        <div class="panel-body">
+						            <% if (products[i].image !== false) { %> 
+			                			<img class="product_image" src="data:image/png;base64, <%= products[i].image %>">
+			                	 	<% } %>
+						        </div>
+						        <div class="panel-heading">
+						            <h3 class="panel-title"> <%= products[i].name %></h3>
+						        </div>
+						    </div>
+						 </div>
+		            <% } %>  
+		    	</div>
+	    	</div>	
+		</div>
 	</div>
 
 
