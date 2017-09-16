@@ -50,7 +50,7 @@ class SessionManager {
                         user = jsonData.result;
 
                     if (user.uid !== false) {
-                        resolve(user);      
+                        resolve(user);
                     }else{
                         reject({error: "Invalid Username or password"});
                     }
@@ -90,9 +90,8 @@ class SessionManager {
                         role: userData.purchase_type_user,
                         userData: userData
                     };
-
+                    
                     resolve();
-
                 } else {
                     reject();
                 }

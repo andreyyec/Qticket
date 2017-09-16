@@ -9,11 +9,16 @@ const   express = require('express'),
         port = process.env.PORT || 3000,
         constants = require('./config/constants'),
         routes = require('./config/routes'),
-        dbMng = require(constants.paths.models + 'DBManager');
+        dbMng = require(constants.paths.models + 'DBManager'),
+        sessinMng = require(constants.paths.models + 'SessionManager'),
+        ordersMng = require(constants.paths.models + 'OrdersManager');
 
 
 //DB settings
-let dbManager = new dbMng();
+let authProcess, ordersManager, sessionManager = new sessinMng(), dbManager = new dbMng();
+
+//App environment settings
+process.env.globalDraftsList = '';
 
 //App settings
 app.set('views', __dirname+'/views');
@@ -25,6 +30,7 @@ app.use(ejsLayouts);
 app.use(bodyParser.urlencoded({
     extended: true
 }));
+
 app.use(bodyParser.json());
 app.use('/public', express.static(__dirname+'/public'));
 app.use(session({
@@ -35,13 +41,22 @@ app.use(session({
     cookie: {expires: new Date(Date.now() + 3600000)}
 }));
 
+//App -> Odoo
+    authProcess = sessionManager.auth(constants.adminAccount.username, constants.adminAccount.password);
+
+    authProcess.then((loginData) => {
+        if (loginData && loginData.session_id) {
+            ordersManager = new ordersMng(loginData, io);
+            ordersManager.initLoop();
+        }else {
+            console.log('Error while trying to access global data');
+        }
+    })/*.catch((data) => {
+        console.log('Unable to access global data');
+    })*/;
+
 //App Router
 app.use('/', routes);
-
-//Web Socket Settings
-io.on('connection', (socket) => {
-
-});
 
 //Web Server Init
 http.listen(port, () => {

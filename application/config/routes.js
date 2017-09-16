@@ -1,15 +1,33 @@
 const 	constants = require('./constants'),
-        express = require('express'),
-	 	router = express.Router(),
 	 	sessMng = require(constants.paths.models + 'SessionManager'),
-        ordersMng = require(constants.paths.models + 'OrdersManager');
+        ordersMng = require(constants.paths.models + 'OrdersManager'),
+        express = require('express'),
+        router = express.Router();
 
 let sessionData, ordersManager, 
     sessionManager = new sessMng();
 
 // ====> Rest EndPoints
 
+router.get('/test', (req, res) => {
+    let ordersManager = new ordersMng(req.session),
+        getDraftsList = ordersManager.requestOrderList(req.session)
+        gdl = process.env.globalDraftsList;
 
+    console.log('=> TEST FLAG:')
+    console.log(process.env.globalDraftsList);
+
+    for (value in gdl) {
+        console.log('=> value: '+gdl[value]);
+    }
+
+    getDraftsList.then(() => {
+        res.write('OK');
+    })
+    .catch((data) => {
+         res.write('CATCH');
+    });    
+});
 
 // ====> Session Routes
 
@@ -79,19 +97,6 @@ router.get('/session/logout', (req, res) => {
     });
 });
 
-router.get('/test', (req, res) => {
-    ordersManager = new ordersMng(req.session);
-    
-    let testRequest = ordersManager.requestOrderList(req.session);
-
-    testRequest.then(() => {
-        res.write('OK');
-    })
-    .catch((data) => {
-         res.write('CATCH');
-    });    
-});
-
 // ====> Application Routes
 
     // middleware to check for a valid user session
@@ -105,7 +110,6 @@ router.use(function checkUserSession (req, res, next) {
 });
 
 router.get('/', (req, res) => {
-
     res.render('orders', {
         session: sessionData,
         activeTab : 1,
@@ -118,7 +122,6 @@ router.get('/', (req, res) => {
 });
 
 router.get('/search', (req, res) => {
-
     res.render('search', {
         session: sessionData,
         activeTab : 2,
@@ -131,7 +134,6 @@ router.get('/search', (req, res) => {
 });
 
 router.get('/reports', (req, res) => {
-
     res.render('reports', {
         session: sessionData,
         activeTab : 3,
@@ -144,7 +146,6 @@ router.get('/reports', (req, res) => {
 });
 
 router.get('/settings', (req, res) => {
-
     res.render('settings', {
         session: sessionData,
         activeTab : 4,

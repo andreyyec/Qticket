@@ -4,26 +4,48 @@ const   constants = require('../config/constants'),
         http = require('http'),
         request = require('request');
 
-let self, cookie, ordersArray = ['test1', 'test2', 'test3'];
+let self, io, cookie, ordersArray = [];
 
 class OrdersManager {
 
-    constructor(session) {
+    constructor(session, ioInstance) {
         self = this;
+        io = ioInstance;
         cookie = request.cookie('session_id='+session.session_id);
-    }
-
-    getOrdersIds() {
-    	
     }
 
     sendUpdateSignal() {
 
     }
 
+    /*getGlobalDraftsArray() {
+        let obj = JSON.parse(process.env.globalDraftsList);
+
+        if (obj) {
+    	   return obj;
+        } else {
+            return [];
+        }
+    }
+
+    setGlobalDraftsArray(object) {
+        process.env.globalDraftsList = JSON.stringify(object);
+    }*/
+
+    attachIOListeners() {
+        //Web Socket Settings
+        io.on('connection', (socket) => {
+
+        });
+    }
+
+    getIdslist() {
+
+    }
+
     requestOrderList() {
         return new Promise((resolve, reject) => {
-            let restServPath = '/odoo/test',
+            let restServPath = '/rest/purchases/drafts/list',
                 opts = {
                     url : odooSettings.protocol+'://'+odooSettings.host+':'+odooSettings.port + restServPath,
                     method: 'post',
@@ -42,17 +64,32 @@ class OrdersManager {
 
             request(opts, function (error, response, body) {
                 if (error === null) {
-                    /*let sessionProductsArray = [],
-                        productsDataArray = JSON.parse(body);*/
-
-                    console.log(body);
-
-                    resolve();
+                    resolve(body.result);
                 } else {
                     reject();
                 }
             });
         });
+    }
+
+    requestProcedure() {
+        let getDraftsList = self.requestOrderList();
+
+        getDraftsList.then((data) => {
+            console.log('=>data');
+            console.log(data);
+        })
+        .catch((data) => {
+             console.log('CATCH');
+        }); 
+    }
+
+    initLoop() {
+        self.requestProcedure();
+        
+        setInterval(() => {
+            self.requestProcedure();
+        }, 5000);
     }
 }
 

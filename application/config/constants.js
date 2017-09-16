@@ -2,6 +2,10 @@ const constants = {
 	secure: {
 		secret: 'R3c1C1aD0rASaNm1Gu3L'
 	},
+	adminAccount: {
+		username: 'admin',
+		password: 'admin'
+	},
 	paths: {
 		root: __dirname.replace('config',''),
 		models: __dirname.replace('config','models/'),
