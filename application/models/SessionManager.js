@@ -115,7 +115,7 @@ class SessionManager {
                     let sessionProductsArray = [],
                         productsDataArray = JSON.parse(body);
 
-                    for (var i in productsDataArray) {
+                    for (let i in productsDataArray) {
                         let odooProductObject = productsDataArray[i],
                             productObject = {
                                 name: odooProductObject.display_name,

@@ -17,7 +17,7 @@ router.get('/test', (req, res) => {
     console.log('=> TEST FLAG:')
     console.log(process.env.globalDraftsList);
 
-    for (value in gdl) {
+    for (let value in gdl) {
         console.log('=> value: '+gdl[value]);
     }
 

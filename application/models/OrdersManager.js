@@ -18,20 +18,6 @@ class OrdersManager {
 
     }
 
-    /*getGlobalDraftsArray() {
-        let obj = JSON.parse(process.env.globalDraftsList);
-
-        if (obj) {
-    	   return obj;
-        } else {
-            return [];
-        }
-    }
-
-    setGlobalDraftsArray(object) {
-        process.env.globalDraftsList = JSON.stringify(object);
-    }*/
-
     attachIOListeners() {
         //Web Socket Settings
         io.on('connection', (socket) => {
@@ -40,12 +26,40 @@ class OrdersManager {
     }
 
     getIdslist() {
+        let idsArray = [];
 
+        for (let key in ordersArray) {
+            idsArray.push(ordersArray[key].id);    
+        }
+
+        return idsArray;
+    }
+
+    updateAppPurchasesList(changesList) {
+        if (changesList) {
+            if (changesList.added && changesList.added.length > 0) {    
+                for (let key in changesList.added) {
+                    ordersArray.push(changesList.added[key])
+                }
+            }
+            if (changesList.removed && changesList.removed.length > 0) {
+                for (let xKey in changesList.removed) {
+                    for (let yKey in ordersArray) {
+                        if (changesList.removed[xKey] === ordersArray[yKey].id) {
+                            delete ordersArray[yKey];
+                        }
+                    }
+                }
+            }
+        } else {
+            console.log('Odoo data wasn\'t received');
+        }
     }
 
     requestOrderList() {
         return new Promise((resolve, reject) => {
             let restServPath = '/rest/purchases/drafts/list',
+                idsArray = self.getIdslist(),
                 opts = {
                     url : odooSettings.protocol+'://'+odooSettings.host+':'+odooSettings.port + restServPath,
                     method: 'post',
@@ -56,7 +70,7 @@ class OrdersManager {
                     body: {
 					    params: {
 					        ids: {
-					        	ids: ordersArray
+					        	ids: idsArray
 					        },
 					    }
                     }
@@ -76,20 +90,21 @@ class OrdersManager {
         let getDraftsList = self.requestOrderList();
 
         getDraftsList.then((data) => {
-            console.log('=>data');
+            console.log('=> Response Data');
             console.log(data);
+            self.updateAppPurchasesList(JSON.parse(data));
         })
-        .catch((data) => {
+        /*.catch((data) => {
              console.log('CATCH');
-        }); 
+        })*/; 
     }
 
     initLoop() {
         self.requestProcedure();
-        
+
         setInterval(() => {
             self.requestProcedure();
-        }, 5000);
+        }, constants.appSettings.purchaseListRefreshTime);
     }
 }
 

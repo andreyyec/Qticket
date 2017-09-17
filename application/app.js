@@ -41,7 +41,7 @@ app.use(session({
     cookie: {expires: new Date(Date.now() + 3600000)}
 }));
 
-//App -> Odoo
+//App -> Odoo Purchases List Init
     authProcess = sessionManager.auth(constants.adminAccount.username, constants.adminAccount.password);
 
     authProcess.then((loginData) => {
