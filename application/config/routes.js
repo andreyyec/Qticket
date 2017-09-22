@@ -9,25 +9,6 @@ let sessionData, ordersManager,
 
 // ====> Rest EndPoints
 
-router.get('/test', (req, res) => {
-    let ordersManager = new ordersMng(req.session),
-        getDraftsList = ordersManager.requestOrderList(req.session)
-        gdl = process.env.globalDraftsList;
-
-    console.log('=> TEST FLAG:')
-    console.log(process.env.globalDraftsList);
-
-    for (let value in gdl) {
-        console.log('=> value: '+gdl[value]);
-    }
-
-    getDraftsList.then(() => {
-        res.write('OK');
-    })
-    .catch((data) => {
-         res.write('CATCH');
-    });    
-});
 
 // ====> Session Routes
 
@@ -111,49 +92,46 @@ router.use(function checkUserSession (req, res, next) {
 
 router.get('/', (req, res) => {
     res.render('orders', {
-        session: sessionData,
         activeTab : 1,
         tabTitle: 'Dashboard - Qticket',
         mainTitle: 'Orders',
         subTitle: 'Dashboard',
-        products: req.session.products
-        //jsfiles: []
+        products: req.session.products,
+        jsfiles: ['io-handler'],
+        session: sessionData,
     });
 });
 
 router.get('/search', (req, res) => {
     res.render('search', {
-        session: sessionData,
         activeTab : 2,
         tabTitle: 'Orders - Qticket',
         mainTitle: 'Search',
         subTitle: '',
         //jsfiles: [],
-        sessionData: req.session
+        session: sessionData,
     });
 });
 
 router.get('/reports', (req, res) => {
     res.render('reports', {
-        session: sessionData,
         activeTab : 3,
         tabTitle: 'Reports - Qticket',
         mainTitle: 'Reports',
         subTitle: '',
         //jsfiles: [],
-        sessionData: req.session
+        session: sessionData,
     });
 });
 
 router.get('/settings', (req, res) => {
     res.render('settings', {
-        session: sessionData,
         activeTab : 4,
         tabTitle: 'Settings - Qticket',
         mainTitle: 'Settings',
         subTitle: '',
         //jsfiles: [],
-        sessionData: req.session
+        session: sessionData,
     });
 });
 

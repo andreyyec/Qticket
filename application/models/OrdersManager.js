@@ -4,7 +4,7 @@ const   constants = require('../config/constants'),
         http = require('http'),
         request = require('request');
 
-let self, io, cookie, ordersArray = [];
+let self, io, cookie, ordersArray = [], sckId;
 
 class OrdersManager {
 
@@ -12,17 +12,35 @@ class OrdersManager {
         self = this;
         io = ioInstance;
         cookie = request.cookie('session_id='+session.session_id);
-    }
-
-    sendUpdateSignal() {
-
+        sckId = 1;
     }
 
     attachIOListeners() {
         //Web Socket Settings
-        io.on('connection', (socket) => {
-
+        io.on('connection', function(socket){
+            socket.emit('ordersFullUpdate', ordersArray);
         });
+
+        io.on('newOrder', (orderID) => {
+            //@TODO: Validation, DB save, then event
+            socket.emit('newOrderEvent', orderID);
+        });
+
+        io.on('deleteOrder', (orderID) => {
+            //@TODO: Validation, DB save, then event
+            socket.emit('deleteOrderEvent', orderID);
+        });
+
+        io.on('updateOrder', (orderInfo) => {
+            let changesObj = {'new': [], 'deleted':[]};
+
+            //io.emit('updateOrder', )
+        });
+    }
+
+    getSocketMessage(data) {
+        sckId ++;
+        return {sID: sckId, data: data};
     }
 
     getIdslist() {
@@ -37,23 +55,34 @@ class OrdersManager {
 
     updateAppPurchasesList(changesList) {
         if (changesList) {
+            let updateFlag = false;
             if (changesList.added && changesList.added.length > 0) {    
                 for (let key in changesList.added) {
                     ordersArray.push(changesList.added[key])
                 }
+                updateFlag = true;
             }
             if (changesList.removed && changesList.removed.length > 0) {
                 for (let xKey in changesList.removed) {
                     for (let yKey in ordersArray) {
                         if (changesList.removed[xKey] === ordersArray[yKey].id) {
+                            let index = ordersArray.indexOf(ordersArray[yKey]);
+                            if (index > -1) {
+                                ordersArray.splice(index, 1);
+                            }
+
                             delete ordersArray[yKey];
                         }
                     }
                 }
+                updateFlag = true;
             }
+            if (updateFlag) {
+                io.emit('updateOrders', ordersArray);
+            }    
         } else {
             console.log('Odoo data wasn\'t received');
-        }
+        }        
     }
 
     requestOrderList() {
@@ -90,17 +119,16 @@ class OrdersManager {
         let getDraftsList = self.requestOrderList();
 
         getDraftsList.then((data) => {
-            console.log('=> Response Data');
-            console.log(data);
             self.updateAppPurchasesList(JSON.parse(data));
         })
-        /*.catch((data) => {
-             console.log('CATCH');
-        })*/; 
+        .catch((data) => {
+             console.log('Error while trying to get purchases list');
+        }); 
     }
 
     initLoop() {
         self.requestProcedure();
+        self.attachIOListeners();
 
         setInterval(() => {
             self.requestProcedure();
