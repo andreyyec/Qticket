@@ -88,14 +88,10 @@ $(function () {
                                 let index = csOrdersArray.indexOf(csOrdersArray[yKey]);
 
                                 $.each(ordersContainer.find('.order-card'), function(index, element) {
-                                    if ($(element).attr('orderid') == csOrdersArray[yKey].id) {
-                                        element.remove();
-                                    }
+                                    if ($(element).attr('orderid') == csOrdersArray[yKey].id) { element.remove();}
                                 });
 
-                                if (index > -1) {
-                                    csOrdersArray.splice(index, 1);
-                                }
+                                if (index > -1) { csOrdersArray.splice(index, 1);}
                             }
                         }
                     }
@@ -120,15 +116,15 @@ $(function () {
                 }
             });
 
-            socket.on('sync', function(sckData) {
-                sckId = sckData.sID;
-                self.initOrdersView(sckData.data);
-            });
-
             socket.on('init', function(sckData) {
                 sckId = sckData.sID;
                 csOrdersArray = sckData.data;
                 self.initOrdersView(sckData.data);
+            });
+
+            socket.on('disconnect', function() {
+                //@TODO: Trigger reset data, screen, and spinner when disconnected
+                console.log('disconnect functionality');
             });
         },
         init: function() {
