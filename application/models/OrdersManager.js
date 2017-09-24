@@ -12,23 +12,23 @@ class OrdersManager {
         self = this;
         io = ioInstance;
         cookie = request.cookie('session_id='+session.session_id);
-        sckId = 1;
+        sckId = 0;
     }
 
     attachIOListeners() {
         //Web Socket Settings
         io.on('connection', function(socket){
-            socket.emit('ordersFullUpdate', ordersArray);
+            socket.emit('init', {sID: sckId, data: ordersArray});
         });
 
-        io.on('newOrder', (orderID) => {
+        io.on('blockOrder', (orderID) => {
             //@TODO: Validation, DB save, then event
-            socket.emit('newOrderEvent', orderID);
+            io.emit('orderBlocked', orderID);
         });
 
         io.on('deleteOrder', (orderID) => {
             //@TODO: Validation, DB save, then event
-            socket.emit('deleteOrderEvent', orderID);
+            io.emit('deleteOrderEvent', orderID);
         });
 
         io.on('updateOrder', (orderInfo) => {
@@ -45,11 +45,9 @@ class OrdersManager {
 
     getIdslist() {
         let idsArray = [];
-
         for (let key in ordersArray) {
-            idsArray.push(ordersArray[key].id);    
+            idsArray.push({id:ordersArray[key].id, last_update: ordersArray[key].last_update});    
         }
-
         return idsArray;
     }
 
@@ -59,6 +57,16 @@ class OrdersManager {
             if (changesList.added && changesList.added.length > 0) {    
                 for (let key in changesList.added) {
                     ordersArray.push(changesList.added[key])
+                }
+                updateFlag = true;
+            }
+            if (changesList.updated && changesList.updated.length > 0) {
+                for (let xKey in changesList.updated) {
+                    for (let yKey in ordersArray) {
+                        if (changesList.updated[xKey].id === ordersArray[yKey].id) {
+                            ordersArray[yKey] = changesList.updated[xKey]
+                        }
+                    }
                 }
                 updateFlag = true;
             }
@@ -77,8 +85,9 @@ class OrdersManager {
                 }
                 updateFlag = true;
             }
+
             if (updateFlag) {
-                io.emit('updateOrders', ordersArray);
+                io.emit('ordersUpdate', self.getSocketMessage(changesList));
             }    
         } else {
             console.log('Odoo data wasn\'t received');
@@ -119,6 +128,8 @@ class OrdersManager {
         let getDraftsList = self.requestOrderList();
 
         getDraftsList.then((data) => {
+            console.log('Data:');
+            console.log(data);
             self.updateAppPurchasesList(JSON.parse(data));
         })
         .catch((data) => {

@@ -1,6 +1,3 @@
-html body #wrapper #page-wrapper .container-fluid .content-container.orders .screen-holder .orders-screen {
-  display: none; }
-
 html body #wrapper #page-wrapper .container-fluid .content-container.orders .screen-holder .order-detail .product-cards-container {
   display: flex;
   justify-content: space-around;
