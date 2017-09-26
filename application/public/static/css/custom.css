@@ -14,6 +14,10 @@ body .content-container.settings span.strong.username {
   padding: 10px 28px;
 }
 
+#wrapper {
+  margin-top: 65px;
+}
+
 /*!
  * Bootstrap Responsive v2.3.2
  *
@@ -108,6 +112,11 @@ body .content-container.settings span.strong.username {
   }
   .hidden-phone {
     display: none !important;
+  }
+  .nav.navbar-right {
+    position: absolute;
+    top: 0;
+    right: 50px;
   }
 }
 
@@ -971,8 +980,10 @@ body .content-container.settings span.strong.username {
   }
   .navbar-fixed-top,
   .navbar-fixed-bottom {
-    position: static;
+    /*position: static;*/
+    margin: 0;
   }
+
   .navbar-fixed-top {
     margin-bottom: 20px;
   }

@@ -4,7 +4,21 @@ $(function () {
     body = $('body'),
     ordersContainer = body.find('.orders-screen'),
     templates= {
-        orderCard: '<div class="col-xs-3 order-card" orderid="${id}">\
+        ncOrderCard:    '<div class="panel panel-primary">\
+                            <div class="panel-heading">\
+                                <div class="col-xs-6">${ticket}</div>\
+                                <div class="col-xs-6">${id} - ${client[1]}</div>\
+                            </div>\
+                        </div>',
+        cOrderCard: '<div class="panel panel-primary">\
+                        <div class="panel-heading">\
+                            <div class="col-xs-6">${ticket}</div>\
+                            <div class="col-xs-6">${id} - ${client[1]}</div>\
+                        </div>\
+                        <div class="panel-body">\
+                        </div>\
+                    </div>',
+        orderCard: '<div class="col-xs-6 col-sm-4 col-md-3 order-card" orderid="${id}">\
                         <div class="panel panel-primary">\
                             <div class="panel-heading">\
                                 <div class="row">\
@@ -123,7 +137,7 @@ $(function () {
             });
 
             socket.on('disconnect', function() {
-                //@TODO: Trigger reset data, screen, and spinner when disconnected
+                //@TODO: Trigger reset data, screen, and spinner     when disconnected
                 console.log('disconnect functionality');
             });
         },

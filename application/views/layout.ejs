@@ -64,19 +64,22 @@
                         <% if (activeTab === 1) { %> <li class="active"> <% } else { %> <li> <% } %>
                             <a href="/"><i class="fa fa-fw fa-shopping-cart"></i> Orders</a>
                         </li>
+                        <% if (activeTab === 2) { %> <li class="active"> <% } else { %> <li> <% } %>
+                            <a href="/"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
+                        </li>
                         <% if (session.user.role === 'admnistrativo' || session.user.role === 'super') { %> 
-                            <% if (activeTab === 2) { %> <li class="active"> <% } else { %> <li> <% } %>
+                            <% if (activeTab === 3) { %> <li class="active"> <% } else { %> <li> <% } %>
                                 <a href="/search"><i class="fa fa-fw fa-search"></i> Search</a>
                             </li>
-                            <% if (activeTab === 3) { %> <li class="active"> <% } else { %> <li> <% } %>
+                            <% if (activeTab === 4) { %> <li class="active"> <% } else { %> <li> <% } %>
                                 <a href="/reports"><i class="fa fa-fw fa-bar-chart"></i> Reports</a>
                             </li>
                         <% } %>
-                        <% if (session.user.role === 'super') { %> 
-                            <% if (activeTab === 4) { %> <li class="active"> <% } else { %> <li> <% } %>
+                        <!-- <%if (session.user.role === 'super') { %> 
+                            <% if (activeTab === 5) { %> <li class="active"> <% } else { %> <li> <% } %>
                                 <a href="/settings"><i class="fa fa-fw fa-gear"></i> Settings</a>
                             </li>
-                        <% } %>
+                        <% } %> -->
                     </ul>
                 </div>
                 <!-- /.navbar-collapse -->
