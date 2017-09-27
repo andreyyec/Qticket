@@ -72,7 +72,7 @@ router.get('/login', (req, res) => {
     }
 });
 
-router.get('/session/logout', (req, res) => {
+router.get('/logout', (req, res) => {
     req.session.destroy(function(err) {
         res.redirect('/login');
     });
@@ -91,11 +91,24 @@ router.use(function checkUserSession (req, res, next) {
 });
 
 router.get('/', (req, res) => {
-    res.render('orders', {
+    res.render('dashboard', {
         activeTab : 1,
         tabTitle: 'Dashboard - Qticket',
-        mainTitle: 'Orders',
+        mainTitle: 'Tickets',
         subTitle: 'Dashboard',
+        products: req.session.products,
+        jsfiles: ['io-handler'],
+        session: sessionData,
+    });
+});
+
+router.get('/orders', (req, res) => {
+    //@TODO render manager / viewer depending on user permissions
+    res.render('orders', {
+        activeTab : 2,
+        tabTitle: 'Orders - Qticket',
+        mainTitle: 'Orders',
+        subTitle: 'Manager',
         products: req.session.products,
         jsfiles: ['io-handler'],
         session: sessionData,
@@ -104,7 +117,7 @@ router.get('/', (req, res) => {
 
 router.get('/search', (req, res) => {
     res.render('search', {
-        activeTab : 2,
+        activeTab : 3,
         tabTitle: 'Orders - Qticket',
         mainTitle: 'Search',
         subTitle: '',
@@ -115,7 +128,7 @@ router.get('/search', (req, res) => {
 
 router.get('/reports', (req, res) => {
     res.render('reports', {
-        activeTab : 3,
+        activeTab : 4,
         tabTitle: 'Reports - Qticket',
         mainTitle: 'Reports',
         subTitle: '',
@@ -124,16 +137,16 @@ router.get('/reports', (req, res) => {
     });
 });
 
-router.get('/settings', (req, res) => {
+/*router.get('/settings', (req, res) => {
     res.render('settings', {
-        activeTab : 4,
+        activeTab : 5,
         tabTitle: 'Settings - Qticket',
         mainTitle: 'Settings',
         subTitle: '',
         //jsfiles: [],
         session: sessionData,
     });
-});
+});*/
 
     // 404 default route
 router.get('*', (req, res) => {

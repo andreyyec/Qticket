@@ -1,152 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="description" content="">
-        <meta name="author" content="">
 
-        <title><%= tabTitle %></title>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Quick Orders System">
+  <meta name="author" content="Andrey Castro - Recicladora San Miguel">
+  <title><%= tabTitle %></title>
 
-        <!-- Project icon -->
-        <link href="public/static/images/nodejs.png" rel="icon">
+    <!-- Project icon -->
+    <link href="public/static/img/nodejs.png" rel="icon">
 
-        <!-- Bootstrap Core CSS -->
-        <link href="public/static/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap core CSS-->
+  <link href="public/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom fonts for this template-->
+  <link href="public/vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+  <!-- Custom styles for this template-->
+  <link href="public/vendor/sb-admin/css/sb-admin.css" rel="stylesheet">
+</head>
 
-        <!-- Custom CSS -->
-        <link href="public/static/css/sb-admin.css" rel="stylesheet">
-        <link href="public/static/css/datatables.css" rel="stylesheet">
-        <link href="public/static/css/screen.css" rel="stylesheet">
-        <link href="public/static/css/custom.css" rel="stylesheet">
+<body class="fixed-nav bg-dark" id="page-top">
+  <!-- Navigation-->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
+    <a class="navbar-brand" href="/">Qticket<span class="small"> beta</span></a>
+    <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarResponsive">
+      <ul class="navbar-nav navbar-sidenav" id="exampleAccordion">
 
-        <!-- Morris Charts CSS -->
-        <link href="public/static/css/plugins/morris.css" rel="stylesheet">
+        <li class="nav-item <% if (activeTab === 1) { %> active <% } %>" data-toggle="tooltip" data-placement="right" title="Dashboard">
+          <a class="nav-link" href="/">
+            <i class="fa fa-fw fa-dashboard"></i>
+            <span class="nav-link-text">Dashboard</span>
+          </a>
+        </li>
 
-        <!-- Custom Fonts -->
-        <link href="public/static/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    </head>
+        <li class="nav-item <% if (activeTab === 2) { %> active <% } %>" data-toggle="tooltip" data-placement="right" title="Orders">
+          <a class="nav-link" href="/orders">
+            <i class="fa fa-fw fa-shopping-cart"></i>
+            <span class="nav-link-text">Orders</span>
+          </a>
+        </li>
 
-    <body>
-        <!-- #wrapper -->
-        <div id="wrapper">
+        <% if (session.user.role === 'admnistrativo' || session.user.role === 'super') { %> 
+            <li class="nav-item <% if (activeTab === 3) { %> active <% } %>" data-toggle="tooltip" data-placement="right" title="Orders Search">
+              <a class="nav-link" href="/search">
+                <i class="fa fa-fw fa-search"></i>
+                <span class="nav-link-text">Search</span>
+              </a>
+            </li>
 
-            <!-- Navigation -->
-            <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-
-                <!-- Brand and toggle get grouped for better mobile display -->
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand" href="/">Qticket <sub>beta</sub></a>
-                </div>
-
-                <!-- Top Menu Items -->
-                <ul class="nav navbar-right top-nav">
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true"><i class="fa fa-user"></i>  <%= session.user.displayname %> <b class="caret"></b></a>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a href="/session/logout"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-
-                <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
-                <div class="collapse navbar-collapse navbar-ex1-collapse">
-                    <ul class="nav navbar-nav side-nav">
-                        <% if (activeTab === 1) { %> <li class="active"> <% } else { %> <li> <% } %>
-                            <a href="/"><i class="fa fa-fw fa-shopping-cart"></i> Orders</a>
-                        </li>
-                        <% if (activeTab === 2) { %> <li class="active"> <% } else { %> <li> <% } %>
-                            <a href="/"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
-                        </li>
-                        <% if (session.user.role === 'admnistrativo' || session.user.role === 'super') { %> 
-                            <% if (activeTab === 3) { %> <li class="active"> <% } else { %> <li> <% } %>
-                                <a href="/search"><i class="fa fa-fw fa-search"></i> Search</a>
-                            </li>
-                            <% if (activeTab === 4) { %> <li class="active"> <% } else { %> <li> <% } %>
-                                <a href="/reports"><i class="fa fa-fw fa-bar-chart"></i> Reports</a>
-                            </li>
-                        <% } %>
-                        <!-- <%if (session.user.role === 'super') { %> 
-                            <% if (activeTab === 5) { %> <li class="active"> <% } else { %> <li> <% } %>
-                                <a href="/settings"><i class="fa fa-fw fa-gear"></i> Settings</a>
-                            </li>
-                        <% } %> -->
-                    </ul>
-                </div>
-                <!-- /.navbar-collapse -->
-            </nav>
-
-            <!-- #page-wrapper -->
-            <div id="page-wrapper">
-
-                <!-- .container-fluid -->
-                <div class="container-fluid">
-
-                    <!-- Page Heading -->
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <h1 class="page-header">
-                                <%= mainTitle %> <small><%= subTitle %></small>
-                            </h1>
-                            <%- breadcrumb -%>
-                            
-                        </div>
-                    </div>
-                    <!-- ./Page Heading -->
-
-                    <!-- Page Content -->
-                        <%-body -%>
-                    <!-- /Page Content -->
-
-                </div>
-                <!-- /.container-fluid -->
-            </div>
-            <!-- /#page-wrapper -->
+            <li class="nav-item <% if (activeTab === 4) { %> active <% } %>" data-toggle="tooltip" data-placement="right" title="Reports">
+              <a class="nav-link" href="/reports">
+                <i class="fa fa-fw fa-area-chart"></i>
+                <span class="nav-link-text">Reports</span>
+              </a>
+            </li>
+        <% } %>
+        <!-- <%# if (session.user.role === 'super') { %> 
+            <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Settings">
+              <a class="nav-link" href="/settings">
+                <i class="fa fa-fw fa-wrench"></i>
+                <span class="nav-link-text">Settings</span>
+              </a>
+            </li>
+            <%# } %>
+        -->
+        <!-- <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true"><i class="fa fa-user"></i>  <%#= session.user.displayname %> <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+                <li>
+                    <a href="/session/logout"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
+                </li>
+            </ul>
+        </li> -->
+      </ul>
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="modal" data-target="#logoutModal">
+            <i class="fa fa-fw fa-sign-out"></i>Logout</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <div class="content-wrapper">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <h1><%= mainTitle %> <small><%= subTitle %></small></h1>
         </div>
-        <!-- /#wrapper -->
+        <div class="col-12">
+          <%- body -%>
+        </div>
+      </div>
+    </div>
+    <!-- /.container-fluid-->
+    <!-- /.content-wrapper-->
+    <!-- <footer class="sticky-footer">
+      <div class="container">
+        <div class="text-center">
+          <small>Copyright © Your Website 2017</small>
+        </div>
+      </div>
+    </footer> -->
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+      <i class="fa fa-angle-up"></i>
+    </a>
+    <!-- Logout Modal-->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+            <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+          <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+            <a class="btn btn-primary" href="/logout">Logout</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        <!-- Data -->
-        <% if(locals.token !== undefined){ %>
-            <script id="data" type="text/javascript">
-                <% for(var i=0; i < token.length; i++) {%>
-                    window.sessionStorage.setItem(token[i].key, token[i].value);
-                <% } %>
-                console.log(token);
-            </script>
-        <% } %>
-        <!-- ./Data -->
-
-        <!-- Socket IO -->
-        <script src="public/static/js/vendor/socket.io.js"></script>
-
-        <!-- jQuery -->
-        <script src="public/static/js/vendor/jquery.js"></script>
-        <script src="public/static/js/vendor/jquery-templates.js"></script>
-
-        <!-- JQuery Data tables -->
-        <script src="public/static/js/vendor/datatables.js"></script>
-
-        <!-- Bootstrap Core JavaScript -->
-        <script src="public/static/js/vendor/bootstrap.min.js"></script>
-
-         <!-- Bootstrap Modal -->
-        <script src="public/static/js/vendor/bootstrap-modal.js"></script>
-
-        <!-- Custom JS files -->
-        <% if(locals.jsfiles !== undefined){ %>
-            <% for(var i=0; i < jsfiles.length; i++) {%>
-                <script src="public/static/js/<%= jsfiles[i] %>.js"></script>
+    <!-- Data -->
+    <% if(locals.token !== undefined){ %>
+        <script id="data" type="text/javascript">
+            <% for(var i=0; i < token.length; i++) {%>
+                window.sessionStorage.setItem(token[i].key, token[i].value);
             <% } %>
-        <% } %>
+            console.log(token);
+        </script>
+    <% } %>
+    <!-- ./Data -->
 
-    </body>
+    <!-- Socket IO -->
+    <script src="public/vendor/io/socket.io.js"></script>
+
+    <!-- JQuery Libraries-->
+    <script src="public/vendor/jquery/jquery.min.js"></script>
+    <script src="public/vendor/jquery/jquery-templates.js"></script>
+    <script src="public/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="public/vendor/popper/popper.min.js"></script>
+    <script src="public/vendor/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="public/vendor/sb-admin/js/sb-admin.min.js"></script>
+
+    <!-- Custom JS files -->
+    <% if(locals.jsfiles !== undefined){ %>
+        <% for(var i=0; i < jsfiles.length; i++) {%>
+            <script src="public/static/js/<%= jsfiles[i] %>.js"></script>
+        <% } %>
+    <% } %>
+
+</body>
+
 </html>
