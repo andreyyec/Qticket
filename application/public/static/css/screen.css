@@ -1,3 +1,12 @@
+nav .nav-screen {
+  color: white;
+  font-size: 24px; }
+  nav .nav-screen .small {
+    font-size: 14px; }
+
+nav .small {
+  font-size: 14px; }
+
 .badge {
   display: inline-block;
   min-width: 10px;
@@ -39,3 +48,27 @@
 .products-section .row {
   margin-right: -10px;
   margin-left: -10px; }
+
+.screen-holder .row.orders-screen {
+  display: none; }
+
+.screen-holder .row.order-details-screen .order-wrapper {
+  display: flex;
+  flex-wrap: wrap; }
+  @media (max-width: 767px) {
+    .screen-holder .row.order-details-screen .order-wrapper .orders-keypad {
+      height: 300px; } }
+  .screen-holder .row.order-details-screen .order-wrapper .orders-keypad .key {
+    text-align: center; }
+
+@media (min-width: 768px) {
+  .login .container .card.card-login {
+    width: 60%; } }
+
+@media (min-width: 992px) {
+  .login .container .card.card-login {
+    width: 50%; } }
+
+@media (min-width: 1200px) {
+  .login .container .card.card-login {
+    width: 40%; } }

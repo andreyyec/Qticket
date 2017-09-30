@@ -12,11 +12,39 @@
 	        
 	    	</div>
 	    	<div class="row order-details-screen">
-	    		<div class="col-12 col-md-4 order-section">
-		     		4 of 12
-		    	</div>
-		    	<div class="col-12 col-md-8 products-section">
-		    		<div class="row align-items-end">
+	    		<div class="order-wrapper">
+		    		<div class="col-12 col-md-4 display-section order-section">
+			     		<div class="row order-products-holder">
+			     			
+			     		</div>
+			     		<div class="row orders-keypad">
+		     				<div class="col-3">
+		     					<div class="key num1">1</div>
+		     					<div class="key num4">4</div>
+		     					<div class="key num7">7</div>
+		     				</div>
+		     				<div class="col-3">
+		     					<div class="key num2">2</div>
+		     					<div class="key num5">5</div>
+		     					<div class="key num8">8</div>
+		     					<div class="key num0">0</div>
+		     				</div>
+		     				<div class="col-3">
+		     					<div class="key num3">3</div>
+		     					<div class="key num6">6</div>
+		     					<div class="key num9">9</div>
+		     					<div class="key num.">.</div>
+		     				</div>
+		     				<div class="col-3">
+		     					<div class="key qty">QTY</div>
+		     					<div class="key price">Price</div>
+		     					<div class="key delete">&lt;-</div>
+		     				</div>
+			     		</div>
+			    	</div>
+
+		    	<div class="col-12 col-md-8 display-section products-section">
+		    		<div class="row">
 		    			<% for(var i=0; i < products.length; i++) {%>
 		    				<div class="col-4 col-sm-4 col-md-3 col-lg-2 o-hidden h-100  product-card">
 		    					<div class="product-card-inner">
@@ -35,6 +63,7 @@
 					        </div>
 		            	<% } %>  
   					</div>
+		    	</div>
 		    	</div>
 	    	</div>
 		</div>

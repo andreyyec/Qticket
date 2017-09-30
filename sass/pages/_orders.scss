@@ -4,3 +4,29 @@
 		margin-left: -10px;
 	}
 }
+
+.screen-holder {
+	.row{
+		&.orders-screen {
+			display: none;
+
+
+		}
+		&.order-details-screen {
+			.order-wrapper {
+				display: flex;
+				flex-wrap: wrap;
+
+				.orders-keypad {
+					@include mobile {
+						height: 300px;
+					}
+
+					.key {
+						text-align: center;
+					}
+				}
+			}
+		}	
+	}
+}

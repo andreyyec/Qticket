@@ -1,3 +1,17 @@
+nav {
+    .nav-screen {
+        color: white;
+        font-size: 24px;
+
+        .small {
+            font-size: 14px;
+        }
+    }
+    .small {
+        font-size: 14px;
+    }
+}
+
 .badge {
 	display: inline-block;
     min-width: 10px;

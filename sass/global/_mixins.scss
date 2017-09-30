@@ -24,7 +24,6 @@
   	}
 }
 
-
 @mixin desktop {
   	@media (min-width: #{$screen-desktop}) and (max-width: #{$screen-desktop-large - 1px}) {
     	@content;

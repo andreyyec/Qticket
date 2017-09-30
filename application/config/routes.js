@@ -94,8 +94,8 @@ router.get('/', (req, res) => {
     res.render('dashboard', {
         activeTab : 1,
         tabTitle: 'Dashboard - Qticket',
-        mainTitle: 'Tickets',
-        subTitle: 'Dashboard',
+        mainTitle: 'Dashboard',
+        subTitle: 'Tickets',
         products: req.session.products,
         jsfiles: ['io-handler'],
         session: sessionData,
@@ -120,7 +120,7 @@ router.get('/search', (req, res) => {
         activeTab : 3,
         tabTitle: 'Orders - Qticket',
         mainTitle: 'Search',
-        subTitle: '',
+        subTitle: 'Order',
         //jsfiles: [],
         session: sessionData,
     });
@@ -131,7 +131,7 @@ router.get('/reports', (req, res) => {
         activeTab : 4,
         tabTitle: 'Reports - Qticket',
         mainTitle: 'Reports',
-        subTitle: '',
+        subTitle: 'Main',
         //jsfiles: [],
         session: sessionData,
     });
@@ -154,8 +154,8 @@ router.get('*', (req, res) => {
         session: sessionData,
         activeTab : 0,
         tabTitle: 'Not found error - TCSb',
-        mainTitle: '',
-        subTitle: '',
+        mainTitle: 'Not Found',
+        subTitle: 'Error',
     });
 });
 
