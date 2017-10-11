@@ -2,7 +2,7 @@
 	padding: 5px;
 
 	.product-card-inner {
-		background-color: #d3d3d3;
+		background-color: $gray-card-border;
 		border-radius: 6px;
 		padding: 5px;
 
@@ -26,6 +26,12 @@
 				font-weight: bold;
 				font-size: 0.8em;
 			}
+		}
+	}
+
+	&.selected {
+		.product-card-inner {
+			background-color: green;
 		}
 	}
 }

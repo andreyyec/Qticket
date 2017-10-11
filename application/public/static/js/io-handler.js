@@ -1,23 +1,19 @@
 $(function () {
-    let self, sckId, csOrdersArray,
+    let self, sckId, csOrdersArray, currentRow,
     socket = io(),
     body = $('body'),
+    disableClass = 'disabled',
+    selectedClass = 'selected',
     ordersContainer = body.find('.orders-screen'),
+    orderDetailsContainer = body.find('.order-details-screen'),
+    productsSection = orderDetailsContainer.find('.products-section'),
+    productCards = productsSection.find('.product-card'),
+    oDSection = orderDetailsContainer.find('.order-details-section'),
+    oDProductsList = oDSection.find('.order-details-products-list'),
+    oDProductsHolder = oDSection.find('.order-products-holder'),
+    oDKeypad = oDSection.find('.order-keypad'),
+    modifierButtons = oDKeypad.find('.modifier'),
     templates= {
-        ncOrderCard:    '<div class="panel panel-primary">\
-                            <div class="panel-heading">\
-                                <div class="col-xs-6">${ticket}</div>\
-                                <div class="col-xs-6">${id} - ${client[1]}</div>\
-                            </div>\
-                        </div>',
-        cOrderCard: '<div class="panel panel-primary">\
-                        <div class="panel-heading">\
-                            <div class="col-xs-6">${ticket}</div>\
-                            <div class="col-xs-6">${id} - ${client[1]}</div>\
-                        </div>\
-                        <div class="panel-body">\
-                        </div>\
-                    </div>',
         orderCard: '<div class="col-xs-6 col-sm-4 col-md-3 order-card" orderid="${id}">\
                         <div class="panel panel-primary">\
                             <div class="panel-heading">\
@@ -59,7 +55,58 @@ $(function () {
                                         <div class="clearfix"></div>\
                                     </div>\
                                 </a>\
-                            </div>'
+                            </div>',
+        row:    '<div class="order-row" data-id="${id}">\
+                    <div class="row inner" >\
+                        <div class="col-8 bold product-name">${product}</div>\
+                        <div class="col-4 product-price">&cent;${price}</div>\
+                        <div class="col-12 product-qty">Cantidad: <span class="bold qty">1</span></div>\
+                    </div>\
+                </div>'
+    },
+    uiManager = {
+        enableActionButtons: function() {
+            modifierButtons.removeClass(disableClass);
+        },
+        disableActionButtons: function() {
+            modifierButtons.addClass(disableClass);
+        },
+        cleanDetailUI: function() {
+            productCards.removeClass(selectedClass);
+        },
+        addRow: function(card) {
+            let nRowInfo = {id: card.attr('data-id'),
+                        product: card.attr('data-name'),
+                        price: card.attr('data-price')},
+                nRow = $.tmpl(templates.row, nRowInfo).appendTo(oDProductsList);
+            uiManager.updateCurrentRow(nRow);
+            uiManager.enableActionButtons();
+            card.addClass(selectedClass);
+        },
+        removeRow: function(row) {
+
+        },
+        updateCurrentRow: function (row) {
+            if (currentRow !== undefined) {
+                currentRow.removeClass(selectedClass);
+                row.addClass(selectedClass);
+                currentRow = row;
+            } else {
+                row.addClass(selectedClass);
+                currentRow = row;
+            }
+        },
+        attachListeners: function() {
+            productsSection.on('click', '.product-card', function(e){
+                let card = $(e.currentTarget);
+                if (!card.hasClass(selectedClass)) {
+                    uiManager.addRow(card);
+                }
+            });
+        },
+        init: function() {
+            uiManager.attachListeners();
+        }
     },
     socketManager = {
         checkSocketMsg: function(socketMsg) {
@@ -123,17 +170,17 @@ $(function () {
 
             socket.on('ordersUpdate', function(socketMsg){
                 //@TODO Check on Sequence check functionality
-                //dataSet = self.checkSocketMsg(socketMsg);
+                //dataSet = socketManager.checkSocketMsg(socketMsg);
                 dataSet = {status: true, data: socketMsg.data};
                 if (dataSet.status) {
-                    self.updateOrdersView(dataSet.data);
+                    socketManager.updateOrdersView(dataSet.data);
                 }
             });
 
             socket.on('init', function(sckData) {
                 sckId = sckData.sID;
                 csOrdersArray = sckData.data;
-                self.initOrdersView(sckData.data);
+                socketManager.initOrdersView(sckData.data);
             });
 
             socket.on('disconnect', function() {
@@ -142,9 +189,11 @@ $(function () {
             });
         },
         init: function() {
-            self = this;
-            self.attachListeners();
+            socketManager = this;
+            socketManager.attachListeners();
         }
     }
+    self = this;
+    uiManager.init();
     socketManager.init();
 });

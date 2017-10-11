@@ -1,32 +1,133 @@
-.products-section {
-	.row {
-		margin-right: -10px;
-		margin-left: -10px;
-	}
-}
-
 .screen-holder {
+	height: calc(100vh - 72px);
+
 	.row{
 		&.orders-screen {
 			display: none;
-
-
 		}
+
 		&.order-details-screen {
+			height: inherit;
+
 			.order-wrapper {
 				display: flex;
 				flex-wrap: wrap;
 
-				.orders-keypad {
-					@include mobile {
-						height: 300px;
-					}
+				.order-details-section {
+					.order-products-holder {
+						height: calc(100% - 165px);
+						padding: 10px;
 
-					.key {
-						text-align: center;
+						.order-details-products-list {
+							overflow-y: scroll;
+
+							&.border-inner{
+								border: 2px solid $gray-card-border;
+								border-radius: 7px;
+							}
+
+							.order-row {
+								cursor: pointer;
+
+								&:first-child .inner {
+									border-top: 0;
+								}
+
+								&.selected {
+									background: $row-selected;
+								}
+
+								.inner {
+									border-top: 1px solid $gray-card-border;
+									margin: 0 5px;
+									padding: 5px 0;
+								}
+
+								.product-price {
+									text-align: right;
+								}
+
+								.product-qty{
+									color: $dark-gray-1;
+
+									.qty {
+										color: $black;
+									}
+								}
+							}
+						}
+					}
+					.order-keypad {
+						.col-3 {
+							padding: 0 6px;
+						}
+
+						@include mobile {
+							height: 300px;
+						}
+
+						.key {
+							text-align: center;
+							width: 100%;
+							font-size: 14px;
+							overflow-x: hidden;
+							margin-bottom: 6px;
+
+							&.qty {
+								height: 77px;
+								line-height: 54px;
+							}
+						}
 					}
 				}
+
+				.products-section {
+					overflow-y: scroll;
+					
+					.row {
+						margin-right: -10px;
+						margin-left: -10px;
+					}
+				}	
 			}
 		}	
 	}
 }
+			
+/* .container-fluid {
+	height: calc(100vh - 72px);
+	.row {
+		height: inherit;
+		.col-12{
+			height: inherit;
+			.content-container.orders {
+				height: inherit;
+				.screen-holder {
+					height: inherit;
+					.row{
+						&.orders-screen {
+							display: none;
+						}
+						&.orders-details-screen {
+							.orders-wrapper {
+								display: flex;
+								flex-wrap: wrap;
+
+								.orders-keypad {
+									@include mobile {
+										height: 300px;
+									}
+
+									.key {
+										text-align: center;
+									}
+								}
+							}
+						}	
+					}
+				}
+			}
+		}
+	}
+}
+*/

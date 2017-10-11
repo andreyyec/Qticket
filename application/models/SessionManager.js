@@ -118,6 +118,7 @@ class SessionManager {
                     for (let i in productsDataArray) {
                         let odooProductObject = productsDataArray[i],
                             productObject = {
+                                id: odooProductObject.id,
                                 name: odooProductObject.display_name,
                                 price: odooProductObject.standard_price,
                                 image: odooProductObject.image_medium
