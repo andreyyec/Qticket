@@ -90,6 +90,8 @@ $(function () {
         cleanDetailUI: function() {
             productCards.removeClass(selectedClass);
             uiManager.disableActionButtons;
+            currentRow = {};
+            oDProductsList.empty();
         },
         addRow: function(card) {
             if (currentRow.element === undefined || uiManager.currentRowValid()) {
@@ -107,6 +109,7 @@ $(function () {
             currentRow.element.remove();
             currentRow = {};
             uiManager.disableActionButtons();
+            uiManager.cleanDetailUI();
         },
         validValue: function(value, field) {
             if(value !== 0) {
@@ -130,6 +133,49 @@ $(function () {
 
             return (uiManager.validValue(floatPrice, 'precio') && uiManager.validValue(floatQty, 'cantidad')) ? true : false;
         },
+        validateUserInput: function(nValue, element) {
+            if (override) {
+                if (nValue === '.') {
+                    element.html('0.');
+                } else {
+                    element.html(nValue.html());
+                }
+                override = false;
+            } else {
+                let currentVal = element.html();
+
+                if (currentVal !== '0') {
+                    if ((nValue.html() === '.' && !currentVal.includes('.')) || nValue.html() !== '.') {
+                        if (currentVal.length <= 6) {
+                            element.html(currentVal + nValue.html());
+                        }
+                    }
+                } else {
+                    if (nValue.html() === '.') {
+                       element.html(currentVal + nValue.html());
+                    } else {
+                        element.html(nValue.html());
+                    }
+                }
+            }
+        },
+        validateUserDelete: function (element) {
+            let currentVal = element.html();
+
+            if (currentVal !== '0') {
+                if (!override) {
+                    if (element.html().length === 1) {
+                        element.html(0);
+                    } else {
+                        element.html(currentVal.slice(0, -1));
+                    }
+                }else {
+                    element.html(0);
+                }
+            } else {
+                uiManager.removeRow(currentRow.element);
+            }
+        },
         updateCurrentRow: function (row) {
             if (currentRow.element !== undefined) {
                  if (uiManager.currentRowValid()) {
@@ -151,39 +197,10 @@ $(function () {
         attachListeners: function() {
             removeModifier.on('click', function(e) {
                 if (actionEnabled) {
-                    let currentVal;
                     if (uiManager.getActiveAction() === 'price') {
-                        currentVal = currentRow.price.html();
-
-                        if (currentVal !== '0') {
-                            if (!override) {
-                                if (currentRow.price.html().length === 1) {
-                                    currentRow.price.html(0);
-                                } else {
-                                    currentRow.price.html(currentVal.slice(0, -1));
-                                }
-                            }else {
-                                currentRow.price.html(0);
-                            }
-                        } else {
-                            uiManager.removeRow(currentRow.element);
-                        }
+                        uiManager.validateUserDelete(currentRow.price);
                     } else {
-                        currentVal = currentRow.qty.html();
-
-                        if (currentVal !== '0') {
-                            if (!override) {
-                                if (currentRow.qty.html().length === 1) {
-                                    currentRow.qty.html(0);
-                                } else {
-                                    currentRow.qty.html(currentVal.slice(0, -1));
-                                }
-                            }else {
-                                currentRow.qty.html(0);
-                            }
-                        } else {
-                            uiManager.removeRow(currentRow.element);
-                        }
+                        uiManager.validateUserDelete(currentRow.qty);
                     }
                 }
             });
@@ -209,63 +226,21 @@ $(function () {
             });
 
             keyButtons.on('click', function(e) {
-                let target = $(e.currentTarget);
-                //@TODO: Create single method to validate and mask inputs
+                if (actionEnabled && currentRow.element !== undefined) {
+                    let target = $(e.currentTarget);
 
-                if (override) {
                     if (uiManager.getActiveAction() === 'price') {
-                        if (target.html() === '.') {
-                            currentRow.price.html('0.');
-                        } else {
-                            currentRow.price.html(target.html());
-                        }
+                        uiManager.validateUserInput(target, currentRow.price);
                     } else {
-                        if (target.html() === '.') {
-                            currentRow.qty.html('0.');
-                        } else {
-                            currentRow.qty.html(target.html());
-                        }
-                    }
-                    override = false;
-                } else {
-                    if (uiManager.getActiveAction() === 'price') {
-                        let currentVal = currentRow.price.html();
-
-                        if (currentVal !== '0') {
-                            if ((target.html() === '.' && !currentVal.includes('.')) || target.html() !== '.') {
-                                if (currentVal.length <= 6) {
-                                    currentRow.price.html(currentVal + target.html());
-                                }
-                            }
-                        } else {
-                            if (target.html() === '.') {
-                                currentRow.price.html(currentVal + target.html());
-                            } else {
-                                currentRow.price.html(target.html());
-                            }
-                        }
-                    } else {
-                       let currentVal = currentRow.qty.html();
-
-                        if (currentVal !== '0') {
-                            if ((target.html() === '.' && !currentVal.includes('.')) || target.html() !== '.') {
-                                if (currentVal.length <= 6) {
-                                    currentRow.qty.html(currentVal + target.html());
-                                }
-                            }
-                        } else {
-                            if (target.html() === '.') {
-                                currentRow.qty.html(currentVal + target.html());
-                            } else {
-                                currentRow.qty.html(target.html());
-                            }
-                        }
+                        uiManager.validateUserInput(target, currentRow.qty);
                     }
                 }
             });
 
             oDProductsList.on('click', '.order-row', function(e) {
-                uiManager.updateCurrentRow($(e.currentTarget));
+                if (currentRow.element.attr('data-id') !== $(e.currentTarget).attr('data-id')) {
+                    uiManager.updateCurrentRow($(e.currentTarget));
+                }
             });
 
             productCards.on('click', function(e) {
