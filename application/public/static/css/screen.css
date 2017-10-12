@@ -88,13 +88,14 @@ nav .small {
       @media (max-width: 767px) {
         .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-keypad {
           height: 300px; } }
-      .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-keypad .key {
+      .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-keypad .btn {
+        cursor: default;
         text-align: center;
         width: 100%;
         font-size: 14px;
         overflow-x: hidden;
         margin-bottom: 6px; }
-        .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-keypad .key.qty {
+        .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-keypad .btn.qty {
           height: 77px;
           line-height: 54px; }
       .screen-holder .row.order-details-screen .order-wrapper .products-section {
