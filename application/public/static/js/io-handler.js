@@ -105,11 +105,14 @@ $(function () {
             }
         },
         removeRow: function() {
+            console.log('remove row action');
+            console.log(currentRow);
             productsSection.find('.product-card[data-id='+currentRow.element.attr('data-id')+']').removeClass(selectedClass);
             currentRow.element.remove();
             currentRow = {};
             uiManager.disableActionButtons();
-            uiManager.cleanDetailUI();
+            // Clean UI Test @ToRemove
+            //uiManager.cleanDetailUI();
         },
         validValue: function(value, field) {
             if(value !== 0) {
