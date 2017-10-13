@@ -12,6 +12,14 @@ nav {
     }
 }
 
+.content-wrapper,
+.content-wrapper > .container-fluid,
+.content-wrapper > .container-fluid > .row,
+.content-wrapper > .container-fluid > .row > .col-12,
+.content-wrapper > .container-fluid > .row > .col-12 > .content-container {
+    min-height: calc(100vh - 56px);
+}
+
 .badge {
 	display: inline-block;
     min-width: 10px;

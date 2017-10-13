@@ -7,6 +7,13 @@ nav .nav-screen {
 nav .small {
   font-size: 14px; }
 
+.content-wrapper,
+.content-wrapper > .container-fluid,
+.content-wrapper > .container-fluid > .row,
+.content-wrapper > .container-fluid > .row > .col-12,
+.content-wrapper > .container-fluid > .row > .col-12 > .content-container {
+  min-height: calc(100vh - 56px); }
+
 .badge {
   display: inline-block;
   min-width: 10px;
@@ -51,7 +58,7 @@ nav .small {
     background-color: green; }
 
 .screen-holder {
-  height: calc(100vh - 72px); }
+  height: calc(100vh - 56px); }
   .screen-holder .row.orders-screen {
     display: none; }
   .screen-holder .row.order-details-screen {
@@ -59,9 +66,11 @@ nav .small {
     .screen-holder .row.order-details-screen .order-wrapper {
       display: flex;
       flex-wrap: wrap; }
+      .screen-holder .row.order-details-screen .order-wrapper .order-details-section .action-buttons-bar {
+        padding-top: 10px; }
       .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-products-holder {
-        height: calc(100% - 165px);
-        padding: 10px; }
+        height: calc(100% - 210px);
+        padding: 10px 0; }
         .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-products-holder .order-details-products-list {
           overflow-y: scroll; }
           .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-products-holder .order-details-products-list.border-inner {

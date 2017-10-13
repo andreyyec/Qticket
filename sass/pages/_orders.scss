@@ -1,5 +1,5 @@
 .screen-holder {
-	height: calc(100vh - 72px);
+	height: calc(100vh - 56px);
 
 	.row{
 		&.orders-screen {
@@ -14,9 +14,12 @@
 				flex-wrap: wrap;
 
 				.order-details-section {
+					.action-buttons-bar {
+						padding-top: 10px;
+					}
 					.order-products-holder {
-						height: calc(100% - 165px);
-						padding: 10px;
+						height: calc(100% - 210px);
+						padding: 10px 0;
 
 						.order-details-products-list {
 							overflow-y: scroll;
