@@ -18,7 +18,7 @@
 						padding-top: 10px;
 					}
 					.order-products-holder {
-						height: calc(100% - 210px);
+						height: calc(100% - 214px);
 						padding: 10px 0;
 
 						.order-details-products-list {
@@ -61,8 +61,17 @@
 						}
 					}
 					.order-keypad {
+						padding: 0 15px;
+						margin: 0 -15px;
+
 						.col-3 {
 							padding: 0 6px;
+							&.col-left {
+								padding-left: 0;
+							}
+							&.col-right {
+								padding-right: 0;
+							}
 						}
 
 						@include mobile {
@@ -78,7 +87,7 @@
 							margin-bottom: 6px;
 
 							&.qty {
-								height: 77px;
+								height: 72px;
 								line-height: 54px;
 							}
 						}
@@ -86,6 +95,7 @@
 				}
 
 				.products-section {
+					padding: 10px;
 					overflow-y: scroll;
 					
 					.row {

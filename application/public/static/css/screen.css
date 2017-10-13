@@ -69,7 +69,7 @@ nav .small {
       .screen-holder .row.order-details-screen .order-wrapper .order-details-section .action-buttons-bar {
         padding-top: 10px; }
       .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-products-holder {
-        height: calc(100% - 210px);
+        height: calc(100% - 214px);
         padding: 10px 0; }
         .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-products-holder .order-details-products-list {
           overflow-y: scroll; }
@@ -92,22 +92,30 @@ nav .small {
               color: #888; }
               .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-products-holder .order-details-products-list .order-row .product-qty .qty {
                 color: #000; }
-      .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-keypad .col-3 {
-        padding: 0 6px; }
-      @media (max-width: 767px) {
-        .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-keypad {
-          height: 300px; } }
-      .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-keypad .btn {
-        cursor: default;
-        text-align: center;
-        width: 100%;
-        font-size: 14px;
-        overflow-x: hidden;
-        margin-bottom: 6px; }
-        .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-keypad .btn.qty {
-          height: 77px;
-          line-height: 54px; }
+      .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-keypad {
+        padding: 0 15px;
+        margin: 0 -15px; }
+        .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-keypad .col-3 {
+          padding: 0 6px; }
+          .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-keypad .col-3.col-left {
+            padding-left: 0; }
+          .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-keypad .col-3.col-right {
+            padding-right: 0; }
+        @media (max-width: 767px) {
+          .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-keypad {
+            height: 300px; } }
+        .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-keypad .btn {
+          cursor: default;
+          text-align: center;
+          width: 100%;
+          font-size: 14px;
+          overflow-x: hidden;
+          margin-bottom: 6px; }
+          .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-keypad .btn.qty {
+            height: 72px;
+            line-height: 54px; }
       .screen-holder .row.order-details-screen .order-wrapper .products-section {
+        padding: 10px;
         overflow-y: scroll; }
         .screen-holder .row.order-details-screen .order-wrapper .products-section .row {
           margin-right: -10px;
