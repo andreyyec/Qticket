@@ -112,8 +112,9 @@ nav .small {
           overflow-x: hidden;
           margin-bottom: 6px; }
           .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-keypad .btn.qty {
-            height: 72px;
-            line-height: 54px; }
+            height: 78px;
+            line-height: 54px;
+            margin-bottom: 0; }
       .screen-holder .row.order-details-screen .order-wrapper .products-section {
         padding: 10px;
         overflow-y: scroll; }
@@ -121,43 +122,6 @@ nav .small {
           margin-right: -10px;
           margin-left: -10px; }
 
-/* .container-fluid {
-	height: calc(100vh - 72px);
-	.row {
-		height: inherit;
-		.col-12{
-			height: inherit;
-			.content-container.orders {
-				height: inherit;
-				.screen-holder {
-					height: inherit;
-					.row{
-						&.orders-screen {
-							display: none;
-						}
-						&.orders-details-screen {
-							.orders-wrapper {
-								display: flex;
-								flex-wrap: wrap;
-
-								.orders-keypad {
-									@include mobile {
-										height: 300px;
-									}
-
-									.key {
-										text-align: center;
-									}
-								}
-							}
-						}	
-					}
-				}
-			}
-		}
-	}
-}
-*/
 @media (min-width: 768px) {
   .login .container .card.card-login {
     width: 60%; } }

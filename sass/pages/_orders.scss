@@ -87,8 +87,9 @@
 							margin-bottom: 6px;
 
 							&.qty {
-								height: 72px;
+								height: 78px;
 								line-height: 54px;
+								margin-bottom: 0;
 							}
 						}
 					}
@@ -107,41 +108,3 @@
 		}	
 	}
 }
-			
-/* .container-fluid {
-	height: calc(100vh - 72px);
-	.row {
-		height: inherit;
-		.col-12{
-			height: inherit;
-			.content-container.orders {
-				height: inherit;
-				.screen-holder {
-					height: inherit;
-					.row{
-						&.orders-screen {
-							display: none;
-						}
-						&.orders-details-screen {
-							.orders-wrapper {
-								display: flex;
-								flex-wrap: wrap;
-
-								.orders-keypad {
-									@include mobile {
-										height: 300px;
-									}
-
-									.key {
-										text-align: center;
-									}
-								}
-							}
-						}	
-					}
-				}
-			}
-		}
-	}
-}
-*/
