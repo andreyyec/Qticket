@@ -61,8 +61,34 @@ nav .small {
   height: calc(100vh - 56px); }
   .screen-holder .row.orders-screen {
     display: none; }
+    .screen-holder .row.orders-screen.active {
+      display: flex; }
+    .screen-holder .row.orders-screen .inner-container .orders-thumbs {
+      padding-top: 10px; }
+      .screen-holder .row.orders-screen .inner-container .orders-thumbs .order-card {
+        cursor: pointer; }
+        .screen-holder .row.orders-screen .inner-container .orders-thumbs .order-card .card-header {
+          font-weight: bold; }
+        .screen-holder .row.orders-screen .inner-container .orders-thumbs .order-card .card-body {
+          align-items: center;
+          display: flex;
+          flex-direction: row-reverse;
+          justify-content: center;
+          padding: 20px 5px;
+          text-align: center; }
+          .screen-holder .row.orders-screen .inner-container .orders-thumbs .order-card .card-body .ticket {
+            border-left: 1px solid gray;
+            font-size: 26px;
+            white-space: nowrap;
+            width: 40%; }
+          .screen-holder .row.orders-screen .inner-container .orders-thumbs .order-card .card-body .client {
+            margin-right: 5px; }
   .screen-holder .row.order-details-screen {
-    height: inherit; }
+    display: none;
+    height: inherit;
+    z-index: 20; }
+    .screen-holder .row.order-details-screen.active {
+      display: flex; }
     .screen-holder .row.order-details-screen .order-wrapper {
       display: flex;
       flex-wrap: wrap; }
@@ -87,8 +113,10 @@ nav .small {
             display: block; } }
       .screen-holder .row.order-details-screen .order-wrapper .order-details-section .action-buttons-bar {
         padding-top: 10px; }
+      .screen-holder .row.order-details-screen .order-wrapper .order-details-section .client-info {
+        height: 20px; }
       .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-products-holder {
-        height: calc(100% - 214px);
+        height: calc(100% - 234px);
         padding: 10px 0; }
         .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-products-holder .order-details-products-list {
           overflow-y: scroll; }
@@ -137,7 +165,7 @@ nav .small {
       .screen-holder .row.order-details-screen .order-wrapper .products-section {
         padding: 10px;
         overflow-y: scroll;
-        z-index: 20; }
+        z-index: 30; }
         @media (max-width: 767px) {
           .screen-holder .row.order-details-screen .order-wrapper .products-section {
             display: none;

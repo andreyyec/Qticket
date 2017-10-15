@@ -1,15 +1,12 @@
 $(function () {
-    let self, sckId, csOrdersArray, currentRow = {}, override = true, actionEnabled = false,
-    socket = io(),
-    body = $('body'),
-    disabledClass = 'disabled',
-    selectedClass = 'selected',
-    activeClass = 'active',
+    let self, sckId, csOrdersArray, currentRow = {}, currentOrderData = {}, override = true, actionEnabled = false,
+    socket = io(), body = $('body'), disabledClass = 'disabled', selectedClass = 'selected', activeClass = 'active',
     ordersContainer = body.find('.orders-screen'),
     orderDetailsContainer = body.find('.order-details-screen'),
     productsSection = orderDetailsContainer.find('.products-section'),
     productCards = productsSection.find('.product-card'),
     oDSection = orderDetailsContainer.find('.order-details-section'),
+    clientInfoBar = oDSection.find('.client-info'),
     oDProductsList = oDSection.find('.order-details-products-list'),
     oDProductsHolder = oDSection.find('.order-products-holder'),
     mobileTabs = orderDetailsContainer.find('.mobile-tabs .tab'),
@@ -17,10 +14,23 @@ $(function () {
     oDKeypad = oDSection.find('.order-keypad'),
     modifierButtons = oDKeypad.find('.modifier'),
     keyButtons = oDKeypad.find('.key'),
+    cancelButton = oDSection.find('.action-buttons-bar .cancel'),
+    saveButton = oDSection.find('.action-buttons-bar .save'),
     removeModifier = $(modifierButtons[0]),
     priceModifier = $(modifierButtons[1]),
     qtyModifier = $(modifierButtons[2]),
     templates= {
+        nOrderCard: '<div class="col-6 col-sm-4 col-md-3">\
+                        <div class="card card-primary card-inverse order-card" data-id="${id}" data-client-id="${client[0]}" data-client="${client[1]}" data-ticket="${ticket}">\
+                            <div class="card-header card-primary card-header">\
+                                ${id}\
+                            </div>\
+                            <div class="card-block bg-white card-body">\
+                                <div class="ticket">${ticket}</div>\
+                                <div class="client">${client[1]}</div>\
+                            </div>\
+                        </div>\
+                    </div>',
         orderCard: '<div class="col-xs-6 col-sm-4 col-md-3 order-card" orderid="${id}">\
                         <div class="panel panel-primary">\
                             <div class="panel-heading">\
@@ -72,11 +82,25 @@ $(function () {
                 </div>'
     },
     uiManager = {
+        toggleScreens: function() {
+            if (ordersContainer.hasClass(activeClass)) {
+                ordersContainer.removeClass(activeClass);
+                orderDetailsContainer.addClass(activeClass);
+            }else {
+                ordersContainer.addClass(activeClass);
+                orderDetailsContainer.removeClass(activeClass);
+            }
+        },
         attachListeners: function() {
-
+            ordersContainer.on('click', '.order-card', function(e) {
+                let target = $(e.currentTarget),
+                    data = {id:target.data('id'), order:target.data('ticket'), client: {id: target.data('client-id'),name: target.data('client')}};
+                uiDetailScreenManager.loadInfoData(data);
+                uiManager.toggleScreens();
+            });
         },
         init: function() {
-
+            uiManager.attachListeners();
         }
     },
     uiDetailScreenManager = {
@@ -92,6 +116,10 @@ $(function () {
                 $(mobileTabs[1]).removeClass(activeClass);
                 $(mobileSections[1]).removeClass(activeClass);
             }
+        },
+        loadInfoData: function(data) {
+            currentOrderData = data;
+            clientInfoBar.html(data.client.name);
         },
         resetActionButtons: function() {
             removeModifier.removeClass(disabledClass);
@@ -114,7 +142,9 @@ $(function () {
         cleanDetailUI: function() {
             productCards.removeClass(selectedClass);
             uiDetailScreenManager.disableActionButtons;
+            clientInfoBar.html('');
             currentRow = {};
+            currentOrderData = {};
             oDProductsList.empty();
         },
         addRow: function(card) {
@@ -129,8 +159,6 @@ $(function () {
             }
         },
         removeRow: function() {
-            console.log('remove row action');
-            console.log(currentRow);
             productsSection.find('.product-card[data-id='+currentRow.element.attr('data-id')+']').removeClass(selectedClass);
             currentRow.element.remove();
             currentRow = {};
@@ -229,6 +257,15 @@ $(function () {
                 }
             });
 
+            cancelButton.on('click', function(e) {
+                uiDetailScreenManager.cleanDetailUI();
+                uiManager.toggleScreens();
+            });
+
+            saveButton.on('click', function(e) {
+                console.log('save Event');
+            });
+
             removeModifier.on('click', function(e) {
                 if (actionEnabled) {
                     if (uiDetailScreenManager.getActiveAction() === 'price') {
@@ -304,7 +341,7 @@ $(function () {
                 if (changesList.added && changesList.added.length > 0) {    
                     for (let key in changesList.added) {
                         csOrdersArray.push(changesList.added[key]);
-                        $.tmpl(templates.orderCard, changesList.added[key]).appendTo( ".orders-screen" );
+                        $.tmpl(templates.nOrderCard, changesList.added[key]).appendTo( ".orders-screen" );
                     }
                 }
                 if (changesList.updated && changesList.updated.length > 0) {
@@ -341,7 +378,7 @@ $(function () {
 
         },
         initOrdersView: function(ordersArray) {
-            $.tmpl(templates.orderCard, ordersArray).appendTo( ".orders-screen" );
+            $.tmpl(templates.nOrderCard, ordersArray).appendTo( ".orders-screen .inner-container .orders-thumbs" );
         },
         attachListeners: function() {
             socket.on('orderUpdate', function(counter){
@@ -369,11 +406,11 @@ $(function () {
             });
         },
         init: function() {
-            socketManager = this;
             socketManager.attachListeners();
         }
     }
     self = this;
+    uiManager.init();
     uiDetailScreenManager.init();
     socketManager.init();
 });
