@@ -4,6 +4,7 @@ $(function () {
     body = $('body'),
     disabledClass = 'disabled',
     selectedClass = 'selected',
+    activeClass = 'active',
     ordersContainer = body.find('.orders-screen'),
     orderDetailsContainer = body.find('.order-details-screen'),
     productsSection = orderDetailsContainer.find('.products-section'),
@@ -11,6 +12,8 @@ $(function () {
     oDSection = orderDetailsContainer.find('.order-details-section'),
     oDProductsList = oDSection.find('.order-details-products-list'),
     oDProductsHolder = oDSection.find('.order-products-holder'),
+    mobileTabs = orderDetailsContainer.find('.mobile-tabs .tab'),
+    mobileSections = orderDetailsContainer.find('.display-section'),
     oDKeypad = oDSection.find('.order-keypad'),
     modifierButtons = oDKeypad.find('.modifier'),
     keyButtons = oDKeypad.find('.key'),
@@ -69,7 +72,28 @@ $(function () {
                 </div>'
     },
     uiManager = {
-        resetActionButtons: function () {
+        attachListeners: function() {
+
+        },
+        init: function() {
+
+        }
+    },
+    uiDetailScreenManager = {
+        toggleTabs: function() {
+            if ($(mobileTabs[0]).hasClass(activeClass)) {
+                $(mobileTabs[0]).removeClass(activeClass);
+                $(mobileSections[0]).removeClass(activeClass);
+                $(mobileTabs[1]).addClass(activeClass);
+                $(mobileSections[1]).addClass(activeClass);
+            } else {
+                $(mobileTabs[0]).addClass(activeClass);
+                $(mobileSections[0]).addClass(activeClass);
+                $(mobileTabs[1]).removeClass(activeClass);
+                $(mobileSections[1]).removeClass(activeClass);
+            }
+        },
+        resetActionButtons: function() {
             removeModifier.removeClass(disabledClass);
             priceModifier.addClass(disabledClass);
             qtyModifier.removeClass(disabledClass);
@@ -77,7 +101,7 @@ $(function () {
         enableActionButtons: function() {
             actionEnabled = true;
             override = true;
-            uiManager.resetActionButtons();
+            uiDetailScreenManager.resetActionButtons();
         },
         disableActionButtons: function() {
             modifierButtons.addClass(disabledClass);
@@ -89,18 +113,18 @@ $(function () {
         },
         cleanDetailUI: function() {
             productCards.removeClass(selectedClass);
-            uiManager.disableActionButtons;
+            uiDetailScreenManager.disableActionButtons;
             currentRow = {};
             oDProductsList.empty();
         },
         addRow: function(card) {
-            if (currentRow.element === undefined || uiManager.currentRowValid()) {
+            if (currentRow.element === undefined || uiDetailScreenManager.currentRowValid()) {
                 let nRowInfo = {id: card.attr('data-id'),
                         product: card.attr('data-name'),
                         price: card.attr('data-price')},
                 nRow = $.tmpl(templates.row, nRowInfo).appendTo(oDProductsList);
                 oDProductsList.scrollTop(oDProductsList.prop('scrollHeight'));
-                uiManager.updateCurrentRow(nRow);
+                uiDetailScreenManager.updateCurrentRow(nRow);
                 card.addClass(selectedClass);
             }
         },
@@ -110,9 +134,9 @@ $(function () {
             productsSection.find('.product-card[data-id='+currentRow.element.attr('data-id')+']').removeClass(selectedClass);
             currentRow.element.remove();
             currentRow = {};
-            uiManager.disableActionButtons();
+            uiDetailScreenManager.disableActionButtons();
             // Clean UI Test @ToRemove
-            //uiManager.cleanDetailUI();
+            //uiDetailScreenManager.cleanDetailUI();
         },
         validValue: function(value, field) {
             if(value !== 0) {
@@ -134,7 +158,7 @@ $(function () {
                 currentRow.price.html(floatPrice);
                 currentRow.qty.html(floatQty);
 
-            return (uiManager.validValue(floatPrice, 'precio') && uiManager.validValue(floatQty, 'cantidad')) ? true : false;
+            return (uiDetailScreenManager.validValue(floatPrice, 'precio') && uiDetailScreenManager.validValue(floatQty, 'cantidad')) ? true : false;
         },
         validateUserInput: function(nValue, element) {
             if (override) {
@@ -176,34 +200,41 @@ $(function () {
                     element.html(0);
                 }
             } else {
-                uiManager.removeRow(currentRow.element);
+                uiDetailScreenManager.removeRow(currentRow.element);
             }
         },
         updateCurrentRow: function (row) {
             if (currentRow.element !== undefined) {
-                 if (uiManager.currentRowValid()) {
+                 if (uiDetailScreenManager.currentRowValid()) {
                     currentRow.element.removeClass(selectedClass);
                     row.addClass(selectedClass);
                     currentRow.element = row;
                     currentRow.price = row.find('.price');
                     currentRow.qty = row.find('.qty');
-                    uiManager.enableActionButtons();
+                    uiDetailScreenManager.enableActionButtons();
                 }
             } else {
                 row.addClass(selectedClass);
                 currentRow.element = row;
                 currentRow.price = row.find('.price');
                 currentRow.qty = row.find('.qty');
-                uiManager.enableActionButtons();
+                uiDetailScreenManager.enableActionButtons();
             }
         },
         attachListeners: function() {
+            mobileTabs.on('click', function(e) {
+                e.preventDefault();
+                if (!$(e.currentTarget).hasClass(activeClass)) {
+                    uiDetailScreenManager.toggleTabs();    
+                }
+            });
+
             removeModifier.on('click', function(e) {
                 if (actionEnabled) {
-                    if (uiManager.getActiveAction() === 'price') {
-                        uiManager.validateUserDelete(currentRow.price);
+                    if (uiDetailScreenManager.getActiveAction() === 'price') {
+                        uiDetailScreenManager.validateUserDelete(currentRow.price);
                     } else {
-                        uiManager.validateUserDelete(currentRow.qty);
+                        uiDetailScreenManager.validateUserDelete(currentRow.qty);
                     }
                 }
             });
@@ -211,7 +242,7 @@ $(function () {
             priceModifier.on('click', function(e) {
                 if (actionEnabled) {
                     override = true;
-                    if (uiManager.getActiveAction() === 'qty') {
+                    if (uiDetailScreenManager.getActiveAction() === 'qty') {
                         qtyModifier.addClass(disabledClass);
                         priceModifier.removeClass(disabledClass);
                     }
@@ -221,7 +252,7 @@ $(function () {
             qtyModifier.on('click', function(e) {
                 if (actionEnabled) {
                     override = true;
-                    if (uiManager.getActiveAction() === 'price') {
+                    if (uiDetailScreenManager.getActiveAction() === 'price') {
                         qtyModifier.removeClass(disabledClass);
                         priceModifier.addClass(disabledClass);
                     }
@@ -232,29 +263,29 @@ $(function () {
                 if (actionEnabled && currentRow.element !== undefined) {
                     let target = $(e.currentTarget);
 
-                    if (uiManager.getActiveAction() === 'price') {
-                        uiManager.validateUserInput(target, currentRow.price);
+                    if (uiDetailScreenManager.getActiveAction() === 'price') {
+                        uiDetailScreenManager.validateUserInput(target, currentRow.price);
                     } else {
-                        uiManager.validateUserInput(target, currentRow.qty);
+                        uiDetailScreenManager.validateUserInput(target, currentRow.qty);
                     }
                 }
             });
 
             oDProductsList.on('click', '.order-row', function(e) {
                 if (currentRow.element.attr('data-id') !== $(e.currentTarget).attr('data-id')) {
-                    uiManager.updateCurrentRow($(e.currentTarget));
+                    uiDetailScreenManager.updateCurrentRow($(e.currentTarget));
                 }
             });
 
             productCards.on('click', function(e) {
                 let card = $(e.currentTarget);
                 if (!card.hasClass(selectedClass)) {
-                    uiManager.addRow(card);
+                    uiDetailScreenManager.addRow(card);
                 }
             });
         },
         init: function() {
-            uiManager.attachListeners();
+            uiDetailScreenManager.attachListeners();
         }
     },
     socketManager = {
@@ -343,6 +374,6 @@ $(function () {
         }
     }
     self = this;
-    uiManager.init();
+    uiDetailScreenManager.init();
     socketManager.init();
 });

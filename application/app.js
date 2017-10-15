@@ -38,6 +38,7 @@ app.use(session({
     resave: false,
     store: new MongoStore({mongooseConnection:dbManager.db}),
     saveUninitialized: true,
+    rolling: true,
     cookie: {expires: new Date(Date.now() + 3600000)}
 }));
 

@@ -13,7 +13,35 @@
 				display: flex;
 				flex-wrap: wrap;
 
+				.mobile-tabs {
+					display: none;
+					height: 30px;
+					background-color:  $gray-card-border;
+					cursor: pointer;
+
+					@include mobile {
+						display: block;
+					}
+
+					.tab {
+						text-decoration: none;
+						color: black;
+						&.active {
+							background-color: gray;
+						}
+					}
+				}
+
 				.order-details-section {
+					@include mobile() {
+						display: none;
+						position: relative;
+
+						&.active {
+							display: block;
+						}
+					}
+
 					.action-buttons-bar {
 						padding-top: 10px;
 					}
@@ -23,6 +51,10 @@
 
 						.order-details-products-list {
 							overflow-y: scroll;
+
+							@include mobile() {
+								height: calc(100vh - 320px);
+							}
 
 							&.border-inner{
 								border: 2px solid $gray-card-border;
@@ -74,10 +106,6 @@
 							}
 						}
 
-						@include mobile {
-							height: 300px;
-						}
-
 						.btn {
 							cursor: default;
 							text-align: center;
@@ -98,6 +126,16 @@
 				.products-section {
 					padding: 10px;
 					overflow-y: scroll;
+					z-index: 20;
+
+					@include mobile{
+						display: none;
+						overflow-y: auto;
+
+						&.active {
+							display: block;
+						}
+					}
 					
 					.row {
 						margin-right: -10px;
