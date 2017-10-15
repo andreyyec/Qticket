@@ -101,10 +101,11 @@ nav .small {
           .screen-holder .row.order-details-screen .order-wrapper .mobile-tabs {
             display: block; } }
         .screen-holder .row.order-details-screen .order-wrapper .mobile-tabs .tab {
+          background-color: gray;
           text-decoration: none;
           color: black; }
           .screen-holder .row.order-details-screen .order-wrapper .mobile-tabs .tab.active {
-            background-color: gray; }
+            background-color: transparent; }
       @media (max-width: 767px) {
         .screen-holder .row.order-details-screen .order-wrapper .order-details-section {
           display: none;
@@ -114,7 +115,10 @@ nav .small {
       .screen-holder .row.order-details-screen .order-wrapper .order-details-section .action-buttons-bar {
         padding-top: 10px; }
       .screen-holder .row.order-details-screen .order-wrapper .order-details-section .client-info {
+        background-color: #d3d3d3;
+        border-radius: 5px;
         height: 20px;
+        text-align: center;
         margin-top: 10px; }
       .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-products-holder {
         height: calc(100% - 244px);

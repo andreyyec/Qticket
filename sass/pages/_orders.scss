@@ -72,10 +72,11 @@
                     }
 
                     .tab {
+                        background-color: gray;
                         text-decoration: none;
                         color: black;
                         &.active {
-                            background-color: gray;
+                            background-color: transparent;
                         }
                     }
                 }
@@ -94,7 +95,10 @@
                         padding-top: 10px;
                     }
                     .client-info {
+                        background-color: $gray-card-border;
+                        border-radius: 5px;
                         height: 20px;
+                        text-align: center;
                         margin-top: 10px;
                     }
                     .order-products-holder {
