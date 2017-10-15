@@ -95,16 +95,17 @@
                     }
                     .client-info {
                         height: 20px;
+                        margin-top: 10px;
                     }
                     .order-products-holder {
-                        height: calc(100% - 234px);
+                        height: calc(100% - 244px);
                         padding: 10px 0;
 
                         .order-details-products-list {
                             overflow-y: scroll;
 
                             @include mobile() {
-                                height: calc(100vh - 320px);
+                                height: calc(100vh - 348px);
                             }
 
                             &.border-inner{

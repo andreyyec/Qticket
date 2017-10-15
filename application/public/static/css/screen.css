@@ -114,15 +114,16 @@ nav .small {
       .screen-holder .row.order-details-screen .order-wrapper .order-details-section .action-buttons-bar {
         padding-top: 10px; }
       .screen-holder .row.order-details-screen .order-wrapper .order-details-section .client-info {
-        height: 20px; }
+        height: 20px;
+        margin-top: 10px; }
       .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-products-holder {
-        height: calc(100% - 234px);
+        height: calc(100% - 244px);
         padding: 10px 0; }
         .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-products-holder .order-details-products-list {
           overflow-y: scroll; }
           @media (max-width: 767px) {
             .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-products-holder .order-details-products-list {
-              height: calc(100vh - 320px); } }
+              height: calc(100vh - 348px); } }
           .screen-holder .row.order-details-screen .order-wrapper .order-details-section .order-products-holder .order-details-products-list.border-inner {
             border: 2px solid #d3d3d3;
             border-radius: 7px; }
