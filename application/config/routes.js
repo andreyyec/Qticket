@@ -97,7 +97,7 @@ router.get('/', (req, res) => {
         mainTitle: 'Dashboard',
         subTitle: 'Tickets',
         products: req.session.products,
-        jsfiles: ['io-handler'],
+        jsfiles: ['dashboard'],
         session: sessionData,
     });
 });
@@ -110,7 +110,7 @@ router.get('/orders', (req, res) => {
         mainTitle: 'Orders',
         subTitle: 'Manager',
         products: req.session.products,
-        jsfiles: ['io-handler'],
+        jsfiles: ['orders'],
         session: sessionData,
     });
 });
