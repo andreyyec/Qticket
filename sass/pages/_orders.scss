@@ -97,19 +97,19 @@
                     .client-info {
                         background-color: $gray-card-border;
                         border-radius: 5px;
-                        height: 20px;
+                        height: 25px;
                         text-align: center;
                         margin-top: 10px;
                     }
                     .order-products-holder {
-                        height: calc(100% - 244px);
+                        height: calc(100% - 249px);
                         padding: 10px 0;
 
                         .order-details-products-list {
                             overflow-y: scroll;
 
                             @include mobile() {
-                                height: calc(100vh - 348px);
+                                height: calc(100vh - 353px);
                             }
 
                             &.border-inner{
