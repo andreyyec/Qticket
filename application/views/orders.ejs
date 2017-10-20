@@ -8,16 +8,26 @@
 <%- contentFor('body') %>
 	<div class="content-container orders">
 		<div class="screen-holder">
-			<div class="row orders-screen">
-	        
+			<div class="row orders-screen active">
+	        	<div class="col-12 inner-container">
+	        		<div class="row orders-thumbs"></div>
+	        		<div class="row orders-full"></div>
+	        	</div>
 	    	</div>
 	    	<div class="row order-details-screen">
 	    		<div class="order-wrapper">
-		    		<div class="col-12 col-md-4 display-section order-details-section">
+	    			<div class="col-12 mobile-tabs">
+	    				<div class="row">
+		    				<a class="col-6 text-center tab details active" href="#">Details</a>
+		    				<a class="col-6 text-center tab products" href="#">Products</a>
+	    				</div>
+	    			</div>
+		    		<div class="col-12 col-md-4 display-section order-details-section active">
+    					<div class="client-info"></div>
 		    			<div class="action-buttons-bar">
-	    						<button type="button" class="btn btn-danger">Cancel</button>
-	    						<button type="button" class="btn btn-success pull-right">Save</button>
-	    					</div>
+    						<button type="button" class="col-5 btn btn-danger cancel">Cancel</button>
+    						<button type="button" class="col-5 btn btn-success pull-right save">Save</button>
+    					</div>
 			     		<div class="row no-gutters order-products-holder">
 			     			<div class="col-12 border-inner order-details-products-list"></div>
 			     		</div>
@@ -47,27 +57,27 @@
 			     		</div>
 			    	</div>
 
-		    	<div class="col-12 col-md-8 display-section products-section">
-		    		<div class="row">
-		    			<% for(var i=0; i < products.length; i++) {%>
-		    				<div class="col-4 col-sm-4 col-md-3 col-lg-2 o-hidden h-100  product-card" data-id="<%= products[i].id %>" data-name="<%= products[i].name %>" data-price="<%= products[i].price %>">
-		    					<div class="product-card-inner">
-		    						<span class="badge"><%= products[i].price %></span>
-						            <div class="product-card-body clearfix">
-						              	<% if (products[i].image !== false) { %> 
-				                			<img class="product-card-image" src="data:image/png;base64, <%= products[i].image %>">
-				                		<% } else { %>
-				                			<img class="product-card-image" src="/public/static/img/no-image.png">
-				                	 	<% } %>
+			    	<div class="col-12 col-md-8 display-section products-section">
+			    		<div class="row">
+			    			<% for(var i=0; i < products.length; i++) {%>
+			    				<div class="col-4 col-sm-4 col-md-3 col-lg-2 o-hidden h-100  product-card" data-id="<%= products[i].id %>" data-name="<%= products[i].name %>" data-price="<%= products[i].price %>">
+			    					<div class="product-card-inner">
+			    						<span class="badge"><%= products[i].price %></span>
+							            <div class="product-card-body clearfix">
+							              	<% if (products[i].image !== false) { %> 
+					                			<img class="product-card-image" src="data:image/png;base64, <%= products[i].image %>">
+					                		<% } else { %>
+					                			<img class="product-card-image" src="/public/static/img/no-image.png">
+					                	 	<% } %>
+							            </div>
+							            <div class="product-card-footer text-white bg-primary clearfix small z-1">
+							              	<span class="float-left"><%= products[i].name %></span>
+							            </div>
 						            </div>
-						            <div class="product-card-footer text-white bg-primary clearfix small z-1">
-						              	<span class="float-left"><%= products[i].name %></span>
-						            </div>
-					            </div>
-					        </div>
-		            	<% } %>  
-  					</div>
-		    	</div>
+						        </div>
+			            	<% } %>  
+	  					</div>
+			    	</div>
 		    	</div>
 	    	</div>
 		</div>

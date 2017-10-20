@@ -1,23 +1,36 @@
 $(function () {
-    let self, sckId, csOrdersArray, currentRow = {}, override = true, actionEnabled = false,
-    socket = io(),
-    body = $('body'),
-    disabledClass = 'disabled',
-    selectedClass = 'selected',
+    let self, sckId, csOrdersArray, currentRow = {}, currentOrderData = {}, override = true, actionEnabled = false,
+    socket = io(), body = $('body'), disabledClass = 'disabled', selectedClass = 'selected', activeClass = 'active',
     ordersContainer = body.find('.orders-screen'),
     orderDetailsContainer = body.find('.order-details-screen'),
     productsSection = orderDetailsContainer.find('.products-section'),
     productCards = productsSection.find('.product-card'),
     oDSection = orderDetailsContainer.find('.order-details-section'),
+    clientInfoBar = oDSection.find('.client-info'),
     oDProductsList = oDSection.find('.order-details-products-list'),
     oDProductsHolder = oDSection.find('.order-products-holder'),
+    mobileTabs = orderDetailsContainer.find('.mobile-tabs .tab'),
+    mobileSections = orderDetailsContainer.find('.display-section'),
     oDKeypad = oDSection.find('.order-keypad'),
     modifierButtons = oDKeypad.find('.modifier'),
     keyButtons = oDKeypad.find('.key'),
+    cancelButton = oDSection.find('.action-buttons-bar .cancel'),
+    saveButton = oDSection.find('.action-buttons-bar .save'),
     removeModifier = $(modifierButtons[0]),
     priceModifier = $(modifierButtons[1]),
     qtyModifier = $(modifierButtons[2]),
     templates= {
+        nOrderCard: '<div class="col-6 col-sm-4 col-md-3">\
+                        <div class="card card-primary card-inverse order-card" data-id="${id}" data-client-id="${client[0]}" data-client="${client[1]}" data-ticket="${ticket}">\
+                            <div class="card-header card-primary card-header">\
+                                ${id}\
+                            </div>\
+                            <div class="card-block bg-white card-body">\
+                                <div class="ticket">${ticket}</div>\
+                                <div class="client">${client[1]}</div>\
+                            </div>\
+                        </div>\
+                    </div>',
         orderCard: '<div class="col-xs-6 col-sm-4 col-md-3 order-card" orderid="${id}">\
                         <div class="panel panel-primary">\
                             <div class="panel-heading">\
@@ -69,7 +82,46 @@ $(function () {
                 </div>'
     },
     uiManager = {
-        resetActionButtons: function () {
+        toggleScreens: function() {
+            if (ordersContainer.hasClass(activeClass)) {
+                ordersContainer.removeClass(activeClass);
+                orderDetailsContainer.addClass(activeClass);
+            }else {
+                ordersContainer.addClass(activeClass);
+                orderDetailsContainer.removeClass(activeClass);
+            }
+        },
+        attachListeners: function() {
+            ordersContainer.on('click', '.order-card', function(e) {
+                let target = $(e.currentTarget),
+                    data = {id:target.data('id'), order:target.data('ticket'), client: {id: target.data('client-id'),name: target.data('client')}};
+                uiDetailScreenManager.loadInfoData(data);
+                uiManager.toggleScreens();
+            });
+        },
+        init: function() {
+            uiManager.attachListeners();
+        }
+    },
+    uiDetailScreenManager = {
+        toggleTabs: function() {
+            if ($(mobileTabs[0]).hasClass(activeClass)) {
+                $(mobileTabs[0]).removeClass(activeClass);
+                $(mobileSections[0]).removeClass(activeClass);
+                $(mobileTabs[1]).addClass(activeClass);
+                $(mobileSections[1]).addClass(activeClass);
+            } else {
+                $(mobileTabs[0]).addClass(activeClass);
+                $(mobileSections[0]).addClass(activeClass);
+                $(mobileTabs[1]).removeClass(activeClass);
+                $(mobileSections[1]).removeClass(activeClass);
+            }
+        },
+        loadInfoData: function(data) {
+            currentOrderData = data;
+            clientInfoBar.html(data.client.name);
+        },
+        resetActionButtons: function() {
             removeModifier.removeClass(disabledClass);
             priceModifier.addClass(disabledClass);
             qtyModifier.removeClass(disabledClass);
@@ -77,7 +129,7 @@ $(function () {
         enableActionButtons: function() {
             actionEnabled = true;
             override = true;
-            uiManager.resetActionButtons();
+            uiDetailScreenManager.resetActionButtons();
         },
         disableActionButtons: function() {
             modifierButtons.addClass(disabledClass);
@@ -89,18 +141,20 @@ $(function () {
         },
         cleanDetailUI: function() {
             productCards.removeClass(selectedClass);
-            uiManager.disableActionButtons;
+            uiDetailScreenManager.disableActionButtons;
+            clientInfoBar.html('');
             currentRow = {};
+            currentOrderData = {};
             oDProductsList.empty();
         },
         addRow: function(card) {
-            if (currentRow.element === undefined || uiManager.currentRowValid()) {
+            if (currentRow.element === undefined || uiDetailScreenManager.currentRowValid()) {
                 let nRowInfo = {id: card.attr('data-id'),
                         product: card.attr('data-name'),
                         price: card.attr('data-price')},
                 nRow = $.tmpl(templates.row, nRowInfo).appendTo(oDProductsList);
                 oDProductsList.scrollTop(oDProductsList.prop('scrollHeight'));
-                uiManager.updateCurrentRow(nRow);
+                uiDetailScreenManager.updateCurrentRow(nRow);
                 card.addClass(selectedClass);
             }
         },
@@ -108,8 +162,9 @@ $(function () {
             productsSection.find('.product-card[data-id='+currentRow.element.attr('data-id')+']').removeClass(selectedClass);
             currentRow.element.remove();
             currentRow = {};
-            uiManager.disableActionButtons();
-            uiManager.cleanDetailUI();
+            uiDetailScreenManager.disableActionButtons();
+            // Clean UI Test @ToRemove
+            //uiDetailScreenManager.cleanDetailUI();
         },
         validValue: function(value, field) {
             if(value !== 0) {
@@ -131,7 +186,7 @@ $(function () {
                 currentRow.price.html(floatPrice);
                 currentRow.qty.html(floatQty);
 
-            return (uiManager.validValue(floatPrice, 'precio') && uiManager.validValue(floatQty, 'cantidad')) ? true : false;
+            return (uiDetailScreenManager.validValue(floatPrice, 'precio') && uiDetailScreenManager.validValue(floatQty, 'cantidad')) ? true : false;
         },
         validateUserInput: function(nValue, element) {
             if (override) {
@@ -173,34 +228,50 @@ $(function () {
                     element.html(0);
                 }
             } else {
-                uiManager.removeRow(currentRow.element);
+                uiDetailScreenManager.removeRow(currentRow.element);
             }
         },
         updateCurrentRow: function (row) {
             if (currentRow.element !== undefined) {
-                 if (uiManager.currentRowValid()) {
+                 if (uiDetailScreenManager.currentRowValid()) {
                     currentRow.element.removeClass(selectedClass);
                     row.addClass(selectedClass);
                     currentRow.element = row;
                     currentRow.price = row.find('.price');
                     currentRow.qty = row.find('.qty');
-                    uiManager.enableActionButtons();
+                    uiDetailScreenManager.enableActionButtons();
                 }
             } else {
                 row.addClass(selectedClass);
                 currentRow.element = row;
                 currentRow.price = row.find('.price');
                 currentRow.qty = row.find('.qty');
-                uiManager.enableActionButtons();
+                uiDetailScreenManager.enableActionButtons();
             }
         },
         attachListeners: function() {
+            mobileTabs.on('click', function(e) {
+                e.preventDefault();
+                if (!$(e.currentTarget).hasClass(activeClass)) {
+                    uiDetailScreenManager.toggleTabs();    
+                }
+            });
+
+            cancelButton.on('click', function(e) {
+                uiDetailScreenManager.cleanDetailUI();
+                uiManager.toggleScreens();
+            });
+
+            saveButton.on('click', function(e) {
+                console.log('save Event');
+            });
+
             removeModifier.on('click', function(e) {
                 if (actionEnabled) {
-                    if (uiManager.getActiveAction() === 'price') {
-                        uiManager.validateUserDelete(currentRow.price);
+                    if (uiDetailScreenManager.getActiveAction() === 'price') {
+                        uiDetailScreenManager.validateUserDelete(currentRow.price);
                     } else {
-                        uiManager.validateUserDelete(currentRow.qty);
+                        uiDetailScreenManager.validateUserDelete(currentRow.qty);
                     }
                 }
             });
@@ -208,7 +279,7 @@ $(function () {
             priceModifier.on('click', function(e) {
                 if (actionEnabled) {
                     override = true;
-                    if (uiManager.getActiveAction() === 'qty') {
+                    if (uiDetailScreenManager.getActiveAction() === 'qty') {
                         qtyModifier.addClass(disabledClass);
                         priceModifier.removeClass(disabledClass);
                     }
@@ -218,7 +289,7 @@ $(function () {
             qtyModifier.on('click', function(e) {
                 if (actionEnabled) {
                     override = true;
-                    if (uiManager.getActiveAction() === 'price') {
+                    if (uiDetailScreenManager.getActiveAction() === 'price') {
                         qtyModifier.removeClass(disabledClass);
                         priceModifier.addClass(disabledClass);
                     }
@@ -229,29 +300,29 @@ $(function () {
                 if (actionEnabled && currentRow.element !== undefined) {
                     let target = $(e.currentTarget);
 
-                    if (uiManager.getActiveAction() === 'price') {
-                        uiManager.validateUserInput(target, currentRow.price);
+                    if (uiDetailScreenManager.getActiveAction() === 'price') {
+                        uiDetailScreenManager.validateUserInput(target, currentRow.price);
                     } else {
-                        uiManager.validateUserInput(target, currentRow.qty);
+                        uiDetailScreenManager.validateUserInput(target, currentRow.qty);
                     }
                 }
             });
 
             oDProductsList.on('click', '.order-row', function(e) {
                 if (currentRow.element.attr('data-id') !== $(e.currentTarget).attr('data-id')) {
-                    uiManager.updateCurrentRow($(e.currentTarget));
+                    uiDetailScreenManager.updateCurrentRow($(e.currentTarget));
                 }
             });
 
             productCards.on('click', function(e) {
                 let card = $(e.currentTarget);
                 if (!card.hasClass(selectedClass)) {
-                    uiManager.addRow(card);
+                    uiDetailScreenManager.addRow(card);
                 }
             });
         },
         init: function() {
-            uiManager.attachListeners();
+            uiDetailScreenManager.attachListeners();
         }
     },
     socketManager = {
@@ -270,7 +341,7 @@ $(function () {
                 if (changesList.added && changesList.added.length > 0) {    
                     for (let key in changesList.added) {
                         csOrdersArray.push(changesList.added[key]);
-                        $.tmpl(templates.orderCard, changesList.added[key]).appendTo( ".orders-screen" );
+                        $.tmpl(templates.nOrderCard, changesList.added[key]).appendTo( ".orders-screen" );
                     }
                 }
                 if (changesList.updated && changesList.updated.length > 0) {
@@ -307,7 +378,7 @@ $(function () {
 
         },
         initOrdersView: function(ordersArray) {
-            $.tmpl(templates.orderCard, ordersArray).appendTo( ".orders-screen" );
+            $.tmpl(templates.nOrderCard, ordersArray).appendTo( ".orders-screen .inner-container .orders-thumbs" );
         },
         attachListeners: function() {
             socket.on('orderUpdate', function(counter){
@@ -335,11 +406,11 @@ $(function () {
             });
         },
         init: function() {
-            socketManager = this;
             socketManager.attachListeners();
         }
     }
     self = this;
     uiManager.init();
+    uiDetailScreenManager.init();
     socketManager.init();
 });
