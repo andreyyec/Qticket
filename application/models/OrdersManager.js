@@ -16,7 +16,7 @@ class OrdersManager {
     }
 
     attachIOListeners() {
-        //Web Socket Settings
+        //Orders Web Socket Settings
         io.on('connection', function(socket){
             socket.emit('init', {sID: sckId, data: ordersObj.drafts});
         });
