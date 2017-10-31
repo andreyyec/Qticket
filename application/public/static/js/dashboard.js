@@ -3,6 +3,7 @@ $(function () {
     Qticket = window.Qticket,
     socket = Qticket.getIOInstance('dashboard');
     body = $('body'),
+    hideClass = 'hide',
     contentContainer = body.find('.content-container'),
     buttonsContainer = contentContainer.find('.action-buttons-container'),
     startButton = buttonsContainer.find('.start'),
@@ -81,12 +82,9 @@ $(function () {
                     $.tmpl(templates.orderRow, obj).prependTo(target);
                 }
             } else {
-                return $.tmpl(templates.nOrderRow, obj).html();
+                return $.tmpl(templates.nOrderRow, obj).outerHTML();
             }
         },
-        /*compileOrderRow: function(obj, target = undefined, prepend = false) {
-            return $.tmpl(templates.orderRow, obj).html();
-        },*/
         dashbScreenInit: function(data) {
             let draftsCol, ordersCol;
 
@@ -99,26 +97,32 @@ $(function () {
             for (let i in data.confirmed) {
                 ordersCol += dashboardManager.compileOrderRow(data.confirmed[i], ordersColumn);
             }
+            dashboardManager.attachDashboardListeners();
+            tcksDashb.removeClass(hideClass);
             Qticket.toggleLoadScreen(false);
         },
         dashbScreenStop: function() {
 
         },
+        attachDashboardListeners: function() {
+            body.on('keydown', function(e) {
+                if (e.keyCode === 27) {
+                    tcksDashb.toggleClass(hideClass);
+                }
+            });
+        },
     	attachListeners: function() {
+
             startButton.on('click', function(e) {
                 scope.webSocketStart();
-                startButton.addClass('hide');
-                stopButton.removeClass('hide');
+                startButton.addClass(hideClass);
+                stopButton.removeClass(hideClass);
             });
+
             stopButton.on('click', function(e) {
                 scope.dashbScreenStop();
-                startButton.removeClass('hide');
-                stopButton.addClass('hide');
-            });
-            body.on('keypress', function(e) {
-                if (e.target === 'esc') {
-                    'Escape key pressed';
-                }
+                startButton.removeClass(hideClass);
+                stopButton.addClass(hideClass);
             });
     	},
     	init: function() {

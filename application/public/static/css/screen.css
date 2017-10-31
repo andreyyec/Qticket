@@ -47,7 +47,7 @@ body.loading .loading-overlay {
   position: fixed;
   top: 0;
   width: 100%;
-  z-index: 1050; }
+  z-index: 9999; }
 
 body.loading .cssload-content {
   display: flex;
@@ -196,6 +196,15 @@ body.loading .cssload-content {
 
 .dashboard .action-buttons-container {
   margin-top: 20px; }
+
+.dashboard .tickets-dashboard {
+  background-color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1100; }
 
 .screen-holder {
   height: calc(100vh - 56px); }
