@@ -1,6 +1,6 @@
 $(function () {
     let self, sckId, csOrdersArray, currentRow = {}, currentOrderData = {}, override = true, actionEnabled = false,
-    socket = io(), body = $('body'), disabledClass = 'disabled', selectedClass = 'selected', activeClass = 'active',
+    socket = Qticket.getIOInstance('orders'), body = $('body'), disabledClass = 'disabled', selectedClass = 'selected', activeClass = 'active',
     ordersContainer = body.find('.orders-screen'),
     orderDetailsContainer = body.find('.order-details-screen'),
     productsSection = orderDetailsContainer.find('.products-section'),

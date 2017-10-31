@@ -1,11 +1,15 @@
 const constants = {
-	
+	public: {
+		protocol: 'http',
+		hostname: 'localhost:3000',
+		basePath: function(){this.basePath = this.protocol+'://'+this.hostname+'/'}
+	},
 	adminAccount: {
 		username: 'admin',
 		password: 'admin'
 	},
 	appSettings: {
-		purchaseListRefreshTime: 8000,
+		purchaseListRefreshTime: 10000,
 	},
 	database: {
 		mongooseConnectionString: 'mongodb://localhost:27017/qticket',
@@ -30,5 +34,7 @@ const constants = {
 		secret: 'R3c1C1aD0rASaNm1Gu3L'
 	}
 }
+
+constants.public.basePath();
 
 module.exports = constants;

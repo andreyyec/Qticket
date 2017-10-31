@@ -4,37 +4,48 @@ const   constants = require('../config/constants'),
         http = require('http'),
         request = require('request');
 
-let self, io, cookie, sckId, ordersObj = {'drafts': [], 'confirmed': [], 'approved': []};
+let self, ioOrders, ioDashb, ioDashboardInstance, cookie, sckId, ordersObj = {'drafts': [], 'confirmed': [], 'approved': []};
 
 class OrdersManager {
 
-    constructor(session, ioInstance) {
+    constructor(session, ioOrdersInstance, ioDashbInstance) {
         self = this;
-        io = ioInstance;
+        ioOrders = ioOrdersInstance;
+        ioDashb = ioDashbInstance;
         cookie = request.cookie('session_id='+session.session_id);
         sckId = 0;
     }
 
     attachIOListeners() {
-        //Orders Web Socket Settings
-        io.on('connection', function(socket){
+        //Dashboard Web Socket
+        ioDashb.on('connection', function(socket) {
+            console.log('client connected to Dashboard');
+            socket.emit('connect');
+
+            socket.on('request', function(data) {
+                socket.emit('data', ordersObj);
+            });
+        });
+
+        //Orders Web Socket
+        ioOrders.on('connection', function(socket){
             socket.emit('init', {sID: sckId, data: ordersObj.drafts});
-        });
 
-        io.on('blockOrder', (orderID) => {
-            //@TODO: Validation, DB save, then event
-            io.emit('orderBlocked', orderID);
-        });
+            socket.on('blockOrder', (orderID) => {
+                //@TODO: Validation, DB save, then event
+                socket.emit('orderBlocked', orderID);
+            });
 
-        io.on('deleteOrder', (orderID) => {
-            //@TODO: Validation, DB save, then event
-            io.emit('deleteOrderEvent', orderID);
-        });
+            socket.on('deleteOrder', (orderID) => {
+                //@TODO: Validation, DB save, then event
+                socket.emit('deleteOrderEvent', orderID);
+            });
 
-        io.on('updateOrder', (orderInfo) => {
-            let changesObj = {'new': [], 'deleted':[]};
+            socket.on('updateOrder', (orderInfo) => {
+                let changesObj = {'new': [], 'deleted':[]};
 
-            //io.emit('updateOrder', )
+                //ioOrders.emit('updateOrder', )
+            });
         });
     }
 
@@ -124,7 +135,7 @@ class OrdersManager {
         }
 
         /*if (updateEventInitFlag) {
-            io.emit('ordersUpdate', self.getSocketMessage(changesList));
+            ioOrders.emit('ordersUpdate', self.getSocketMessage(changesList));
         }*/
     }
 

@@ -65,7 +65,7 @@ router.get('/login', (req, res) => {
     if (sessionManager.isValidSession(req.session)) {
         res.redirect('/');
     } else {
-        res.render('login', {
+        res.render('pages/login', {
             layout: false,
             errorMsg: (req.query.error !== undefined) ? 'Invalid Username or Password' : undefined 
         });
@@ -91,66 +91,71 @@ router.use(function checkUserSession (req, res, next) {
 });
 
 router.get('/', (req, res) => {
-    res.render('dashboard', {
+    res.render('pages/dashboard', {
         activeTab : 1,
         tabTitle: 'Dashboard - Qticket',
         mainTitle: 'Dashboard',
         subTitle: 'Tickets',
         products: req.session.products,
         jsfiles: ['dashboard'],
-        session: sessionData,
+        constants: constants.public,
+        session: sessionData
     });
 });
 
 router.get('/orders', (req, res) => {
     //@TODO render manager / viewer depending on user permissions
-    res.render('orders', {
+    res.render('pages/orders', {
         activeTab : 2,
         tabTitle: 'Orders - Qticket',
         mainTitle: 'Orders',
         subTitle: 'Manager',
         products: req.session.products,
         jsfiles: ['orders'],
-        session: sessionData,
+        constants: constants.public,
+        session: sessionData
     });
 });
 
 router.get('/search', (req, res) => {
-    res.render('search', {
+    res.render('pages/search', {
         activeTab : 3,
         tabTitle: 'Orders - Qticket',
         mainTitle: 'Search',
         subTitle: 'Order',
         //jsfiles: [],
-        session: sessionData,
+        constants: constants.public,
+        session: sessionData
     });
 });
 
 router.get('/reports', (req, res) => {
-    res.render('reports', {
+    res.render('pages/reports', {
         activeTab : 4,
         tabTitle: 'Reports - Qticket',
         mainTitle: 'Reports',
         subTitle: 'Main',
         //jsfiles: [],
-        session: sessionData,
+        constants: constants.public,
+        session: sessionData
     });
 });
 
 /*router.get('/settings', (req, res) => {
-    res.render('settings', {
+    res.render('pages/settings', {
         activeTab : 5,
         tabTitle: 'Settings - Qticket',
         mainTitle: 'Settings',
         subTitle: '',
         //jsfiles: [],
-        session: sessionData,
+        constants: constants.public,
+        session: sessionData
     });
 });*/
 
     // 404 default route
 router.get('*', (req, res) => {
-    res.render('404', {
+    res.render('pages/404', {
         session: sessionData,
         activeTab : 0,
         tabTitle: 'Not found error - TCSb',

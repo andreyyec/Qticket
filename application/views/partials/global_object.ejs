@@ -1,0 +1,16 @@
+<script type="text/javascript">
+	window.Qticket = {
+		constants: <%- (typeof constants != "undefined" ? JSON.stringify(constants) : "") %>,
+		getIOInstance: function(relativePath) {
+			return io.connect(window.Qticket.constants.basePath+relativePath);
+		},
+		toggleLoadScreen: function(activate, message = 'Loading...'){
+			if (activate) {
+				$('body').addClass('loading');
+			} else {
+				setTimeout(function(){$('body').removeClass('loading');}, 1000);
+			}
+			$('.loading-overlay .cssload-message').html(message);
+		}
+	};
+</script>

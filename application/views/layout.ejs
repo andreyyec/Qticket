@@ -51,6 +51,7 @@
         <%- include partials/logout_modal.ejs %>
     </div>
 
+    <!-- Loading Overlay -->
     <%- include partials/loading_overlay.ejs %>
 
     <!-- JS Files -->
@@ -67,6 +68,10 @@
     <script src="public/vendor/noty/noty.min.js"></script>
     <!-- Custom scripts for all pages-->
     <script src="public/vendor/sb-admin/js/sb-admin.min.js"></script>
+
+    <!-- Global Functions Object -->
+    <%- include partials/global_object.ejs %>
+
     <!-- Custom JS files -->
     <% if(locals.jsfiles !== undefined){ %>
         <% for(var i=0; i < jsfiles.length; i++) {%>
