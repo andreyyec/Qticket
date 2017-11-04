@@ -23,7 +23,7 @@ class OrdersManager {
             socket.emit('connect');
 
             socket.on('request', function(data) {
-                socket.emit('data', ordersObj);
+                socket.emit('data', self.enhancedDashboardUpdateList(ordersObj));
             });
         });
 
@@ -49,9 +49,11 @@ class OrdersManager {
         });
     }
 
-    getSocketMessage(data) {
+    getSocketMessage(sdata) {
         sckId ++;
-        return {sID: sckId, data: data};
+        console.log('Socket Message');
+        console.log(data);
+        return {sID: sckId, data: sdata};
     }
 
     getIdsObj() {
@@ -69,7 +71,7 @@ class OrdersManager {
     }
 
     updateList(changesList, updatesArray, checkForUpdated = false) {
-        let /*updatesArray = [],*/ updateFlag = false;
+        let updateFlag = false;
 
         if (changesList) {
             if (changesList.added && changesList.added.length > 0) {    
@@ -124,6 +126,9 @@ class OrdersManager {
             eChangesList.orders.push({id: oObj.confirmed[obj].id, client: oObj.confirmed[obj].client, ticket: oObj.confirmed[obj].ticket});
         }
 
+        eChangesList.drafts.sort(function(x, y){ return x.last_update - y.last_update;});
+        eChangesList.orders.sort(function(x, y){ return x.last_update - y.last_update;});
+
         return eChangesList;
     }
 
@@ -157,7 +162,7 @@ class OrdersManager {
 
         if (updateEvFlag) {
             //ioOrders.emit('ordersUpdate', self.getSocketMessage(changesList));
-            ioDashb.emit('update', self.getSocketMessage(self.enhancedDashboardUpdateList(ordersObj)));
+            ioDashb.emit('update', self.enhancedDashboardUpdateList(ordersObj));
         }
     }
 

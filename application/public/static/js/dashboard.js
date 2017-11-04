@@ -33,9 +33,7 @@ $(function () {
             });
 
             socket.on('update', function(data) {
-                console.log('Orders Update Triggered');
-                console.log(data);
-                //dashboardManager.
+                dashboardManager.dashbScreenUpdate(data);
             });
 
             socket.on('disconnect', function () {
@@ -88,26 +86,39 @@ $(function () {
                 return $.tmpl(templates.nOrderRow, obj).outerHTML();
             }
         },
+        getColumnChangesDiff: function(data, target) {
+            let row;
+            
+            for (let elem in data) {
+                obj = target.find('#'+data[elem].id);
+
+                if (obj !== undefined) {
+                    data.splice(elem, 1);
+                } else {
+                    dashboardManager.compileOrderRow(data[elem], target);
+                }
+            }
+        },
         dashbScreenInit: function(data) {
-            let draftsCol, ordersCol;
+            self.dashboardManager.dashbScreenUpdate(data);
 
-            console.log(data);
-
-            for (let i in data.drafts) {
-                draftsCol += dashboardManager.compileOrderRow(data.drafts[i], draftsColumn);
-            }
-            for (let i in data.approved) {
-                draftsCol += dashboardManager.compileOrderRow(data.approved[i], draftsColumn);
-            }
-            for (let i in data.confirmed) {
-                ordersCol += dashboardManager.compileOrderRow(data.confirmed[i], ordersColumn);
-            }
             dashboardManager.attachDashboardListeners();
             tcksDashb.removeClass(hideClass);
             Qticket.toggleLoadScreen(false);
         },
-        dashbScreenUpdate: function(changesList) {
+        dashbScreenUpdate: function(data) {
+            let draftsCol, ordersCol;
 
+            draftsColumn.empty();
+            ordersColumn.empty();
+
+            for (let i in data.drafts) {
+                draftsCol += dashboardManager.compileOrderRow(data.drafts[i], draftsColumn);
+            }
+
+            for (let i in data.orders) {
+                ordersCol += dashboardManager.compileOrderRow(data.orders[i], ordersColumn);
+            }
         },
         dashbScreenStop: function() {
             draftsColumn.empty();
