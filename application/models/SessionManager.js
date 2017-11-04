@@ -14,7 +14,7 @@ class SessionManager {
     }
 
     isValidSession(session) {
-        return (session !== undefined && session.user !== undefined && session.products !== undefined) ? true : false;
+        return (session !== undefined && session.user !== undefined/* && session.products !== undefined*/) ? true : false;
     }
 
     auth(username, password) {
@@ -79,10 +79,12 @@ class SessionManager {
 
             request.get(opts, function (error, response, body) {
                 if (error === null) {
-                    let jsonData = JSON.parse(body),
+                    let dashBUser = false,
+                        jsonData = JSON.parse(body),
                         userData = jsonData[0];
 
                     session.session_id = user.session_id;
+
                     session.user = {
                         uid: user.uid,
                         username: userData.login,
@@ -90,8 +92,12 @@ class SessionManager {
                         role: userData.purchase_type_user,
                         userData: userData
                     };
-                    
-                    resolve();
+
+                    if (userData.purchase_type_user === 'tablero') {
+                        dashBUser = true;
+                    }
+
+                    resolve(dashBUser);
                 } else {
                     reject();
                 }

@@ -20,7 +20,12 @@ router.post('/session/login', (req, res) => {
     authProcess.then((loginData) => {
         userDataRequest = sessionManager.getUserData(loginData, req.session);
 
-        userDataRequest.then(() => {
+        userDataRequest.then((StickySessionFlag) => {
+            if (StickySessionFlag) {
+                let year = 1000 * 60 * 60 * 24 * 365;
+                req.session.cookie.expires = new Date(Date.now() + year)
+                req.session.cookie.maxAge = year;
+            }
             res.redirect(307, '/session/start');
         })
         .catch((data) => {

@@ -11,6 +11,14 @@
 				setTimeout(function(){$('body').removeClass('loading');}, 1000);
 			}
 			$('.loading-overlay .cssload-message').html(message);
-		}
+		},
+		getUrlParam : function (param) {
+            var results = new RegExp('[\?&]' + param + '=([^&#]*)').exec(window.location.href);
+            if (results === null){
+                return null;
+            } else {
+                return results[1] || 0;
+            }
+        },
 	};
 </script>

@@ -26,7 +26,7 @@ $(function () {
                                 ${id}\
                             </div>\
                             <div class="card-block bg-white card-body">\
-                                <div class="ticket">${ticket}</div>\
+                                <div class="ticket">{{if (ticket !== false)}}${ticket}{{else}}-{{/if}}</div>\
                                 <div class="client">${client[1]}</div>\
                             </div>\
                         </div>\
@@ -39,7 +39,7 @@ $(function () {
                                         <!-- <i class="fa fa-comments fa-5x"></i> -->\
                                     </div>\
                                     <div class="col-xs-9 text-right">\
-                                        <div class="huge">${ticket}</div>\
+                                        <div class="huge">{{if (ticket !== false)}}${ticket}{{else}}-{{/if}}</div>\
                                         <div>${id} - ${client[1]}</div>\
                                     </div>\
                                 </div>\
@@ -60,7 +60,7 @@ $(function () {
                                             <!-- <i class="fa fa-comments fa-5x"></i> -->\
                                         </div>\
                                         <div class="col-xs-9 text-right">\
-                                            <div class="huge">${ticket}</div>\
+                                            <div class="huge">{{if (ticket !== false)}}${ticket}{{else}}-{{/if}}</div>\
                                             <div>${id} - ${client[1]}</div>\
                                         </div>\
                                     </div>\

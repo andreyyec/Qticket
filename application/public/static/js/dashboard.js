@@ -136,11 +136,14 @@ $(function () {
         detachDashboardListeners: function() {
             body.unbind('keydown');
         },
+        startProcedure: function() {
+            scope.webSocketStart();
+            startButton.addClass(hideClass);
+            stopButton.removeClass(hideClass);
+        },
     	attachListeners: function() {
             startButton.on('click', function(e) {
-                scope.webSocketStart();
-                startButton.addClass(hideClass);
-                stopButton.removeClass(hideClass);
+                dashboardManager.startProcedure();
             });
 
             stopButton.on('click', function(e) {
@@ -152,6 +155,9 @@ $(function () {
     	init: function() {
     		scope = this;
 			scope.attachListeners();
+            if (Qticket.getUrlParam('dashinit') === 'true') {
+                dashboardManager.startProcedure();
+            }
     	}
     }
     dashboardManager.init();

@@ -51,8 +51,6 @@ class OrdersManager {
 
     getSocketMessage(sdata) {
         sckId ++;
-        console.log('Socket Message');
-        console.log(data);
         return {sID: sckId, data: sdata};
     }
 
@@ -95,13 +93,9 @@ class OrdersManager {
                     for (let yKey in updatesArray) {
                         if (changesList.removed[xKey] === updatesArray[yKey].id) {
                             let index = updatesArray.indexOf(updatesArray[yKey]);
-                            console.log('checking for removing index');
-                            console.log(index);
                             if (index > -1) {
                                 updatesArray.splice(index, 1);
                             }
-
-                            //delete updatesArray[yKey];
                         }
                     }
                 }
