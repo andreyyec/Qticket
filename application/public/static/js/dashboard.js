@@ -12,10 +12,12 @@ $(function () {
     draftsColumn = tcksDashb.find('.drafts-column'),
     ordersColumn = tcksDashb.find('.orders-column'),
     templates = {
-        orderRow:   '<div class="ticket-row">\
+        orderRow:   '<div class="ticket-row" data-id="${id}" data-client="${client[1]}" data-ticket"${ticket}">\
                         <div class="ticket ticket-number">\
                             <span class="title">FICHA:</span>\
-                            <span class="number">${ticket}</span>\
+                            <span class="number">\
+                                {{if (ticket !== false)}}${ticket}{{else}}-{{/if}}\
+                            </span>\
                         </div>\
                         <div class="ticket ticket-info">${client[1]}</div>\
                     </div>'
@@ -31,7 +33,9 @@ $(function () {
             });
 
             socket.on('update', function(data) {
-
+                console.log('Orders Update Triggered');
+                console.log(data);
+                //dashboardManager.
             });
 
             socket.on('disconnect', function () {
@@ -47,10 +51,9 @@ $(function () {
             });*/
         },
         detachListerners: function() {
-
+            socket.off();
         },
         requestData: function() {
-            console.log('emiting request over WebSocket');
             socket.emit('request');
         },
         start: function() {
@@ -58,7 +61,7 @@ $(function () {
             socketManager.requestData();
         },
         stop: function() {
-
+            this.detachListerners();
         },
         connect: function() {
             socket.on('connect', function(sckData) {
@@ -88,6 +91,8 @@ $(function () {
         dashbScreenInit: function(data) {
             let draftsCol, ordersCol;
 
+            console.log(data);
+
             for (let i in data.drafts) {
                 draftsCol += dashboardManager.compileOrderRow(data.drafts[i], draftsColumn);
             }
@@ -101,8 +106,14 @@ $(function () {
             tcksDashb.removeClass(hideClass);
             Qticket.toggleLoadScreen(false);
         },
-        dashbScreenStop: function() {
+        dashbScreenUpdate: function(changesList) {
 
+        },
+        dashbScreenStop: function() {
+            draftsColumn.empty();
+            ordersColumn.empty();
+            dashboardManager.detachDashboardListeners();
+            socketManager.detachListerners();
         },
         attachDashboardListeners: function() {
             body.on('keydown', function(e) {
@@ -111,8 +122,10 @@ $(function () {
                 }
             });
         },
+        detachDashboardListeners: function() {
+            body.unbind('keydown');
+        },
     	attachListeners: function() {
-
             startButton.on('click', function(e) {
                 scope.webSocketStart();
                 startButton.addClass(hideClass);
@@ -132,6 +145,4 @@ $(function () {
     }
     dashboardManager.init();
     socketManager.init();
-
-    window.test = socket;
 });

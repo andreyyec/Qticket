@@ -4,7 +4,8 @@ const   constants = require('../config/constants'),
         http = require('http'),
         request = require('request');
 
-let self, ioOrders, ioDashb, ioDashboardInstance, cookie, sckId, ordersObj = {'drafts': [], 'confirmed': [], 'approved': []};
+let self, ioOrders, ioDashb, ioDashboardInstance, cookie, sckId, 
+    ordersObj = {'drafts': [], 'approved': [], 'confirmed': []};
 
 class OrdersManager {
 
@@ -19,7 +20,6 @@ class OrdersManager {
     attachIOListeners() {
         //Dashboard Web Socket
         ioDashb.on('connection', function(socket) {
-            console.log('client connected to Dashboard');
             socket.emit('connect');
 
             socket.on('request', function(data) {
@@ -68,8 +68,8 @@ class OrdersManager {
         return idsObj;
     }
 
-    updateList(changesList, checkForUpdated = false) {
-        let updatesArray = [], updateFlag = false;
+    updateList(changesList, updatesArray, checkForUpdated = false) {
+        let /*updatesArray = [],*/ updateFlag = false;
 
         if (changesList) {
             if (changesList.added && changesList.added.length > 0) {    
@@ -93,11 +93,13 @@ class OrdersManager {
                     for (let yKey in updatesArray) {
                         if (changesList.removed[xKey] === updatesArray[yKey].id) {
                             let index = updatesArray.indexOf(updatesArray[yKey]);
+                            console.log('checking for removing index');
+                            console.log(index);
                             if (index > -1) {
                                 updatesArray.splice(index, 1);
                             }
 
-                            delete updatesArray[yKey];
+                            //delete updatesArray[yKey];
                         }
                     }
                 }
@@ -107,11 +109,30 @@ class OrdersManager {
         return {updated: updateFlag, updatedObject: updatesArray};
     }
 
+    enhancedDashboardUpdateList(oObj) {
+        let eChangesList = {drafts: [], orders: []};
+
+        for (let obj in oObj.drafts) {
+            eChangesList.drafts.push({id: oObj.drafts[obj].id, client: oObj.drafts[obj].client, ticket: oObj.drafts[obj].ticket});
+        }
+
+        for (let obj in ordersObj.approved) {
+            eChangesList.drafts.push({id: oObj.approved[obj].id, client: oObj.approved[obj].client, ticket: oObj.approved[obj].ticket});
+        }
+
+        for (let obj in ordersObj.confirmed) {
+            eChangesList.orders.push({id: oObj.confirmed[obj].id, client: oObj.confirmed[obj].client, ticket: oObj.confirmed[obj].ticket});
+        }
+
+        return eChangesList;
+    }
+
     updateAppInMemoryList(changesList) {
         let updtbject, updateEvFlag = false;
 
         if (changesList.drafts.added.length > 0 || changesList.drafts.updated.length > 0 || changesList.drafts.removed.length > 0) {
-            updtbject = self.updateList(changesList.drafts, true);
+            updtbject = self.updateList(changesList.drafts, ordersObj.drafts, true);
+
             if (updtbject.updated === true) {
                 updateEvFlag = true;
                 ordersObj.drafts = updtbject.updatedObject;
@@ -119,7 +140,7 @@ class OrdersManager {
         }
 
         if (changesList.confirmed.added.length > 0 || changesList.confirmed.removed.length > 0) {
-            updtbject = self.updateList(changesList.confirmed, true);
+            updtbject = self.updateList(changesList.confirmed, ordersObj.confirmed, true);
             if (updtbject.updated === true) {
                 updateEvFlag = true;
                 ordersObj.confirmed = updtbject.updatedObject;
@@ -127,16 +148,17 @@ class OrdersManager {
         }
 
         if (changesList.approved.added.length > 0 || changesList.approved.removed.length > 0) {
-            updtbject = self.updateList(changesList.approved, true);
+            updtbject = self.updateList(changesList.approved, ordersObj.approved, true);
             if (updtbject.updated === true) {
                 updateEvFlag = true;
                 ordersObj.approved = updtbject.updatedObject;
             }
         }
 
-        /*if (updateEventInitFlag) {
-            ioOrders.emit('ordersUpdate', self.getSocketMessage(changesList));
-        }*/
+        if (updateEvFlag) {
+            //ioOrders.emit('ordersUpdate', self.getSocketMessage(changesList));
+            ioDashb.emit('update', self.getSocketMessage(self.enhancedDashboardUpdateList(ordersObj)));
+        }
     }
 
     requestOrderList() {
