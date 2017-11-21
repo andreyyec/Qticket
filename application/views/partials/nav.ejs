@@ -11,7 +11,7 @@
                     <span class="nav-link-text">Dashboard</span>
                 </a>
             </li>
-            <% if (session.user.role === 'limitado' || session.user.role === 'admnistrativo' || session.user.role === 'super') { %>
+            <% if (session.user.role === 'limitado' || session.user.role === 'administrativo' || session.user.role === 'super') { %>
                 <li class="nav-item <% if (activeTab === 2) { %> active <% } %>" data-toggle="tooltip" data-placement="right" title="Orders">
                     <a class="nav-link" href="/orders">
                         <i class="fa fa-fw fa-shopping-cart"></i>
@@ -19,7 +19,7 @@
                     </a>
                 </li>
             <% } %>
-            <% if (session.user.role === 'admnistrativo' || session.user.role === 'super') { %>
+            <% if (session.user.role === 'administrativo' || session.user.role === 'super') { %>
                 <li class="nav-item <% if (activeTab === 3) { %> active <% } %>" data-toggle="tooltip" data-placement="right" title="Orders Search">
                     <a class="nav-link" href="/search"><i class="fa fa-fw fa-search"></i><span class="nav-link-text">Search</span></a>
                 </li>

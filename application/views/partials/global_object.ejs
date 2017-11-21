@@ -1,5 +1,6 @@
 <script type="text/javascript">
 	window.Qticket = {
+		session: <%- (typeof constants != "undefined" ? JSON.stringify(session.user) : "") %>,
 		constants: <%- (typeof constants != "undefined" ? JSON.stringify(constants) : "") %>,
 		getIOInstance: function(relativePath) {
 			return io.connect(window.Qticket.constants.basePath+relativePath);
@@ -12,7 +13,7 @@
 			}
 			$('.loading-overlay .cssload-message').html(message);
 		},
-		getUrlParam : function (param) {
+		getUrlParam: function (param) {
             var results = new RegExp('[\?&]' + param + '=([^&#]*)').exec(window.location.href);
             if (results === null){
                 return null;
@@ -20,5 +21,17 @@
                 return results[1] || 0;
             }
         },
+        throwAlert: function (text, type = 'error', timeout = 2000, layout = 'topRight') {
+        	if (text !== undefined) {
+        		new Noty({
+                    type: type,
+                    layout: layout,
+                    timeout: timeout,
+                    text: text
+                }).show();	
+        	} else {
+        		console.log('Unable to display Alert because text was\'nt defined');
+        	}
+        }
 	};
 </script>

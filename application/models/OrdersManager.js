@@ -17,6 +17,28 @@ class OrdersManager {
         sckId = 0;
     }
 
+    getDocumentFromArray (array, property, value, getIndex = false) {
+        if (array.constructor === Array) {
+            if (getIndex) {
+                return {document: array.filter(x => x[property] === value), index: array.findIndex(x => x[property] === value)};
+            }else {
+                return array.findIndex(x => x[property] === value);
+            }
+        } else {
+            console.log('[ERROR] variable provided is not array');
+            return false;
+        }
+    }
+
+    checkOrdersOnSocketDisconnect(socketID) {
+        for (let i in ordersObj.drafts) {
+            if (ordersObj.drafts[i].isBlocked !== undefined && ordersObj.drafts[i].isBlocked.socket === socketID) {
+                ordersObj.drafts[i].isBlocked = undefined;
+                ioOrders.emit('orderUnblocked', ordersObj.drafts[i].id);
+            }
+        }
+    }
+
     attachIOListeners() {
         //Dashboard Web Socket
         ioDashb.on('connection', function(socket) {
@@ -31,9 +53,33 @@ class OrdersManager {
         ioOrders.on('connection', function(socket){
             socket.emit('init', {sID: sckId, data: ordersObj.drafts});
 
-            socket.on('blockOrder', (orderID) => {
+            /*socket.on('blockOrder', (orderID) => {
                 //@TODO: Validation, DB save, then event
                 socket.emit('orderBlocked', orderID);
+            });*/
+
+            socket.on('blockOrder', function(data, returnFn) {
+                let serverData = self.getDocumentFromArray(ordersObj.drafts, 'id', data.orderID, true),
+                    index = serverData.index,
+                    order = serverData.document;
+
+                if (order.isBlocked === undefined) {
+                    ordersObj.drafts[index].isBlocked = {socket: socket.id, user: data.user};
+                    ioOrders.emit('orderBlocked', {orderID: data.orderID, user: data.user});
+                    returnFn(true);
+                
+                } else {
+                    returnFn(false);
+                }
+            });
+
+            socket.on('unblockOrder', function(orderID, returnFn) {
+                let serverData = self.getDocumentFromArray(ordersObj.drafts, 'id', orderID, true),
+                    index = serverData.index;
+
+                ordersObj.drafts[index].isBlocked = undefined;
+                returnFn(true);
+                ioOrders.emit('orderUnblocked', orderID);
             });
 
             socket.on('deleteOrder', (orderID) => {
@@ -43,9 +89,12 @@ class OrdersManager {
 
             socket.on('updateOrder', (orderInfo) => {
                 let changesObj = {'new': [], 'deleted':[]};
-
-                //ioOrders.emit('updateOrder', )
             });
+
+            socket.on('disconnect', () => {
+                self.checkOrdersOnSocketDisconnect(socket.id);
+            });
+
         });
     }
 
@@ -206,6 +255,7 @@ class OrdersManager {
 
         setInterval(() => {
             self.requestProcedure();
+            console.log(ordersObj);
         }, constants.appSettings.purchaseListRefreshTime);
     }
 }

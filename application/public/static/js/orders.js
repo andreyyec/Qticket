@@ -1,6 +1,6 @@
 $(function () {
     let self, sckId, csOrdersArray, currentRow = {}, currentOrderData = {}, override = true, actionEnabled = false,
-    socket = Qticket.getIOInstance('orders'), body = $('body'), disabledClass = 'disabled', selectedClass = 'selected', activeClass = 'active',
+    socket = Qticket.getIOInstance('orders'), body = $('body'), blockedClass = 'blocked', disabledClass = 'disabled', selectedClass = 'selected', activeClass = 'active',
     ordersContainer = body.find('.orders-screen'),
     orderDetailsContainer = body.find('.order-details-screen'),
     productsSection = orderDetailsContainer.find('.products-section'),
@@ -21,36 +21,14 @@ $(function () {
     qtyModifier = $(modifierButtons[2]),
     templates= {
         nOrderCard: '<div class="col-6 col-sm-4 col-md-3">\
-                        <div class="card card-primary card-inverse order-card" data-id="${id}" data-client-id="${client[0]}" data-client="${client[1]}" data-ticket="${ticket}">\
-                            <div class="card-header card-primary card-header">\
+                        <div class="card card-inverse order-card" data-id="${id}" data-client-id="${client[0]}" data-client="${client[1]}" data-ticket="${ticket}">\
+                            <div class="card-header card-header">\
                                 ${id}\
                             </div>\
                             <div class="card-block bg-white card-body">\
                                 <div class="ticket">{{if (ticket !== false)}}${ticket}{{else}}-{{/if}}</div>\
                                 <div class="client">${client[1]}</div>\
                             </div>\
-                        </div>\
-                    </div>',
-        orderCard: '<div class="col-xs-6 col-sm-4 col-md-3 order-card" orderid="${id}">\
-                        <div class="panel panel-primary">\
-                            <div class="panel-heading">\
-                                <div class="row">\
-                                    <div class="col-xs-3">\
-                                        <!-- <i class="fa fa-comments fa-5x"></i> -->\
-                                    </div>\
-                                    <div class="col-xs-9 text-right">\
-                                        <div class="huge">{{if (ticket !== false)}}${ticket}{{else}}-{{/if}}</div>\
-                                        <div>${id} - ${client[1]}</div>\
-                                    </div>\
-                                </div>\
-                            </div>\
-                            <a href="#">\
-                                <div class="panel-footer">\
-                                    <span class="pull-left">View Details</span>\
-                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>\
-                                    <div class="clearfix"></div>\
-                                </div>\
-                            </a>\
                         </div>\
                     </div>',
         orderCardContent:   '<div class="panel panel-primary">\
@@ -80,6 +58,118 @@ $(function () {
                         <div class="col-12 product-qty">Cantidad: <span class="bold qty">1</span></div>\
                     </div>\
                 </div>'
+    },socketManager = {
+        // => Base
+        checkSocketMsg: function(socketMsg) {
+            let sqID = sckId + 1 ;
+
+            if(socketMsg.sID === sckId){
+                return {status: true, data: socketMsg.data};
+            } else {
+                socket.emit('sync');
+                return {status: false};
+            }
+        },
+        // => Orders
+        checkIfBlocked: function(orderId) {
+            return new Promise((resolve, reject) => {
+                socket.emit('blockOrder', {orderID: orderId, user: {username: Qticket.session.username, name:Qticket.session.displayname}}, function(confirmation){
+                    resolve(confirmation);
+                });
+            });
+        },
+        // => View
+        updateOrdersView: function(changesList) {
+            if (changesList) {
+                if (changesList.added && changesList.added.length > 0) {    
+                    for (let key in changesList.added) {
+                        csOrdersArray.push(changesList.added[key]);
+                        $.tmpl(templates.nOrderCard, changesList.added[key]).appendTo( ".orders-screen" );
+                    }
+                }
+                if (changesList.updated && changesList.updated.length > 0) {
+                    for (let xKey in changesList.updated) {
+                        for (let yKey in csOrdersArray) {
+                            if (changesList.updated[xKey].id === csOrdersArray[yKey].id) {
+                                $.each(ordersContainer.find('.order-card'), function(index, element) {
+                                    if ($(element).attr('orderid') === csOrdersArray[yKey].id) {
+                                        $(element).empty();
+                                        $.tmpl(templates.orderCardContent, changesList.updated[xKey]).appendTo(element);
+                                    }
+                                });
+                                csOrdersArray[yKey] = changesList.updated[xKey]
+                            }
+                        }
+                    }
+                }
+                if (changesList.removed && changesList.removed.length > 0) {
+                    for (let xKey in changesList.removed) {
+                        for (let yKey in csOrdersArray) {
+                            if (changesList.removed[xKey] === csOrdersArray[yKey].id) {
+                                let index = csOrdersArray.indexOf(csOrdersArray[yKey]);
+
+                                $.each(ordersContainer.find('.order-card'), function(index, element) {
+                                    if ($(element).attr('orderid') === csOrdersArray[yKey].id) { element.remove();}
+                                });
+
+                                if (index > -1) { csOrdersArray.splice(index, 1);}
+                            }
+                        }
+                    }
+                }
+            }
+
+        },
+        initOrdersView: function(ordersArray) {
+            $.tmpl(templates.nOrderCard, ordersArray).appendTo( ".orders-screen .inner-container .orders-thumbs" );
+        },
+        // => Listeners
+        attachListeners: function() {
+            socket.on('connect', function() {
+                console.log('Web Socket connected as:' + socket);
+                console.log(socket);
+            });
+
+            socket.on('orderUpdate', function(counter){
+                //@TODO Update Single Order   
+            });
+
+            socket.on('orderBlocked', function(data) {
+                uiManager.toggleOrderBlocking(data.orderID, true, data.user.username);
+            });
+
+            socket.on('orderUnblocked', function(orderID) {
+                uiManager.toggleOrderBlocking(orderID, false);
+            });
+
+            socket.on('ordersUpdate', function(socketMsg){
+                //@TODO Check on Sequence check functionality
+                //dataSet = socketManager.checkSocketMsg(socketMsg);
+                dataSet = {status: true, data: socketMsg.data};
+                if (dataSet.status) {
+                    socketManager.updateOrdersView(dataSet.data);
+                }
+            });
+
+            socket.on('init', function(sckData) {
+                sckId = sckData.sID;
+                csOrdersArray = sckData.data;
+                socketManager.initOrdersView(sckData.data);
+            });
+
+            socket.on('connection',function(socket) {
+                `console.log('a user connected');`
+            });
+
+            socket.on('disconnect', function() {
+                //@TODO: Trigger reset data, screen, and spinner     when disconnected
+                console.log('disconnect functionality');
+            });
+        },
+        // => Init
+        init: function() {
+            socketManager.attachListeners();
+        }
     },
     uiManager = {
         toggleScreens: function() {
@@ -91,12 +181,40 @@ $(function () {
                 orderDetailsContainer.removeClass(activeClass);
             }
         },
+
+        toggleOrderBlocking: function(id, blockState = true, username = undefined) {
+            //if (username !== undefined && Qticket.session.username !== data.user.username) {
+                $.each(ordersContainer.find('.order-card'), function(index, element) {
+                    let target = $(element);
+                    if (target.data('id') === id) {
+                        target.toggleClass(blockedClass, blockState);
+                    }
+                });
+            //}
+        },
+        ordersUpdate: function() {
+            
+        },
         attachListeners: function() {
+
             ordersContainer.on('click', '.order-card', function(e) {
-                let target = $(e.currentTarget),
-                    data = {id:target.data('id'), order:target.data('ticket'), client: {id: target.data('client-id'),name: target.data('client')}};
-                uiDetailScreenManager.loadInfoData(data);
-                uiManager.toggleScreens();
+                let target = $(e.currentTarget);
+
+                if (!target.hasClass(blockedClass)) {
+                    let data = {id:target.data('id'), order:target.data('ticket'), client: {id: target.data('client-id'),name: target.data('client')}},
+                        orderAvailable = socketManager.checkIfBlocked(data.id);
+
+                    orderAvailable.then(function(orderAvailable){
+                        if (orderAvailable) {
+                            uiDetailScreenManager.loadInfoData(data);
+                            uiManager.toggleScreens();
+                        } else {
+                            Qticket.throwAlert('Order Blocked');
+                        };
+                    });
+                }else {
+                    Qticket.throwAlert('Order Blocked');
+                }
             });
         },
         init: function() {
@@ -323,90 +441,9 @@ $(function () {
         },
         init: function() {
             uiDetailScreenManager.attachListeners();
-        }
-    },
-    socketManager = {
-        checkSocketMsg: function(socketMsg) {
-            let sqID = sckId + 1 ;
-
-            if(socketMsg.sID === sckId){
-                return {status: true, data: socketMsg.data};
-            } else {
-                socket.emit('sync');
-                return {status: false};
-            }
-        },
-        updateOrdersView: function(changesList) {
-            if (changesList) {
-                if (changesList.added && changesList.added.length > 0) {    
-                    for (let key in changesList.added) {
-                        csOrdersArray.push(changesList.added[key]);
-                        $.tmpl(templates.nOrderCard, changesList.added[key]).appendTo( ".orders-screen" );
-                    }
-                }
-                if (changesList.updated && changesList.updated.length > 0) {
-                    for (let xKey in changesList.updated) {
-                        for (let yKey in csOrdersArray) {
-                            if (changesList.updated[xKey].id === csOrdersArray[yKey].id) {
-                                $.each(ordersContainer.find('.order-card'), function(index, element) {
-                                    if ($(element).attr('orderid') == csOrdersArray[yKey].id) {
-                                        $(element).empty();
-                                        $.tmpl(templates.orderCardContent, changesList.updated[xKey]).appendTo(element);
-                                    }
-                                });
-                                csOrdersArray[yKey] = changesList.updated[xKey]
-                            }
-                        }
-                    }
-                }
-                if (changesList.removed && changesList.removed.length > 0) {
-                    for (let xKey in changesList.removed) {
-                        for (let yKey in csOrdersArray) {
-                            if (changesList.removed[xKey] === csOrdersArray[yKey].id) {
-                                let index = csOrdersArray.indexOf(csOrdersArray[yKey]);
-
-                                $.each(ordersContainer.find('.order-card'), function(index, element) {
-                                    if ($(element).attr('orderid') == csOrdersArray[yKey].id) { element.remove();}
-                                });
-
-                                if (index > -1) { csOrdersArray.splice(index, 1);}
-                            }
-                        }
-                    }
-                }
-            }
-
-        },
-        initOrdersView: function(ordersArray) {
-            $.tmpl(templates.nOrderCard, ordersArray).appendTo( ".orders-screen .inner-container .orders-thumbs" );
-        },
-        attachListeners: function() {
-            socket.on('orderUpdate', function(counter){
-                //@TODO Update Single Order   
+            $(document).ready(function(){
+                $('[data-toggle="tooltip"]').tooltip();   
             });
-
-            socket.on('ordersUpdate', function(socketMsg){
-                //@TODO Check on Sequence check functionality
-                //dataSet = socketManager.checkSocketMsg(socketMsg);
-                dataSet = {status: true, data: socketMsg.data};
-                if (dataSet.status) {
-                    socketManager.updateOrdersView(dataSet.data);
-                }
-            });
-
-            socket.on('init', function(sckData) {
-                sckId = sckData.sID;
-                csOrdersArray = sckData.data;
-                socketManager.initOrdersView(sckData.data);
-            });
-
-            socket.on('disconnect', function() {
-                //@TODO: Trigger reset data, screen, and spinner     when disconnected
-                console.log('disconnect functionality');
-            });
-        },
-        init: function() {
-            socketManager.attachListeners();
         }
     }
     self = this;

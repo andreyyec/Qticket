@@ -171,6 +171,17 @@ body.loading .cssload-content {
   100% {
     -moz-transform: rotate(360deg); } }
 
+.order-card {
+  border-color: #0275d8; }
+  .order-card .card-header {
+    background-color: #0275d8;
+    border-color: #0275d8; }
+  .order-card.blocked {
+    border-color: #f0ad4e; }
+    .order-card.blocked .card-header {
+      background-color: #f0ad4e;
+      border-color: #f0ad4e; }
+
 .product-card {
   padding: 5px; }
   .product-card .product-card-inner {
