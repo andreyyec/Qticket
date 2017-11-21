@@ -107,7 +107,7 @@ class SessionManager {
 
     getProductsData(session) {
         return new Promise((resolve, reject) => {
-            let restServPath = '/rest/products/all/',
+            let restServPath = '/rest/products/qticket/',
                 opts = {
                     url : odooSettings.protocol+'://'+odooSettings.host+':'+odooSettings.port + restServPath,
                     method: 'GET',
@@ -132,6 +132,9 @@ class SessionManager {
                         sessionProductsArray.push(productObject);
                     }
 
+                    console.log('Products Array:');
+                    console.log(sessionProductsArray);
+                    
                     session.products = sessionProductsArray;
 
                     resolve();
