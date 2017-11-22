@@ -4,21 +4,14 @@ const 	mongoose = require('mongoose'),
 let OrderSchema = new Schema({
 	client: String,
 	notes: String,
-	orderLines: {
+	odooRef: String,
+	orderLines: [{
 		productName: String,
 		productQty: Number,
 		productPrice: Number
-	},
-	createdBy: {     
-	  type: mongoose.Schema.Types.ObjectId,
-	  ref: "User"
-	},
-	createdDate: {type: Date, default: Date.now},
-	lastModifiedBy: {     
-	  type: mongoose.Schema.Types.ObjectId,
-	  ref: "User"
-	},
-	lastModifiedDate: {type: Date, default: Date.now}
+	}],
+	activityLogs: [{user:String, body: String, date: Date}],
+	userDefinedState: String
 });
 
 module.exports = mongoose.model('Order', OrderSchema);

@@ -125,7 +125,6 @@ $(function () {
                     }
                 }
             }
-
         },
         initOrdersView: function(ordersArray) {
             $.tmpl(templates.nOrderCard, ordersArray).appendTo( ".orders-screen .inner-container .orders-thumbs" );
