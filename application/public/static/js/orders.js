@@ -71,9 +71,16 @@ $(function () {
             }
         },
         // => Orders
-        checkIfBlocked: function(orderId) {
+        blockOrder: function(orderId) {
             return new Promise((resolve, reject) => {
                 socket.emit('blockOrder', {orderID: orderId, user: {username: Qticket.session.username, name:Qticket.session.displayname}}, function(confirmation){
+                    resolve(confirmation);
+                });
+            });
+        },
+        unBlockOrder: function(orderId) {
+            return new Promise((resolve, reject) => {
+                socket.emit('unblockOrder', orderId, function(confirmation){
                     resolve(confirmation);
                 });
             });
@@ -126,45 +133,42 @@ $(function () {
         // => Listeners
         attachListeners: function() {
             socket.on('connect', function() {
-                console.log('Web Socket connected as:' + socket);
-                console.log(socket);
+                console.log('Web Socket connection established');
+
+                socket.on('orderBlocked', function(data) {
+                    uiManager.toggleOrderBlocking(data.orderID, true, data.user.username);
+                });
+
+                socket.on('orderUnblocked', function(orderID) {
+                    uiManager.toggleOrderBlocking(orderID, false);
+                });
+
+                socket.on('ordersUpdate', function(socketMsg){
+                    //@TODO Check on Sequence check functionality
+                    //dataSet = socketManager.checkSocketMsg(socketMsg);
+                    dataSet = {status: true, data: socketMsg.data};
+                    if (dataSet.status) {
+                        socketManager.updateOrdersView(dataSet.data);
+                    }
+                });
+
+                socket.on('orderUpdate', function(counter){
+                    //@TODO Update Single Order   
+                });
+
+                socket.on('init', function(sckData) {
+                    sckId = sckData.sID;
+                    csOrdersArray = sckData.data;
+                    socketManager.initOrdersView(sckData.data);
+                });
+
+                socket.on('disconnect', function() {
+                    //@TODO: Trigger reset data, screen, and spinner     when disconnected
+                    console.log('disconnect functionality');
+                });
             });
 
-            socket.on('orderUpdate', function(counter){
-                //@TODO Update Single Order   
-            });
-
-            socket.on('orderBlocked', function(data) {
-                uiManager.toggleOrderBlocking(data.orderID, true, data.user.username);
-            });
-
-            socket.on('orderUnblocked', function(orderID) {
-                uiManager.toggleOrderBlocking(orderID, false);
-            });
-
-            socket.on('ordersUpdate', function(socketMsg){
-                //@TODO Check on Sequence check functionality
-                //dataSet = socketManager.checkSocketMsg(socketMsg);
-                dataSet = {status: true, data: socketMsg.data};
-                if (dataSet.status) {
-                    socketManager.updateOrdersView(dataSet.data);
-                }
-            });
-
-            socket.on('init', function(sckData) {
-                sckId = sckData.sID;
-                csOrdersArray = sckData.data;
-                socketManager.initOrdersView(sckData.data);
-            });
-
-            socket.on('connection',function(socket) {
-                `console.log('a user connected');`
-            });
-
-            socket.on('disconnect', function() {
-                //@TODO: Trigger reset data, screen, and spinner     when disconnected
-                console.log('disconnect functionality');
-            });
+            
         },
         // => Init
         init: function() {
@@ -183,14 +187,12 @@ $(function () {
         },
 
         toggleOrderBlocking: function(id, blockState = true, username = undefined) {
-            //if (username !== undefined && Qticket.session.username !== data.user.username) {
-                $.each(ordersContainer.find('.order-card'), function(index, element) {
-                    let target = $(element);
-                    if (target.data('id') === id) {
-                        target.toggleClass(blockedClass, blockState);
-                    }
-                });
-            //}
+            $.each(ordersContainer.find('.order-card'), function(index, element) {
+                let target = $(element);
+                if (target.data('id') === id) {
+                    target.toggleClass(blockedClass, blockState);
+                }
+            });
         },
         ordersUpdate: function() {
             
@@ -202,10 +204,11 @@ $(function () {
 
                 if (!target.hasClass(blockedClass)) {
                     let data = {id:target.data('id'), order:target.data('ticket'), client: {id: target.data('client-id'),name: target.data('client')}},
-                        orderAvailable = socketManager.checkIfBlocked(data.id);
+                        orderAvailable = socketManager.blockOrder(data.id);
 
                     orderAvailable.then(function(orderAvailable){
                         if (orderAvailable) {
+
                             uiDetailScreenManager.loadInfoData(data);
                             uiManager.toggleScreens();
                         } else {
@@ -376,8 +379,17 @@ $(function () {
             });
 
             cancelButton.on('click', function(e) {
-                uiDetailScreenManager.cleanDetailUI();
-                uiManager.toggleScreens();
+                    let orderUnblocking = socketManager.unBlockOrder(currentOrderData.id);
+                    
+                    orderUnblocking.then(function(confirmation){
+                        if (confirmation) {
+                            uiDetailScreenManager.cleanDetailUI();
+                            uiManager.toggleScreens();
+                        } else {
+                            Qticket.throwAlert('Error while unlocking order');
+                            location.reload();
+                        };
+                    });
             });
 
             saveButton.on('click', function(e) {

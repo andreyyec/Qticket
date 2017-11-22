@@ -1,6 +1,7 @@
 const constants = {
 	public: {
 		protocol: 'http',
+		//hostname: '[Desired Base IP]]:3000',
 		hostname: 'localhost:3000',
 		basePath: function(){this.basePath = this.protocol+'://'+this.hostname+'/'}
 	},
