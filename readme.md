@@ -6,7 +6,7 @@
 3) Working on save/done events
 4) Add order status evaluation when rendering the page
 5) Add filter to send back only the products meant to be on Qticket
-6) Start working on order data saving using mongoose
+6) Start working on order data saving using mongoose (Updated mongoose model, required gathering logs funcionality)
 
 
 
