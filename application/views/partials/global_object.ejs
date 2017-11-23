@@ -5,6 +5,9 @@
 		getIOInstance: function(relativePath) {
 			return io.connect(window.Qticket.constants.basePath+relativePath);
 		},
+        isLoadingActive: function() {
+            return ($('body').hasClass('loading')) ? true : false;
+        },
 		toggleLoadScreen: function(activate, message = 'Loading...'){
 			if (activate) {
 				$('body').addClass('loading');

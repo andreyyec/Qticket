@@ -131,47 +131,51 @@ $(function () {
         },
         // => Listeners
         attachListeners: function() {
-            socket.on('connect', function() {
-                console.log('Web Socket connection established');
+            console.log('Web Socket connection established');
 
-                socket.on('orderBlocked', function(data) {
-                    uiManager.toggleOrderBlocking(data.orderID, true, data.user.username);
-                });
-
-                socket.on('orderUnblocked', function(orderID) {
-                    uiManager.toggleOrderBlocking(orderID, false);
-                });
-
-                socket.on('ordersUpdate', function(socketMsg){
-                    //@TODO Check on Sequence check functionality
-                    //dataSet = socketManager.checkSocketMsg(socketMsg);
-                    dataSet = {status: true, data: socketMsg.data};
-                    if (dataSet.status) {
-                        socketManager.updateOrdersView(dataSet.data);
-                    }
-                });
-
-                socket.on('orderUpdate', function(counter){
-                    //@TODO Update Single Order   
-                });
-
-                socket.on('init', function(sckData) {
-                    sckId = sckData.sID;
-                    csOrdersArray = sckData.data;
-                    socketManager.initOrdersView(sckData.data);
-                });
-
-                socket.on('disconnect', function() {
-                    //@TODO: Trigger reset data, screen, and spinner     when disconnected
-                    console.log('disconnect functionality');
-                });
+            socket.on('orderBlocked', function(data) {
+                uiManager.toggleOrderBlocking(data.orderID, true, data.user.username);
             });
 
-            
+            socket.on('orderUnblocked', function(orderID) {
+                uiManager.toggleOrderBlocking(orderID, false);
+            });
+
+            socket.on('ordersUpdate', function(socketMsg){
+                //@TODO Check on Sequence check functionality
+                //dataSet = socketManager.checkSocketMsg(socketMsg);
+                dataSet = {status: true, data: socketMsg.data};
+                if (dataSet.status) {
+                    socketManager.updateOrdersView(dataSet.data);
+                }
+            });
+
+            socket.on('orderUpdate', function(counter){
+                //@TODO Update Single Order   
+            });
+
+            socket.on('init', function(sckData) {
+                sckId = sckData.sID;
+                csOrdersArray = sckData.data;
+                socketManager.initOrdersView(sckData.data);
+            });
+
+            socket.on('disconnect', function() {
+                Qticket.toggleLoadScreen(true);
+            });            
+        },
+        socketConnect: function(){
+            socket.on('connect', function() {
+                if (!Qticket.isLoadingActive()) {
+                    socketManager.attachListeners();
+                }else {
+                    location.reload();
+                }
+            });
         },
         // => Init
         init: function() {
-            socketManager.attachListeners();
+            socketManager.socketConnect();
         }
     },
     uiManager = {
