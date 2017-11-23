@@ -10,7 +10,15 @@ let OrderSchema = new Schema({
 		productQty: Number,
 		productPrice: Number
 	}],
-	activityLogs: [{user:String, body: String, date: Date}],
+	activityRegistry: [{
+		user:String, 
+		date: Date, 
+		activityLogs: [{
+			product:String,
+			action:String,
+			info: String
+		}],
+	}],
 	userDefinedState: String
 });
 

@@ -19,6 +19,7 @@ $(function () {
     removeModifier = $(modifierButtons[0]),
     priceModifier = $(modifierButtons[1]),
     qtyModifier = $(modifierButtons[2]),
+    //===> Templates Object
     templates= {
         nOrderCard: '<div class="col-6 col-sm-4 col-md-3">\
                         <div class="card card-inverse order-card" data-id="${id}" data-client-id="${client[0]}" data-client="${client[1]}" data-ticket="${ticket}">\
@@ -58,8 +59,9 @@ $(function () {
                         <div class="col-12 product-qty">Cantidad: <span class="bold qty">1</span></div>\
                     </div>\
                 </div>'
-    },socketManager = {
-        // => Base
+    },
+    //===> Socket Manager
+    socketManager = {
         checkSocketMsg: function(socketMsg) {
             let sqID = sckId + 1 ;
 
@@ -70,7 +72,6 @@ $(function () {
                 return {status: false};
             }
         },
-        // => Orders
         blockOrder: function(orderId) {
             return new Promise((resolve, reject) => {
                 socket.emit('blockOrder', {orderID: orderId, user: {username: Qticket.session.username, name:Qticket.session.displayname}}, function(confirmation){
@@ -85,7 +86,6 @@ $(function () {
                 });
             });
         },
-        // => View
         updateOrdersView: function(changesList) {
             if (changesList) {
                 if (changesList.added && changesList.added.length > 0) {    
@@ -129,7 +129,6 @@ $(function () {
         initOrdersView: function(ordersArray) {
             $.tmpl(templates.nOrderCard, ordersArray).appendTo( ".orders-screen .inner-container .orders-thumbs" );
         },
-        // => Listeners
         attachListeners: function() {
             console.log('Web Socket connection established');
 
@@ -178,6 +177,7 @@ $(function () {
             socketManager.socketConnect();
         }
     },
+    //===> UI Manager
     uiManager = {
         toggleScreens: function() {
             if (ordersContainer.hasClass(activeClass)) {
@@ -227,6 +227,7 @@ $(function () {
             uiManager.attachListeners();
         }
     },
+    //===> Detail Screen Manager
     uiDetailScreenManager = {
         toggleTabs: function() {
             if ($(mobileTabs[0]).hasClass(activeClass)) {
