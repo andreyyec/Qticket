@@ -2,7 +2,7 @@ const   constants = require('../config/constants'),
         Mongoose = require('mongoose'),
         db = Mongoose.connection,
         moduleModel = require(constants.paths.dbModels+'ModuleModel'),
-        userModel = require(constants.paths.dbModels+'UserModel');
+        orderModel = require(constants.paths.dbModels+'OrderModel');
 
 let self;
 
@@ -21,8 +21,38 @@ class DBManager {
         });
     }
 
-    exampleGetUser(uname, pswd) {
-        return userModel.findOne({username: uname, password:pswd}, (err,obj) => { 
+    saveOrder(nOrderData, oID) {
+        return new Promise((resolve, reject) => { 
+            let result, order = new orderModel(nOrderData);
+
+            console.log('order');
+            console.log(order);
+            console.log('nOrderData');
+            console.log(nOrderData);
+
+            if (oID === undefined) {
+                order.save((err) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(true);
+                    }
+                });
+            } else {
+                /*let query = {odooOrderRef: nOrderData.odooOrderRef};
+
+                order.findOneAndUpdate(query, nOrderData, (err)=> {
+                    result = (err) ? true : false;
+                    console.log('Error while trying to save in the database');
+                    console.log(err);
+                });*/
+                console.log('on update event');
+            }
+        });
+    }
+
+    exampleGetOrder(id) {
+        return orderModel.findOne({id: id}, (err,obj) => { 
             console.log(obj);
             if (err) {
                 return {status: 'error'};
@@ -54,42 +84,6 @@ class DBManager {
                 console.log(data);
             }
         });
-    }
-
-    //===> Get all records methods
-
-    getModules() {
-
-    }
-
-    getUsers() {
-
-    }
-
-    getRoles() {
-
-    }
-
-    getOrders() {
-
-    }
-
-    //===> Save record methods
-
-    saveModule() {
-
-    }
-
-    saveOrder() {
-
-    }
-
-    saveRole() {
-
-    }
-
-    saveUser() {
-
     }
 }
 

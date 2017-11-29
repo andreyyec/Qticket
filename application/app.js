@@ -47,7 +47,7 @@ app.use(session({
 
     authProcess.then((loginData) => {
         if (loginData && loginData.session_id) {
-            ordersManager = new ordersMng(loginData, io.of('/orders'), io.of('/dashboard'));
+            ordersManager = new ordersMng(loginData, dbManager,io.of('/orders'), io.of('/dashboard'));
             ordersManager.initLoop();
         }else {
             console.log('Error while trying to access global data');

@@ -1,14 +1,9 @@
 const 	constants = require('./constants'),
 	 	sessMng = require(constants.paths.models + 'SessionManager'),
-        ordersMng = require(constants.paths.models + 'OrdersManager'),
         express = require('express'),
         router = express.Router();
 
-let sessionData, ordersManager, 
-    sessionManager = new sessMng();
-
-// ====> Rest EndPoints
-
+let sessionData, sessionManager = new sessMng();
 
 // ====> Session Routes
 

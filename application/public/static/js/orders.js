@@ -62,7 +62,7 @@ $(function () {
     },
     //===> Socket Manager
     socketManager = {
-        checkSocketMsg: function(socketMsg) {
+        checkSocketMsg: (socketMsg) => {
             let sqID = sckId + 1 ;
 
             if(socketMsg.sID === sckId){
@@ -72,21 +72,26 @@ $(function () {
                 return {status: false};
             }
         },
-        blockOrder: function(orderId) {
+        blockOrder: (orderId) => {
             return new Promise((resolve, reject) => {
-                socket.emit('blockOrder', {orderID: orderId, user: {username: Qticket.session.username, name:Qticket.session.displayname}}, function(confirmation){
+                socket.emit('blockOrder', {orderID: orderId, user: {username: Qticket.session.username, name:Qticket.session.displayname}}, (confirmation) => {
                     resolve(confirmation);
                 });
             });
         },
-        unBlockOrder: function(orderId) {
+        unBlockOrder: (orderId) => {
             return new Promise((resolve, reject) => {
-                socket.emit('unblockOrder', orderId, function(confirmation){
+                socket.emit('unblockOrder', orderId, (confirmation) => {
                     resolve(confirmation);
                 });
             });
         },
-        updateOrdersView: function(changesList) {
+        updateOrder: (orderData) => {
+            socket.emit('updateOrder', orderData, (confirmation) => {
+                resolve(confirmation);
+            });
+        },
+        updateOrdersView: (changesList) => {
             if (changesList) {
                 if (changesList.added && changesList.added.length > 0) {    
                     for (let key in changesList.added) {
@@ -98,7 +103,7 @@ $(function () {
                     for (let xKey in changesList.updated) {
                         for (let yKey in csOrdersArray) {
                             if (changesList.updated[xKey].id === csOrdersArray[yKey].id) {
-                                $.each(ordersContainer.find('.order-card'), function(index, element) {
+                                $.each(ordersContainer.find('.order-card'), (index, element) => {
                                     if ($(element).attr('orderid') === csOrdersArray[yKey].id) {
                                         $(element).empty();
                                         $.tmpl(templates.orderCardContent, changesList.updated[xKey]).appendTo(element);
@@ -115,7 +120,7 @@ $(function () {
                             if (changesList.removed[xKey] === csOrdersArray[yKey].id) {
                                 let index = csOrdersArray.indexOf(csOrdersArray[yKey]);
 
-                                $.each(ordersContainer.find('.order-card'), function(index, element) {
+                                $.each(ordersContainer.find('.order-card'), (index, element) => {
                                     if ($(element).attr('orderid') === csOrdersArray[yKey].id) { element.remove();}
                                 });
 
@@ -126,21 +131,21 @@ $(function () {
                 }
             }
         },
-        initOrdersView: function(ordersArray) {
+        initOrdersView: (ordersArray) => {
             $.tmpl(templates.nOrderCard, ordersArray).appendTo( ".orders-screen .inner-container .orders-thumbs" );
         },
-        attachListeners: function() {
+        attachListeners: () => {
             console.log('Web Socket connection established');
 
-            socket.on('orderBlocked', function(data) {
+            socket.on('orderBlocked', (data) => {
                 uiManager.toggleOrderBlocking(data.orderID, true, data.user.username);
             });
 
-            socket.on('orderUnblocked', function(orderID) {
+            socket.on('orderUnblocked', (orderID) => {
                 uiManager.toggleOrderBlocking(orderID, false);
             });
 
-            socket.on('ordersUpdate', function(socketMsg){
+            socket.on('ordersUpdate', (socketMsg) => {
                 //@TODO Check on Sequence check functionality
                 //dataSet = socketManager.checkSocketMsg(socketMsg);
                 dataSet = {status: true, data: socketMsg.data};
@@ -149,22 +154,22 @@ $(function () {
                 }
             });
 
-            socket.on('orderUpdate', function(counter){
+            socket.on('orderUpdate', (counter) => {
                 //@TODO Update Single Order   
             });
 
-            socket.on('init', function(sckData) {
+            socket.on('init', (sckData) => {
                 sckId = sckData.sID;
                 csOrdersArray = sckData.data;
                 socketManager.initOrdersView(sckData.data);
             });
 
-            socket.on('disconnect', function() {
+            socket.on('disconnect', () => {
                 Qticket.toggleLoadScreen(true);
             });            
         },
-        socketConnect: function(){
-            socket.on('connect', function() {
+        socketConnect: () => {
+            socket.on('connect', () => {
                 if (!Qticket.isLoadingActive()) {
                     socketManager.attachListeners();
                 }else {
@@ -173,13 +178,13 @@ $(function () {
             });
         },
         // => Init
-        init: function() {
+        init: () => {
             socketManager.socketConnect();
         }
     },
     //===> UI Manager
     uiManager = {
-        toggleScreens: function() {
+        toggleScreens: () => {
             if (ordersContainer.hasClass(activeClass)) {
                 ordersContainer.removeClass(activeClass);
                 orderDetailsContainer.addClass(activeClass);
@@ -189,29 +194,27 @@ $(function () {
             }
         },
 
-        toggleOrderBlocking: function(id, blockState = true, username = undefined) {
-            $.each(ordersContainer.find('.order-card'), function(index, element) {
+        toggleOrderBlocking: (id, blockState = true, username = undefined) => {
+            $.each(ordersContainer.find('.order-card'), (index, element) => {
                 let target = $(element);
                 if (target.data('id') === id) {
                     target.toggleClass(blockedClass, blockState);
                 }
             });
         },
-        ordersUpdate: function() {
+        ordersUpdate: () => {
             
         },
-        attachListeners: function() {
-
-            ordersContainer.on('click', '.order-card', function(e) {
+        attachListeners: () => {
+            ordersContainer.on('click', '.order-card', (e) => {
                 let target = $(e.currentTarget);
 
                 if (!target.hasClass(blockedClass)) {
-                    let data = {id:target.data('id'), order:target.data('ticket'), client: {id: target.data('client-id'),name: target.data('client')}},
+                    let data = {id:target.data('id'), order:target.data('ticketNumber'), client: {id: target.data('client-id'),name: target.data('client')}},
                         orderAvailable = socketManager.blockOrder(data.id);
 
-                    orderAvailable.then(function(orderAvailable){
-                        if (orderAvailable) {
-
+                    orderAvailable.then((orderData) => {
+                        if (orderData.orderAvailable) {
                             uiDetailScreenManager.loadInfoData(data);
                             uiManager.toggleScreens();
                         } else {
@@ -223,13 +226,59 @@ $(function () {
                 }
             });
         },
-        init: function() {
+        init: () => {
             uiManager.attachListeners();
         }
     },
     //===> Detail Screen Manager
     uiDetailScreenManager = {
-        toggleTabs: function() {
+        sendOrderData: (data) => {
+            return new Promise((resolve, reject) => {
+                socket.emit('updateOrder', data, (confirmation) => {
+                    resolve(confirmation);
+                });
+            });
+        },
+        getOrderProductsArray: () => {
+            let orderRows = oDProductsList.find('.order-row'),
+                orderRowsArray = [];
+
+                $.each(orderRows, (index, element) => {
+                    let row = $(element);
+
+                    orderRowsArray.push({
+                        productName: row.find('.product-name').html(),
+                        productQty: row.find('.product-price .price').html(),
+                        productPrice: row.find('.product-qty .qty').html()
+                    });
+                });
+
+            return orderRowsArray;
+        },
+        gatherOrderStoredData: (ordState) => {
+            let orderRowsInfo = uiDetailScreenManager.getOrderProductsArray(),
+                orderDataObj = {
+                    orderState: ordState,
+                    odooOrderRef: currentOrderData.id,
+                    ticketNumber: currentOrderData.order,
+                    client: {
+                        id: currentOrderData.client.id, 
+                        name: currentOrderData.client.name
+                    },
+                    productRows: orderRowsInfo,
+                    activityLog: [{
+                        user: {
+                            odooUserId: Qticket.session.uid,
+                            username: Qticket.session.username
+                        },
+                        date: new Date(), 
+                        changeLogs: []
+                    }]
+                }
+
+            return orderDataObj;
+        },
+        toggleTabs: () => {
             if ($(mobileTabs[0]).hasClass(activeClass)) {
                 $(mobileTabs[0]).removeClass(activeClass);
                 $(mobileSections[0]).removeClass(activeClass);
@@ -242,29 +291,29 @@ $(function () {
                 $(mobileSections[1]).removeClass(activeClass);
             }
         },
-        loadInfoData: function(data) {
+        loadInfoData: (data) => {
             currentOrderData = data;
             clientInfoBar.html(data.client.name);
         },
-        resetActionButtons: function() {
+        resetActionButtons: () => {
             removeModifier.removeClass(disabledClass);
             priceModifier.addClass(disabledClass);
             qtyModifier.removeClass(disabledClass);
         },
-        enableActionButtons: function() {
+        enableActionButtons: () => {
             actionEnabled = true;
             override = true;
             uiDetailScreenManager.resetActionButtons();
         },
-        disableActionButtons: function() {
+        disableActionButtons: () => {
             modifierButtons.addClass(disabledClass);
             writeQueue = '';
             actionEnabled = false;
         },
-        getActiveAction: function() {
+        getActiveAction: () => {
             return (!priceModifier.hasClass(disabledClass)) ? 'price' : 'qty';
         },
-        cleanDetailUI: function() {
+        cleanDetailUI: () => {
             productCards.removeClass(selectedClass);
             uiDetailScreenManager.disableActionButtons;
             clientInfoBar.html('');
@@ -272,7 +321,7 @@ $(function () {
             currentOrderData = {};
             oDProductsList.empty();
         },
-        addRow: function(card) {
+        addRow: (card) => {
             if (currentRow.element === undefined || uiDetailScreenManager.currentRowValid()) {
                 let nRowInfo = {id: card.attr('data-id'),
                         product: card.attr('data-name'),
@@ -283,15 +332,13 @@ $(function () {
                 card.addClass(selectedClass);
             }
         },
-        removeRow: function() {
+        removeRow: () => {
             productsSection.find('.product-card[data-id='+currentRow.element.attr('data-id')+']').removeClass(selectedClass);
             currentRow.element.remove();
             currentRow = {};
             uiDetailScreenManager.disableActionButtons();
-            // Clean UI Test @ToRemove
-            //uiDetailScreenManager.cleanDetailUI();
         },
-        validValue: function(value, field) {
+        validValue: (value, field) => {
             if(value !== 0) {
                 return true;
             } else {
@@ -304,7 +351,7 @@ $(function () {
                 return false;
             }
         },
-        currentRowValid: function() {
+        currentRowValid: () => {
             let floatPrice = parseFloat(currentRow.price.html()),
                 floatQty = parseFloat(currentRow.qty.html());
 
@@ -313,7 +360,7 @@ $(function () {
 
             return (uiDetailScreenManager.validValue(floatPrice, 'precio') && uiDetailScreenManager.validValue(floatQty, 'cantidad')) ? true : false;
         },
-        validateUserInput: function(nValue, element) {
+        validateUserInput: (nValue, element) => {
             if (override) {
                 if (nValue === '.') {
                     element.html('0.');
@@ -374,18 +421,18 @@ $(function () {
                 uiDetailScreenManager.enableActionButtons();
             }
         },
-        attachListeners: function() {
-            mobileTabs.on('click', function(e) {
+        attachListeners: () => {
+            mobileTabs.on('click', (e) => {
                 e.preventDefault();
                 if (!$(e.currentTarget).hasClass(activeClass)) {
                     uiDetailScreenManager.toggleTabs();    
                 }
             });
 
-            cancelButton.on('click', function(e) {
+            cancelButton.on('click', (e) => {
                     let orderUnblocking = socketManager.unBlockOrder(currentOrderData.id);
                     
-                    orderUnblocking.then(function(confirmation){
+                    orderUnblocking.then((confirmation) => {
                         if (confirmation) {
                             uiDetailScreenManager.cleanDetailUI();
                             uiManager.toggleScreens();
@@ -396,11 +443,16 @@ $(function () {
                     });
             });
 
-            saveButton.on('click', function(e) {
-                console.log('save Event');
+            saveButton.on('click', (e) => {
+                let sendOrderPrms = uiDetailScreenManager.sendOrderData(uiDetailScreenManager.gatherOrderStoredData());
+
+                sendOrderPrms.then((confirmation)=>{
+                    console.log('Promise Confirmation');
+                    console.log(confirmation);
+                });
             });
 
-            removeModifier.on('click', function(e) {
+            removeModifier.on('click', (e) => {
                 if (actionEnabled) {
                     if (uiDetailScreenManager.getActiveAction() === 'price') {
                         uiDetailScreenManager.validateUserDelete(currentRow.price);
@@ -410,7 +462,7 @@ $(function () {
                 }
             });
 
-            priceModifier.on('click', function(e) {
+            priceModifier.on('click', (e) => {
                 if (actionEnabled) {
                     override = true;
                     if (uiDetailScreenManager.getActiveAction() === 'qty') {
@@ -420,7 +472,7 @@ $(function () {
                 }
             });
 
-            qtyModifier.on('click', function(e) {
+            qtyModifier.on('click', (e) => {
                 if (actionEnabled) {
                     override = true;
                     if (uiDetailScreenManager.getActiveAction() === 'price') {
@@ -430,7 +482,7 @@ $(function () {
                 }
             });
 
-            keyButtons.on('click', function(e) {
+            keyButtons.on('click', (e) => {
                 if (actionEnabled && currentRow.element !== undefined) {
                     let target = $(e.currentTarget);
 
@@ -442,22 +494,22 @@ $(function () {
                 }
             });
 
-            oDProductsList.on('click', '.order-row', function(e) {
+            oDProductsList.on('click', '.order-row', (e) => {
                 if (currentRow.element.attr('data-id') !== $(e.currentTarget).attr('data-id')) {
                     uiDetailScreenManager.updateCurrentRow($(e.currentTarget));
                 }
             });
 
-            productCards.on('click', function(e) {
+            productCards.on('click', (e) => {
                 let card = $(e.currentTarget);
                 if (!card.hasClass(selectedClass)) {
                     uiDetailScreenManager.addRow(card);
                 }
             });
         },
-        init: function() {
+        init: () => {
             uiDetailScreenManager.attachListeners();
-            $(document).ready(function(){
+            $(document).ready(() => {
                 $('[data-toggle="tooltip"]').tooltip();   
             });
         }

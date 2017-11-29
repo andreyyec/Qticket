@@ -2,24 +2,31 @@ const 	mongoose = require('mongoose'),
 		Schema = mongoose.Schema;
 
 let OrderSchema = new Schema({
-	client: String,
-	notes: String,
-	odooRef: String,
-	orderLines: [{
+	orderState: String,
+	odooOrderRef: String,
+	ticketNumber: Number,
+	client: {
+		id: String, 
+		name: String
+	},
+	productRows: [{
 		productName: String,
 		productQty: Number,
 		productPrice: Number
 	}],
-	activityRegistry: [{
-		user:String, 
+	activityRows: [{
+		user: {
+			uid: Number,
+			username: String,
+		}, 
 		date: Date, 
 		activityLogs: [{
 			product:String,
 			action:String,
-			info: String
+			qty: Number,
+            price: Number
 		}],
-	}],
-	userDefinedState: String
+	}]
 });
 
 module.exports = mongoose.model('Order', OrderSchema);

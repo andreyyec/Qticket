@@ -1,16 +1,16 @@
 const   constants = require('../config/constants'),
         odooSettings = constants.odooParams,
-        dbMng = require(constants.paths.models + 'DBManager'),
         http = require('http'),
         request = require('request');
 
-let self, ioOrders, ioDashb, ioDashboardInstance, cookie, sckId, 
+let self, ioOrders, ioDashb, ioDashboardInstance, dbInstance, cookie, sckId, 
     ordersObj = {'drafts': [], 'approved': [], 'confirmed': []};
 
 class OrdersManager {
 
-    constructor(session, ioOrdersInstance, ioDashbInstance) {
+    constructor(session, dbInst, ioOrdersInstance, ioDashbInstance) {
         self = this;
+        dbInstance = dbInst;
         ioOrders = ioOrdersInstance;
         ioDashb = ioDashbInstance;
         cookie = request.cookie('session_id='+session.session_id);
@@ -30,6 +30,44 @@ class OrdersManager {
         }
     }
 
+    generateOrderActivityLogs(nOrderD, sOrderD) {
+        let activityLogs = [];
+
+        if(sOrderD.orderDBData === undefined) {
+            for(let index in nOrderD.productRows) {
+                let productObj = nOrderD.productRows[index];
+                activityLogs.push({product:productObj.productName, action:'added', qty:productObj.productQty, price:productObj.productPrice});
+            } 
+        } else {
+            /*for(let index in nOrderD.productRows) {
+                let activityArray
+            }    */
+            console.log('[DEBUG]=>Compare to old previous order');
+        }
+        return activityLogs;
+    }
+
+    saveOrderOnDB(orderData) {
+        return new Promise((resolve, reject) => {
+
+            let dbSaveProcess = dbInstance.saveOrder(orderData);
+
+            dbSaveProcess.then((result) => {
+                console.log('Save Order Result');
+                console.log(result);
+
+                if (result) {
+                    resolve(true);
+                } else {
+                    reject();
+                }
+            }).catch((err)=> {
+                console.log('Error while trying to save into the DB');
+                console.log(err);
+            });
+        });
+    }
+
     checkOrdersOnSocketDisconnect(socketID) {
         for (let i in ordersObj.drafts) {
             if (ordersObj.drafts[i].isBlocked !== undefined && ordersObj.drafts[i].isBlocked.socket === socketID) {
@@ -41,24 +79,19 @@ class OrdersManager {
 
     attachIOListeners() {
         //Dashboard Web Socket
-        ioDashb.on('connection', function(socket) {
+        ioDashb.on('connection', (socket) => {
             socket.emit('connect');
 
-            socket.on('request', function(data) {
+            socket.on('request', (data) => {
                 socket.emit('data', self.enhancedDashboardUpdateList(ordersObj));
             });
         });
 
         //Orders Web Socket
-        ioOrders.on('connection', function(socket){
+        ioOrders.on('connection', (socket) => {
             socket.emit('init', {sID: sckId, data: ordersObj.drafts});
 
-            /*socket.on('blockOrder', (orderID) => {
-                //@TODO: Validation, DB save, then event
-                socket.emit('orderBlocked', orderID);
-            });*/
-
-            socket.on('blockOrder', function(data, returnFn) {
+            socket.on('blockOrder', (data, returnFn) => {
                 let serverData = self.getDocumentFromArray(ordersObj.drafts, 'id', data.orderID, true),
                     index = serverData.index,
                     order = serverData.document;
@@ -66,14 +99,14 @@ class OrdersManager {
                 if (order.isBlocked === undefined) {
                     ordersObj.drafts[index].isBlocked = {socket: socket.id, user: data.user};
                     ioOrders.emit('orderBlocked', {orderID: data.orderID, user: data.user});
-                    returnFn(true);
+                    returnFn({order: order, orderAvailable: true});
                 
                 } else {
-                    returnFn(false);
+                    returnFn({orderAvailable: false});
                 }
             });
 
-            socket.on('unblockOrder', function(orderID, returnFn) {
+            socket.on('unblockOrder', (orderID, returnFn) => {
                 let serverData = self.getDocumentFromArray(ordersObj.drafts, 'id', orderID, true),
                     index = serverData.index;
 
@@ -87,8 +120,29 @@ class OrdersManager {
                 socket.emit('deleteOrderEvent', orderID);
             });
 
-            socket.on('updateOrder', (orderInfo) => {
-                let changesObj = {'new': [], 'deleted':[]};
+            socket.on('updateOrder', (nOrder, returnFn) => {
+                let serverData = self.getDocumentFromArray(ordersObj.drafts, 'id', nOrder.odooOrderRef, true),
+                    sOrderIndex = serverData.index,
+                    sOrder = serverData.document;
+
+                nOrder.activityLog[0].changeLogs = self.generateOrderActivityLogs(nOrder, sOrder, sOrderIndex);
+
+                let savePromise = self.saveOrderOnDB(nOrder);
+
+                savePromise.then((result) => {
+                    if(result) {
+                        ordersObj.drafts[sOrderIndex] = nOrder;
+                        //Save data stored into the DB, to the inMemoryOrdersObject
+                        //Trigger Update event over IO
+                        //Handle correct execution on orders.js
+                        returnFn(true);
+                    } else {
+                        returnFn(false);
+                    }
+                }).catch((err)=> {
+                    console.log('Error while trying to save into the DB');
+                    console.log(err);
+                });
             });
 
             socket.on('disconnect', () => {
@@ -169,8 +223,8 @@ class OrdersManager {
             eChangesList.orders.push({id: oObj.confirmed[obj].id, client: oObj.confirmed[obj].client, ticket: oObj.confirmed[obj].ticket});
         }
 
-        eChangesList.drafts.sort(function(x, y){ return x.last_update - y.last_update;});
-        eChangesList.orders.sort(function(x, y){ return x.last_update - y.last_update;});
+        eChangesList.drafts.sort((x, y) => { return x.last_update - y.last_update;});
+        eChangesList.orders.sort((x, y) => { return x.last_update - y.last_update;});
 
         return eChangesList;
     }
