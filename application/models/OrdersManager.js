@@ -39,35 +39,11 @@ class OrdersManager {
         }
     }
 
-    //Move only required data from front-end and process in server
-    /*gatherToStoreOrderData(ordState, firstTimeSave = false) {
-        let orderDataObj, orderRowsInfo = uiDetailScreenManager.getOrderProductsArray();
+    saveOrderOnDB(orderData) {
+        if (order) {}
 
-        if (currentOrderData.orderDBData !== undefined) {
-            currentOrderData.orderRowsInfo
-        } else {
-            orderDataObj = {
-                orderState: ordState,
-                odooOrderRef: currentOrderData.id,
-                ticketNumber: currentOrderData.order,
-                client: {
-                    id: currentOrderData.client[0], 
-                    name: currentOrderData.client[1]
-                },
-                productRows: orderRowsInfo,
-                activityLog: [{
-                    user: {
-                        odooUserId: Qticket.session.uid,
-                        username: Qticket.session.username
-                    },
-                    date: new Date(), 
-                    changeLogs: []
-                }]
-            }
-        }
-
-        return orderDataObj;
-    }*/
+        return dbInstance.saveOrder(orderData);
+    }
 
     generateOrderActivityLogs(nOrderD, sOrderD) {
         let activityLogs = [];
@@ -86,12 +62,86 @@ class OrdersManager {
 
             console.log('[DEBUG]=>Compare to old previous order');
         }
+
+
         return activityLogs;
     }
 
-    saveOrderOnDB(orderData) {
-        return dbInstance.saveOrder(orderData);
+    //Move only required data from front-end and process in server
+    gatherToStoreOrderData(nOrderD, sOrderD) {
+        let nOrderLogs = self.generateOrderActivityLogs(nOrderD, sOrderD);
+
+        if (sOrderD.orderDBData) {
+            return {
+                orderState: nOrderD.orderState,
+                productRows: nOrderD.productRows,
+                activityLog: {
+                    user: {
+                        odooUserId: nOrderD.activityLog.user.odooUserId,
+                        username: nOrderD.activityLog.user.username
+                    },
+                    date: new Date(), 
+                    changeLogs: nOrderLogs
+                }
+                
+            }
+        } else {
+            return {
+                orderState: nOrderD.orderState,
+                odooOrderRef: sOrderD.id,
+                ticketNumber: sOrderD.order,
+                client: {
+                    id: sOrderD.client[0], 
+                    name: sOrderD.client[1]
+                },
+                productRows: nOrderD.productRows,
+                activityLog: [{
+                    user: {
+                        odooUserId: nOrderD.activityLog.user.odooUserId,
+                        username: nOrderD.activityLog.user.username
+                    },
+                    date: new Date(),
+                    changeLogs: nOrderLogs
+                }]
+            }
+        }
     }
+
+    updateOrderOnDB(nOrderD) {
+        return new Promise((resolve, reject) => {
+            let saveOrderPromise, updateData,
+                serverData = self.getDocumentFromArray(ordersObj.drafts, 'id', nOrderD.orderid, true),
+                sOrderIndex = serverData.index,
+                sOrder = serverData.document,
+                processedData = self.gatherToStoreOrderData(nOrderD, sOrder);
+
+            if (!sOrder.orderDBData) {
+                //New Order
+                updateData = processedData;
+            } else {
+                //Update Order
+                let actLog, updateData = sOrder.orderDBData;
+
+                updateData.orderState = processedData.orderState;
+                updateData.productRows = processedData.productRows;
+                actLog =  processedData.changeLogs.concat(updateData.activityLog);
+                updateData.activityLog = orderLogs;
+            }
+
+            saveOrderPromise =  self.saveOrderOnDB(updateData);
+
+            saveOrderPromise.then((confirmation) => {
+                ordersObj.drafts[sOrderIndex].orderDBData = updateData;
+                ioOrders.emit('orderUpdate', updateData);
+                returnFn(true);
+            }).catch((err) => {
+                self.logDbError(err, 'trying to save Order into the DB');
+                returnFn(false);
+            });
+        });
+    }
+
+    
 
     checkForOrdersSavedOnDB(orderIdsArray) {
         return dbInstance.getDraftsDbInfo(orderIdsArray);
@@ -149,15 +199,18 @@ class OrdersManager {
             });
 
             socket.on('updateOrder', (nOrder, returnFn) => {
-                let serverData = self.getDocumentFromArray(ordersObj.drafts, 'id', nOrder.orderid, true),
-                    sOrderIndex = serverData.index,
-                    sOrder = serverData.document,
-                    //currentLogIndex = (nOrder.activityLog.length > 0) ? nOrder.activityLog.length - 1 : 0;
-                    nOrderChangeLogs = self.generateOrderActivityLogs(nOrder, sOrder);
+                let saveProcedurePromise = self.updateOrderOnDB(nOrder);
 
-                console.log(nOrderChangeLogs);
+                saveProcedurePromise.then((confirmation) => {
+                    
+                    returnFn(true);
+                }).catch((err) => {
+                    //here
+                    self.logDbError(err, 'trying to save Order into the DB');
+                    returnFn(false);
+                });
 
-                returnFn(nOrderChangeLogs);
+                //HERE
 
                 /*let savePromise = self.saveOrderOnDB(nOrder);
 

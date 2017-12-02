@@ -267,9 +267,7 @@ $(function () {
                         user: {
                             odooUserId: Qticket.session.uid,
                             username: Qticket.session.username
-                        },
-                        date: new Date(), 
-                        changeLogs: []
+                        }
                     }
                 };
 
