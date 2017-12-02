@@ -11,11 +11,12 @@ const   express = require('express'),
         routes = require('./config/routes'),
         dbMng = require(constants.paths.models + 'DBManager'),
         sessinMng = require(constants.paths.models + 'SessionManager'),
+        prodsMng = require(constants.paths.models + 'ProductsManager'),
         ordersMng = require(constants.paths.models + 'OrdersManager');
 
 
 //DB settings
-let authProcess, ordersManager, sessionManager = new sessinMng(), dbManager = new dbMng();
+let authProcess, ordersManager, productsManager, sessionManager = new sessinMng(), dbManager = new dbMng();
 
 //App environment settings
 process.env.globalDraftsList = '';
@@ -46,7 +47,16 @@ app.use(session({
     authProcess = sessionManager.auth(constants.adminAccount.username, constants.adminAccount.password);
 
     authProcess.then((loginData) => {
+        let productsDataRequest;
+
         if (loginData && loginData.session_id) {
+            productsManager = new prodsMng(loginData);
+            productsDataRequest = productsManager.requestProductsData();
+            productsDataRequest.then((productsData) => {
+                app.set('appProducts', productsData);
+            }).catch((err) => {
+                console.log('Error while trying to get Odoo products Data');
+            });
             ordersManager = new ordersMng(loginData, dbManager,io.of('/orders'), io.of('/dashboard'));
             ordersManager.initLoop();
         }else {

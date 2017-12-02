@@ -17,55 +17,84 @@ class OrdersManager {
         sckId = 0;
     }
 
+    logDbError(err, msg = 'processing') {
+        console.log('Error while ' + msg);
+        console.log(err);
+    }
+
     getDocumentFromArray (array, property, value, getIndex = false) {
         if (array.constructor === Array) {
             if (getIndex) {
-                return {document: array.filter(x => x[property] === value), index: array.findIndex(x => x[property] === value)};
+                let doc = array.filter(x => x[property] === value);
+                if (doc) {
+                    return {document: doc[0], index: array.findIndex(x => x[property] === value)};
+                } else {
+                    return {document: undefined, index: undefined};    
+                }
             }else {
                 return array.findIndex(x => x[property] === value);
             }
         } else {
-            console.log('[ERROR] variable provided is not array');
             return false;
         }
     }
 
+    //Move only required data from front-end and process in server
+    /*gatherToStoreOrderData(ordState, firstTimeSave = false) {
+        let orderDataObj, orderRowsInfo = uiDetailScreenManager.getOrderProductsArray();
+
+        if (currentOrderData.orderDBData !== undefined) {
+            currentOrderData.orderRowsInfo
+        } else {
+            orderDataObj = {
+                orderState: ordState,
+                odooOrderRef: currentOrderData.id,
+                ticketNumber: currentOrderData.order,
+                client: {
+                    id: currentOrderData.client[0], 
+                    name: currentOrderData.client[1]
+                },
+                productRows: orderRowsInfo,
+                activityLog: [{
+                    user: {
+                        odooUserId: Qticket.session.uid,
+                        username: Qticket.session.username
+                    },
+                    date: new Date(), 
+                    changeLogs: []
+                }]
+            }
+        }
+
+        return orderDataObj;
+    }*/
+
     generateOrderActivityLogs(nOrderD, sOrderD) {
         let activityLogs = [];
 
-        if(sOrderD.orderDBData === undefined) {
+        if(!sOrderD.orderDBData) {
             for(let index in nOrderD.productRows) {
                 let productObj = nOrderD.productRows[index];
                 activityLogs.push({product:productObj.productName, action:'added', qty:productObj.productQty, price:productObj.productPrice});
             } 
         } else {
-            /*for(let index in nOrderD.productRows) {
-                let activityArray
-            }    */
+            //Get Added
+
+            //Get Updated
+
+            //Get Deleted
+
             console.log('[DEBUG]=>Compare to old previous order');
         }
         return activityLogs;
     }
 
     saveOrderOnDB(orderData) {
-        return new Promise((resolve, reject) => {
+        return dbInstance.saveOrder(orderData);
+    }
 
-            let dbSaveProcess = dbInstance.saveOrder(orderData);
-
-            dbSaveProcess.then((result) => {
-                console.log('Save Order Result');
-                console.log(result);
-
-                if (result) {
-                    resolve(true);
-                } else {
-                    reject();
-                }
-            }).catch((err)=> {
-                console.log('Error while trying to save into the DB');
-                console.log(err);
-            });
-        });
+    checkForOrdersSavedOnDB(orderIdsArray) {
+        return dbInstance.getDraftsDbInfo(orderIdsArray);
     }
 
     checkOrdersOnSocketDisconnect(socketID) {
@@ -100,7 +129,6 @@ class OrdersManager {
                     ordersObj.drafts[index].isBlocked = {socket: socket.id, user: data.user};
                     ioOrders.emit('orderBlocked', {orderID: data.orderID, user: data.user});
                     returnFn({order: order, orderAvailable: true});
-                
                 } else {
                     returnFn({orderAvailable: false});
                 }
@@ -121,18 +149,25 @@ class OrdersManager {
             });
 
             socket.on('updateOrder', (nOrder, returnFn) => {
-                let serverData = self.getDocumentFromArray(ordersObj.drafts, 'id', nOrder.odooOrderRef, true),
+                let serverData = self.getDocumentFromArray(ordersObj.drafts, 'id', nOrder.orderid, true),
                     sOrderIndex = serverData.index,
-                    sOrder = serverData.document;
+                    sOrder = serverData.document,
+                    //currentLogIndex = (nOrder.activityLog.length > 0) ? nOrder.activityLog.length - 1 : 0;
+                    nOrderChangeLogs = self.generateOrderActivityLogs(nOrder, sOrder);
 
-                nOrder.activityLog[0].changeLogs = self.generateOrderActivityLogs(nOrder, sOrder, sOrderIndex);
+                console.log(nOrderChangeLogs);
 
-                let savePromise = self.saveOrderOnDB(nOrder);
+                returnFn(nOrderChangeLogs);
+
+                /*let savePromise = self.saveOrderOnDB(nOrder);
 
                 savePromise.then((result) => {
                     if(result) {
-                        ordersObj.drafts[sOrderIndex] = nOrder;
-                        //Save data stored into the DB, to the inMemoryOrdersObject
+                        //here
+                        ordersObj.drafts[sOrderIndex].orderDBData = nOrder;
+                        ordersObj.drafts[sOrderIndex].isBlocked = undefined;
+                        ioOrders.emit('orderUpdate', ordersObj.drafts[sOrderIndex]);
+
                         //Trigger Update event over IO
                         //Handle correct execution on orders.js
                         returnFn(true);
@@ -140,9 +175,8 @@ class OrdersManager {
                         returnFn(false);
                     }
                 }).catch((err)=> {
-                    console.log('Error while trying to save into the DB');
-                    console.log(err);
-                });
+                    self.logDbError(err, 'trying to save Order into the DB');
+                });*/
             });
 
             socket.on('disconnect', () => {
@@ -150,11 +184,6 @@ class OrdersManager {
             });
 
         });
-    }
-
-    getSocketMessage(sdata) {
-        sckId ++;
-        return {sID: sckId, data: sdata};
     }
 
     getIdsObj() {
@@ -165,10 +194,23 @@ class OrdersManager {
             idsObj[sectInd] = new Array();
 
             for (let doc in section) {
-                idsObj[sectInd].push({id:section[doc].id, last_update:section[doc].last_update});    
+                idsObj[sectInd].push({id:section[doc].id, last_update:section[doc].last_update});
             }
         }
         return idsObj;
+    }
+
+    getDraftsIdsArray(){
+        let idsArray = [];
+
+        for (let index in ordersObj['drafts']) {
+            let order = ordersObj.drafts[index];
+            if (order.orderDBData === undefined) {
+                idsArray.push(order.id);    
+            }
+        }
+
+        return idsArray;
     }
 
     updateList(changesList, updatesArray, checkForUpdated = false) {
@@ -230,7 +272,7 @@ class OrdersManager {
     }
 
     updateAppInMemoryList(changesList) {
-        let updtbject, updateEvFlag = false;
+        let updtbject, getDbSavedInfo, updateEvFlag = false;
 
         if (changesList.drafts.added.length > 0 || changesList.drafts.updated.length > 0 || changesList.drafts.removed.length > 0) {
             updtbject = self.updateList(changesList.drafts, ordersObj.drafts, true);
@@ -257,10 +299,17 @@ class OrdersManager {
             }
         }
 
-        if (updateEvFlag) {
-            //ioOrders.emit('ordersUpdate', self.getSocketMessage(changesList));
-            ioDashb.emit('update', self.enhancedDashboardUpdateList(ordersObj));
-        }
+        getDbSavedInfo = self.checkForOrdersSavedOnDB(self.getDraftsIdsArray());
+
+        getDbSavedInfo.then(() => {
+            //Render products from previously saved orders
+        }).catch((err) => {
+            self.logDbError('getting DB order records',err);
+        }).then(() => {
+            if (updateEvFlag) {
+                ioDashb.emit('update', self.enhancedDashboardUpdateList(ordersObj));
+            }
+        });
     }
 
     requestOrderList() {
@@ -282,7 +331,8 @@ class OrdersManager {
                 };
             request(opts, function (error, response, body) {
                 if (error === null) {
-                    console.log(body.result);
+                    //[DEBUG] Globals
+                    //console.log(body.result);
                     resolve(body.result);
                 } else {
                     reject();
@@ -297,10 +347,10 @@ class OrdersManager {
         getDraftsList.then((data) => {
             self.updateAppInMemoryList(JSON.parse(data));
         })
-        .catch((data) => {
-            console.log(data);
+        .catch((err) => {
+            console.log(err);
             console.log('Error while trying to get purchases list');
-        }); 
+        });
     }
 
     initLoop() {
@@ -309,7 +359,8 @@ class OrdersManager {
 
         setInterval(() => {
             self.requestProcedure();
-            console.log(ordersObj);
+            //[DEBUG] Globals
+            //console.log(ordersObj);
         }, constants.appSettings.purchaseListRefreshTime);
     }
 }

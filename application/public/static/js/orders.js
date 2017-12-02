@@ -16,6 +16,7 @@ $(function () {
     keyButtons = oDKeypad.find('.key'),
     cancelButton = oDSection.find('.action-buttons-bar .cancel'),
     saveButton = oDSection.find('.action-buttons-bar .save'),
+    doneButton = oDSection.find('.action-buttons-bar .done'),
     removeModifier = $(modifierButtons[0]),
     priceModifier = $(modifierButtons[1]),
     qtyModifier = $(modifierButtons[2]),
@@ -62,16 +63,6 @@ $(function () {
     },
     //===> Socket Manager
     socketManager = {
-        checkSocketMsg: (socketMsg) => {
-            let sqID = sckId + 1 ;
-
-            if(socketMsg.sID === sckId){
-                return {status: true, data: socketMsg.data};
-            } else {
-                socket.emit('sync');
-                return {status: false};
-            }
-        },
         blockOrder: (orderId) => {
             return new Promise((resolve, reject) => {
                 socket.emit('blockOrder', {orderID: orderId, user: {username: Qticket.session.username, name:Qticket.session.displayname}}, (confirmation) => {
@@ -88,7 +79,10 @@ $(function () {
         },
         updateOrder: (orderData) => {
             socket.emit('updateOrder', orderData, (confirmation) => {
-                resolve(confirmation);
+                //Rollback
+                //resolve(confirmation);
+
+                console.log(confirmation);
             });
         },
         updateOrdersView: (changesList) => {
@@ -139,6 +133,7 @@ $(function () {
 
             socket.on('orderBlocked', (data) => {
                 uiManager.toggleOrderBlocking(data.orderID, true, data.user.username);
+                // [NOTE] Add functionality to show blocking username on the order
             });
 
             socket.on('orderUnblocked', (orderID) => {
@@ -154,8 +149,10 @@ $(function () {
                 }
             });
 
-            socket.on('orderUpdate', (counter) => {
-                //@TODO Update Single Order   
+            socket.on('orderUpdate', (data) => {
+                //@TODO Update Single Order 
+                console.log('OrderUpdate Event');
+                console.log(data);
             });
 
             socket.on('init', (sckData) => {
@@ -184,13 +181,18 @@ $(function () {
     },
     //===> UI Manager
     uiManager = {
-        toggleScreens: () => {
+        toggleScreens: (prevEdited) => {
             if (ordersContainer.hasClass(activeClass)) {
+                if (prevEdited) {
+                    uiDetailScreenManager.toggleOrderActionButtons(true);
+                }
                 ordersContainer.removeClass(activeClass);
                 orderDetailsContainer.addClass(activeClass);
             }else {
                 ordersContainer.addClass(activeClass);
                 orderDetailsContainer.removeClass(activeClass);
+                uiDetailScreenManager.toggleOrderActionButtons(false);
+                uiDetailScreenManager.cleanDetailUI();
             }
         },
 
@@ -215,8 +217,7 @@ $(function () {
 
                     orderAvailable.then((orderData) => {
                         if (orderData.orderAvailable) {
-                            uiDetailScreenManager.loadInfoData(data);
-                            uiManager.toggleScreens();
+                            uiDetailScreenManager.renderOrderInfo(orderData.order);
                         } else {
                             Qticket.throwAlert('Order Blocked');
                         };
@@ -232,6 +233,7 @@ $(function () {
     },
     //===> Detail Screen Manager
     uiDetailScreenManager = {
+        //IO Related functions
         sendOrderData: (data) => {
             return new Promise((resolve, reject) => {
                 socket.emit('updateOrder', data, (confirmation) => {
@@ -255,102 +257,25 @@ $(function () {
 
             return orderRowsArray;
         },
-        gatherOrderStoredData: (ordState) => {
+        gatherToStoreOrderData: (ordState) => {
             let orderRowsInfo = uiDetailScreenManager.getOrderProductsArray(),
-                orderDataObj = {
+                orderDataObj ={
+                    orderid: currentOrderData.id,
                     orderState: ordState,
-                    odooOrderRef: currentOrderData.id,
-                    ticketNumber: currentOrderData.order,
-                    client: {
-                        id: currentOrderData.client.id, 
-                        name: currentOrderData.client.name
-                    },
                     productRows: orderRowsInfo,
-                    activityLog: [{
+                    activityLog: {
                         user: {
                             odooUserId: Qticket.session.uid,
                             username: Qticket.session.username
                         },
                         date: new Date(), 
                         changeLogs: []
-                    }]
-                }
+                    }
+                };
 
             return orderDataObj;
         },
-        toggleTabs: () => {
-            if ($(mobileTabs[0]).hasClass(activeClass)) {
-                $(mobileTabs[0]).removeClass(activeClass);
-                $(mobileSections[0]).removeClass(activeClass);
-                $(mobileTabs[1]).addClass(activeClass);
-                $(mobileSections[1]).addClass(activeClass);
-            } else {
-                $(mobileTabs[0]).addClass(activeClass);
-                $(mobileSections[0]).addClass(activeClass);
-                $(mobileTabs[1]).removeClass(activeClass);
-                $(mobileSections[1]).removeClass(activeClass);
-            }
-        },
-        loadInfoData: (data) => {
-            currentOrderData = data;
-            clientInfoBar.html(data.client.name);
-        },
-        resetActionButtons: () => {
-            removeModifier.removeClass(disabledClass);
-            priceModifier.addClass(disabledClass);
-            qtyModifier.removeClass(disabledClass);
-        },
-        enableActionButtons: () => {
-            actionEnabled = true;
-            override = true;
-            uiDetailScreenManager.resetActionButtons();
-        },
-        disableActionButtons: () => {
-            modifierButtons.addClass(disabledClass);
-            writeQueue = '';
-            actionEnabled = false;
-        },
-        getActiveAction: () => {
-            return (!priceModifier.hasClass(disabledClass)) ? 'price' : 'qty';
-        },
-        cleanDetailUI: () => {
-            productCards.removeClass(selectedClass);
-            uiDetailScreenManager.disableActionButtons;
-            clientInfoBar.html('');
-            currentRow = {};
-            currentOrderData = {};
-            oDProductsList.empty();
-        },
-        addRow: (card) => {
-            if (currentRow.element === undefined || uiDetailScreenManager.currentRowValid()) {
-                let nRowInfo = {id: card.attr('data-id'),
-                        product: card.attr('data-name'),
-                        price: card.attr('data-price')},
-                nRow = $.tmpl(templates.row, nRowInfo).appendTo(oDProductsList);
-                oDProductsList.scrollTop(oDProductsList.prop('scrollHeight'));
-                uiDetailScreenManager.updateCurrentRow(nRow);
-                card.addClass(selectedClass);
-            }
-        },
-        removeRow: () => {
-            productsSection.find('.product-card[data-id='+currentRow.element.attr('data-id')+']').removeClass(selectedClass);
-            currentRow.element.remove();
-            currentRow = {};
-            uiDetailScreenManager.disableActionButtons();
-        },
-        validValue: (value, field) => {
-            if(value !== 0) {
-                return true;
-            } else {
-                new Noty({
-                    type: 'error',
-                    layout: 'topRight',
-                    timeout: 2000,
-                    text: 'Error en ' + field
-                }).show();
-                return false;
-            }
-        },
+        // Validation Methods
         currentRowValid: () => {
             let floatPrice = parseFloat(currentRow.price.html()),
                 floatQty = parseFloat(currentRow.qty.html());
@@ -403,6 +328,113 @@ $(function () {
                 uiDetailScreenManager.removeRow(currentRow.element);
             }
         },
+        validValue: (value, field) => {
+            if(value !== 0) {
+                return true;
+            } else {
+                new Noty({
+                    type: 'error',
+                    layout: 'topRight',
+                    timeout: 2000,
+                    text: 'Error en ' + field
+                }).show();
+                return false;
+            }
+        },
+        validateOrderBeforeSend: () => {
+            //Check that orders count with at least one product row
+        },
+        //UI Related functions
+        toggleTabs: () => {
+            if ($(mobileTabs[0]).hasClass(activeClass)) {
+                $(mobileTabs[0]).removeClass(activeClass);
+                $(mobileSections[0]).removeClass(activeClass);
+                $(mobileTabs[1]).addClass(activeClass);
+                $(mobileSections[1]).addClass(activeClass);
+            } else {
+                $(mobileTabs[0]).addClass(activeClass);
+                $(mobileSections[0]).addClass(activeClass);
+                $(mobileTabs[1]).removeClass(activeClass);
+                $(mobileSections[1]).removeClass(activeClass);
+            }
+        },
+        renderOrderInfo: (orderData) => {
+            let prevEdited;
+            currentOrderData = orderData;
+            
+            clientInfoBar.html(orderData.client[1]);
+
+            if (orderData.orderDBData !== undefined) {
+                prevEdited = true;
+                //Load Prevoiusly edited products into the list
+            } else {
+                prevEdited = false;
+            }
+
+            uiManager.toggleScreens(prevEdited);
+        },
+        toggleOrderActionButtons: (activate) => {
+            if (activate) {
+                saveButton.removeClass(disabledClass);
+                doneButton.removeClass(disabledClass);
+            } else {
+                saveButton.addClass(disabledClass);
+                doneButton.addClass(disabledClass);
+            }
+        },
+        resetProductsActionButtons: () => {
+            removeModifier.removeClass(disabledClass);
+            priceModifier.addClass(disabledClass);
+            qtyModifier.removeClass(disabledClass);
+        },
+        enableActionButtons: () => {
+            actionEnabled = true;
+            override = true;
+            uiDetailScreenManager.resetProductsActionButtons();
+        },
+        disableActionButtons: () => {
+            modifierButtons.addClass(disabledClass);
+            writeQueue = '';
+            actionEnabled = false;
+        },
+        getActiveAction: () => {
+            return (!priceModifier.hasClass(disabledClass)) ? 'price' : 'qty';
+        },
+        cleanDetailUI: () => {
+            productCards.removeClass(selectedClass);
+            uiDetailScreenManager.disableActionButtons;
+            clientInfoBar.html('');
+            currentRow = {};
+            currentOrderData = {};
+            oDProductsList.empty();
+        },
+        leaveDetailScreen: ()=> {
+            uiManager.toggleScreens();
+        },
+        addRow: (card) => {
+            if (currentRow.element === undefined || uiDetailScreenManager.currentRowValid()) {
+                let nRowInfo = {id: card.attr('data-id'),
+                        product: card.attr('data-name'),
+                        price: card.attr('data-price')},
+                nRow = $.tmpl(templates.row, nRowInfo).appendTo(oDProductsList);
+                oDProductsList.scrollTop(oDProductsList.prop('scrollHeight'));
+                uiDetailScreenManager.updateCurrentRow(nRow);
+                card.addClass(selectedClass);
+            }
+            if (oDProductsList.find('.row').length > 0 && saveButton.hasClass(disabledClass)) {
+                uiDetailScreenManager.toggleOrderActionButtons(true);
+            }
+        },
+        removeRow: () => {
+            productsSection.find('.product-card[data-id='+currentRow.element.attr('data-id')+']').removeClass(selectedClass);
+            currentRow.element.remove();
+            currentRow = {};
+            uiDetailScreenManager.disableActionButtons();
+
+            if (oDProductsList.find('.row').length == 0 && !saveButton.hasClass(disabledClass)) {
+                uiDetailScreenManager.toggleOrderActionButtons(false);
+            }
+        },
         updateCurrentRow: function (row) {
             if (currentRow.element !== undefined) {
                  if (uiDetailScreenManager.currentRowValid()) {
@@ -430,26 +462,39 @@ $(function () {
             });
 
             cancelButton.on('click', (e) => {
-                    let orderUnblocking = socketManager.unBlockOrder(currentOrderData.id);
-                    
-                    orderUnblocking.then((confirmation) => {
-                        if (confirmation) {
-                            uiDetailScreenManager.cleanDetailUI();
-                            uiManager.toggleScreens();
-                        } else {
-                            Qticket.throwAlert('Error while unlocking order');
-                            location.reload();
-                        };
-                    });
+                let orderUnblocking = socketManager.unBlockOrder(currentOrderData.id);
+                
+                orderUnblocking.then((confirmation) => {
+                    if (confirmation) {
+                        uiDetailScreenManager.leaveDetailScreen();
+                    } else {
+                        Qticket.throwAlert('Error while unlocking order');
+                        location.reload();
+                    };
+                });
             });
 
             saveButton.on('click', (e) => {
-                let sendOrderPrms = uiDetailScreenManager.sendOrderData(uiDetailScreenManager.gatherOrderStoredData());
+                if (!saveButton.hasClass(disabledClass)) {
+                    let sendOrderPrms = uiDetailScreenManager.sendOrderData(uiDetailScreenManager.gatherToStoreOrderData('saved'));
+                    
+                    sendOrderPrms.then((confirmation) => {
+                        if (confirmation) {
+                            uiDetailScreenManager.leaveDetailScreen();
+                        } else {
+                            Qticket.throwAlert('Error Saving order to the database');
+                        }
+                    }).catch((err) => {
+                        console.log(err);
+                        Qticket.throwAlert('Error Saving order to the database');
+                    });
+                }
+            });
 
-                sendOrderPrms.then((confirmation)=>{
-                    console.log('Promise Confirmation');
-                    console.log(confirmation);
-                });
+            doneButton.on('click', (e) => {
+                if (!doneButton.hasClass(disabledClass)) {
+                    // Done procedure
+                }
             });
 
             removeModifier.on('click', (e) => {

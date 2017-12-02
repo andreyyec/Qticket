@@ -22,13 +22,8 @@ class DBManager {
     }
 
     saveOrder(nOrderData, oID) {
-        return new Promise((resolve, reject) => { 
+        return new Promise((resolve, reject) => {
             let result, order = new orderModel(nOrderData);
-
-            console.log('order');
-            console.log(order);
-            console.log('nOrderData');
-            console.log(nOrderData);
 
             if (oID === undefined) {
                 order.save((err) => {
@@ -46,14 +41,28 @@ class DBManager {
                     console.log('Error while trying to save in the database');
                     console.log(err);
                 });*/
-                console.log('on update event');
+            }
+        });
+    }
+
+    getDraftsDbInfo(draftsIdsArray) {
+        return new Promise((resolve, reject) => {
+            if (draftsIdsArray) {
+                orderModel.find({'odooOrderRef': { $in: draftsIdsArray}},{_id: false, __v: false, activityRows: false} ,(err, docs) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(docs);
+                    }
+                });
+            } else {
+                reject('No IDs specified');
             }
         });
     }
 
     exampleGetOrder(id) {
-        return orderModel.findOne({id: id}, (err,obj) => { 
-            console.log(obj);
+        return orderModel.findOne({id: id}, (err,obj) => {
             if (err) {
                 return {status: 'error'};
             } else {

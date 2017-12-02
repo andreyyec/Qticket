@@ -2,7 +2,7 @@ const 	mongoose = require('mongoose'),
 		Schema = mongoose.Schema;
 
 let OrderSchema = new Schema({
-	orderState: String,
+	available: String,
 	odooOrderRef: String,
 	ticketNumber: Number,
 	client: {

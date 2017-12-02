@@ -1,6 +1,7 @@
 const 	constants = require('./constants'),
 	 	sessMng = require(constants.paths.models + 'SessionManager'),
         express = require('express'),
+        app = express(),
         router = express.Router();
 
 let sessionData, sessionManager = new sessMng();
@@ -21,7 +22,7 @@ router.post('/session/login', (req, res) => {
                 req.session.cookie.expires = new Date(Date.now() + year)
                 req.session.cookie.maxAge = year;
             }
-            res.redirect(307, '/session/start');
+            res.redirect('/');
         })
         .catch((data) => {
             if (data.error) {
@@ -38,27 +39,6 @@ router.post('/session/login', (req, res) => {
             res.redirect('/login?error=2');
         }
     });
-});
-
-router.post('/session/start', (req, res) => {
-    let productsDataRequest;
-
-    if (req.session.user !== undefined) {
-        productsDataRequest = sessionManager.getProductsData(req.session);
-
-        productsDataRequest.then(() => {
-            res.redirect('/');
-        })
-        .catch((data) => {
-            if (data.error) {
-                res.redirect('/login?error=5');
-            }else{
-                res.redirect('/login?error=6');
-            }
-        });    
-    } else{
-        res.redirect('/login?error=1');
-    }
 });
 
 router.get('/login', (req, res) => {
@@ -96,7 +76,7 @@ router.get('/', (req, res) => {
         tabTitle: 'Dashboard - Qticket',
         mainTitle: 'Dashboard',
         subTitle: 'Tickets',
-        products: req.session.products,
+        products: req.app.get('appProducts'),
         jsfiles: ['dashboard'],
         constants: constants.public,
         session: sessionData
@@ -110,7 +90,7 @@ router.get('/orders', (req, res) => {
         tabTitle: 'Orders - Qticket',
         mainTitle: 'Orders',
         subTitle: 'Manager',
-        products: req.session.products,
+        products: req.app.get('appProducts'),
         jsfiles: ['orders'],
         constants: constants.public,
         session: sessionData
