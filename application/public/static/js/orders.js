@@ -103,8 +103,7 @@ $(function () {
 
             socket.on('orderUpdate', (data) => {
                 //@TODO Update Single Order 
-                console.log('OrderUpdate Event');
-                console.log(data);
+                let pOrder = ordersContainer.find('.order-card[data-id="'+data.id+'"]').parent().replaceWith($.tmpl(templates.nOrderCard, data));
             });
 
             socket.on('init', (ordersArray) => {

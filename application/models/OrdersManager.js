@@ -3,7 +3,7 @@ const   constants = require('../config/constants'),
         http = require('http'),
         request = require('request');
 
-let self, ioOrders, ioDashb, ioDashboardInstance, dbInstance, cookie, sckId, 
+let self, ioOrders, ioDashb, ioDashboardInstance, dbInstance, cookie, 
     ordersObj = {'drafts': [], 'approved': [], 'confirmed': []};
 
 class OrdersManager {
@@ -14,7 +14,6 @@ class OrdersManager {
         ioOrders = ioOrdersInstance;
         ioDashb = ioDashbInstance;
         cookie = request.cookie('session_id='+session.session_id);
-        sckId = 0;
     }
 
     logDbError(err, msg = 'processing') {
@@ -149,7 +148,7 @@ class OrdersManager {
 
             saveOrderPromise.then((confirmation) => {
                 ordersObj.drafts[sOrderIndex].orderDBData = updateData;
-                ioOrders.emit('orderUpdate', updateData);
+                ioOrders.emit('orderUpdate', ordersObj.drafts[sOrderIndex]);
                 resolve();
             }).catch((err) => {
                 self.logDbError(err, 'trying to save Order into the DB');
