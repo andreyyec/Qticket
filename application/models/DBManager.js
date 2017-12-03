@@ -21,14 +21,13 @@ class DBManager {
         });
     }
 
-    saveOrder(nOrderData, oID) {
+    saveOrder(nOrderData, prevSaved = false) {
+        console.log('nOrderData');
+        console.log(nOrderData);
         return new Promise((resolve, reject) => {
             let result, order = new orderModel(nOrderData);
 
-            console.log('[DEBUG] Order to DB');
-            console.log(order);
-
-            if (!oID) {
+            if (!prevSaved) {
                 order.save((err) => {
                     if (err) {
                         reject(err);
@@ -37,13 +36,13 @@ class DBManager {
                     }
                 });
             } else {
-                /*let query = {odooOrderRef: nOrderData.odooOrderRef};
-
-                order.findOneAndUpdate(query, nOrderData, (err)=> {
-                    result = (err) ? true : false;
-                    console.log('Error while trying to save in the database');
-                    console.log(err);
-                });*/
+                orderModel.findOneAndUpdate({odooOrderRef: nOrderData.odooOrderRef}, nOrderData, (err)=> {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(true);
+                    }
+                });
             }
         });
     }

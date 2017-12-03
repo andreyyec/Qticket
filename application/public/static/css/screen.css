@@ -181,6 +181,18 @@ body.loading .cssload-content {
     .order-card.blocked .card-header {
       background-color: #f0ad4e;
       border-color: #f0ad4e; }
+  .order-card .card-body {
+    padding: 5px; }
+    .order-card .card-body .client-info-section {
+      padding: 2px; }
+      .order-card .card-body .client-info-section div {
+        padding: 2px; }
+      .order-card .card-body .client-info-section .ticket {
+        border-left: 1px solid #ddd;
+        text-align: center; }
+    .order-card .card-body .products-section {
+      padding: 2px;
+      border-top: 1px solid #ddd; }
 
 .product-card {
   padding: 5px; }
@@ -276,8 +288,6 @@ body.loading .cssload-content {
             font-size: 26px;
             white-space: nowrap;
             width: 40%; }
-          .screen-holder .row.orders-screen .inner-container .orders-thumbs .order-card .card-body .client {
-            margin-right: 5px; }
   .screen-holder .row.order-details-screen {
     display: none;
     height: inherit;

@@ -39,8 +39,8 @@ class OrdersManager {
         }
     }
 
-    saveOrderOnDB(orderData) {
-        return dbInstance.saveOrder(orderData);
+    saveOrderOnDB(orderData, prevSaved = false) {
+        return dbInstance.saveOrder(orderData, prevSaved);
     }
 
     generateOrderActivityLogs(nOrderD, sOrderD) {
@@ -49,18 +49,37 @@ class OrdersManager {
         if(!sOrderD.orderDBData) {
             for(let index in nOrderD.productRows) {
                 let productObj = nOrderD.productRows[index];
-                activityLogs.push({product:productObj.productName, action:'added', qty:productObj.productQty, price:productObj.productPrice});
+                activityLogs.push({id:productObj.id ,product:productObj.name, action:'added', qty:productObj.qty, price:productObj.price});
             } 
         } else {
-            //Get Added
+            let newOrderProducts = nOrderD.productRows,
+                savedOrderProducts = sOrderD.orderDBData.productRows;
+            
+            for(let i in newOrderProducts) {
+                let nProduct = newOrderProducts[i],
+                    sRegistry = self.getDocumentFromArray(savedOrderProducts, 'id', nProduct.id, true),
+                    sProductIndex = sRegistry.index,
+                    sProduct = sRegistry.document;
 
-            //Get Updated
+                if (!sProduct) {
+                    //Get Added Products
+                    activityLogs.unshift({id:nProduct.id ,product:nProduct.name, action:'added', qty:nProduct.qty, price:nProduct.price});
+                } else {
+                    //Get Updated Products
+                    if (parseFloat(nProduct.qty) !== parseFloat(sProduct.qty)) {
+                        activityLogs.push({id:nProduct.id ,product:nProduct.name, action:'updated', qty:nProduct.qty, price:nProduct.price});
+                    }
+                    savedOrderProducts.splice(sProductIndex, 1);
+                }
+            }
 
-            //Get Deleted
-
-            console.log('[DEBUG]=>Compare to old previous order');
+            //Get Deleted Products
+            if (savedOrderProducts.length > 0) {
+                for(let i in savedOrderProducts) {
+                    activityLogs.push({id:savedOrderProducts[i].id, product:savedOrderProducts[i].name, action:'deleted', qty:null, price:null});
+                }
+            }
         }
-
 
         return activityLogs;
     }
@@ -107,7 +126,7 @@ class OrdersManager {
 
     updateOrderOnDB(nOrderD) {
         return new Promise((resolve, reject) => {
-            let saveOrderPromise, updateData,
+            let saveOrderPromise, updateData, prevSaved = false,
                 serverData = self.getDocumentFromArray(ordersObj.drafts, 'id', nOrderD.orderid, true),
                 sOrderIndex = serverData.index,
                 sOrder = serverData.document,
@@ -118,15 +137,15 @@ class OrdersManager {
                 updateData = processedData;
             } else {
                 //Update Order
-                let actLog, updateData = sOrder.orderDBData;
+                updateData = sOrder.orderDBData;
 
+                prevSaved = true;
                 updateData.orderState = processedData.orderState;
                 updateData.productRows = processedData.productRows;
-                actLog =  processedData.changeLogs.concat(updateData.activityLog);
-                updateData.activityLog = orderLogs;
+                updateData.activityLog.unshift(processedData.activityLog);
             }
 
-            saveOrderPromise =  self.saveOrderOnDB(updateData);
+            saveOrderPromise =  self.saveOrderOnDB(updateData, prevSaved);
 
             saveOrderPromise.then((confirmation) => {
                 ordersObj.drafts[sOrderIndex].orderDBData = updateData;
@@ -164,7 +183,7 @@ class OrdersManager {
 
         //Orders Web Socket
         ioOrders.on('connection', (socket) => {
-            socket.emit('init', {sID: sckId, data: ordersObj.drafts});
+            socket.emit('init', ordersObj.drafts);
 
             socket.on('blockOrder', (data, returnFn) => {
                 let serverData = self.getDocumentFromArray(ordersObj.drafts, 'id', data.orderID, true),
@@ -332,9 +351,13 @@ class OrdersManager {
         getDbSavedInfo = self.checkForOrdersSavedOnDB(self.getDraftsIdsArray());
 
         getDbSavedInfo.then((dbOrdersArray) => {
-            //Render products from previously saved orders
-            console.log('dbOrdersArray');
-            console.log(dbOrdersArray);
+            for(let index in dbOrdersArray) {
+                let odbData = dbOrdersArray[index],
+                serverData = self.getDocumentFromArray(ordersObj.drafts, 'id', odbData.odooOrderRef, true),
+                sOrderIndex = serverData.index;
+           
+                ordersObj.drafts[sOrderIndex].orderDBData = odbData;
+            }
         }).catch((err) => {
             self.logDbError('getting DB order records',err);
         }).then(() => {

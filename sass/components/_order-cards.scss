@@ -14,4 +14,26 @@
 	    	border-color: $bootstrap-warning;
     	}
 	}
+
+	.card-body {
+		padding: 5px;
+
+		.client-info-section {
+			padding: 2px;
+
+			div {
+				padding: 2px;
+			}
+
+			.ticket{
+				border-left: 1px solid $gray-card-inner;
+				text-align: center;
+			}
+		}
+
+		.products-section{
+			padding: 2px;
+			border-top: 1px solid $gray-card-inner;
+		}
+	}
 }

@@ -10,9 +10,10 @@ let OrderSchema = new Schema({
 		name: String
 	},
 	productRows: [{
-		productName: String,
-		productQty: Number,
-		productPrice: Number
+		id: Number,
+		name: String,
+		qty: Number,
+		price: Number
 	}],
 	activityLog: [{
 		user: {
@@ -21,8 +22,9 @@ let OrderSchema = new Schema({
 		}, 
 		date: Date, 
 		changeLogs: [{
-			product:String,
-			action:String,
+			id: Number,
+			product: String,
+			action: String,
 			qty: Number,
             price: Number
 		}],
