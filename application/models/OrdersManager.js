@@ -40,8 +40,6 @@ class OrdersManager {
     }
 
     saveOrderOnDB(orderData) {
-        if (order) {}
-
         return dbInstance.saveOrder(orderData);
     }
 
@@ -133,15 +131,13 @@ class OrdersManager {
             saveOrderPromise.then((confirmation) => {
                 ordersObj.drafts[sOrderIndex].orderDBData = updateData;
                 ioOrders.emit('orderUpdate', updateData);
-                returnFn(true);
+                resolve();
             }).catch((err) => {
                 self.logDbError(err, 'trying to save Order into the DB');
-                returnFn(false);
+                reject();
             });
         });
     }
-
-    
 
     checkForOrdersSavedOnDB(orderIdsArray) {
         return dbInstance.getDraftsDbInfo(orderIdsArray);
@@ -201,35 +197,16 @@ class OrdersManager {
             socket.on('updateOrder', (nOrder, returnFn) => {
                 let saveProcedurePromise = self.updateOrderOnDB(nOrder);
 
-                saveProcedurePromise.then((confirmation) => {
-                    
+                saveProcedurePromise.then(() => {
                     returnFn(true);
                 }).catch((err) => {
-                    //here
                     self.logDbError(err, 'trying to save Order into the DB');
                     returnFn(false);
                 });
+            });
 
-                //HERE
-
-                /*let savePromise = self.saveOrderOnDB(nOrder);
-
-                savePromise.then((result) => {
-                    if(result) {
-                        //here
-                        ordersObj.drafts[sOrderIndex].orderDBData = nOrder;
-                        ordersObj.drafts[sOrderIndex].isBlocked = undefined;
-                        ioOrders.emit('orderUpdate', ordersObj.drafts[sOrderIndex]);
-
-                        //Trigger Update event over IO
-                        //Handle correct execution on orders.js
-                        returnFn(true);
-                    } else {
-                        returnFn(false);
-                    }
-                }).catch((err)=> {
-                    self.logDbError(err, 'trying to save Order into the DB');
-                });*/
+            socket.on('debug', (returnFn) => {
+                returnFn(ordersObj.drafts);
             });
 
             socket.on('disconnect', () => {
@@ -354,8 +331,10 @@ class OrdersManager {
 
         getDbSavedInfo = self.checkForOrdersSavedOnDB(self.getDraftsIdsArray());
 
-        getDbSavedInfo.then(() => {
+        getDbSavedInfo.then((dbOrdersArray) => {
             //Render products from previously saved orders
+            console.log('dbOrdersArray');
+            console.log(dbOrdersArray);
         }).catch((err) => {
             self.logDbError('getting DB order records',err);
         }).then(() => {
@@ -412,8 +391,6 @@ class OrdersManager {
 
         setInterval(() => {
             self.requestProcedure();
-            //[DEBUG] Globals
-            //console.log(ordersObj);
         }, constants.appSettings.purchaseListRefreshTime);
     }
 }

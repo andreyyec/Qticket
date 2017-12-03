@@ -165,6 +165,11 @@ $(function () {
                 Qticket.toggleLoadScreen(true);
             });            
         },
+        debug: () => {
+            socket.emit('debug', (data) => {
+                console.log(data);
+            });
+        },
         socketConnect: () => {
             socket.on('connect', () => {
                 if (!Qticket.isLoadingActive()) {
@@ -177,6 +182,9 @@ $(function () {
         // => Init
         init: () => {
             socketManager.socketConnect();
+            Qticket.debug = () => {
+                socketManager.debug();
+            };
         }
     },
     //===> UI Manager

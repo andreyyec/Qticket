@@ -25,7 +25,10 @@ class DBManager {
         return new Promise((resolve, reject) => {
             let result, order = new orderModel(nOrderData);
 
-            if (oID === undefined) {
+            console.log('[DEBUG] Order to DB');
+            console.log(order);
+
+            if (!oID) {
                 order.save((err) => {
                     if (err) {
                         reject(err);
@@ -48,7 +51,7 @@ class DBManager {
     getDraftsDbInfo(draftsIdsArray) {
         return new Promise((resolve, reject) => {
             if (draftsIdsArray) {
-                orderModel.find({'odooOrderRef': { $in: draftsIdsArray}},{_id: false, __v: false, activityRows: false} ,(err, docs) => {
+                orderModel.find({'odooOrderRef': { $in: draftsIdsArray}} ,(err, docs) => {
                     if (err) {
                         reject(err);
                     } else {

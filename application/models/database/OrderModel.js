@@ -14,13 +14,13 @@ let OrderSchema = new Schema({
 		productQty: Number,
 		productPrice: Number
 	}],
-	activityRows: [{
+	activityLog: [{
 		user: {
 			uid: Number,
 			username: String,
 		}, 
 		date: Date, 
-		activityLogs: [{
+		changeLogs: [{
 			product:String,
 			action:String,
 			qty: Number,

@@ -44,32 +44,34 @@ app.use(session({
 }));
 
 //App -> Odoo Purchases List Init
-    authProcess = sessionManager.auth(constants.adminAccount.username, constants.adminAccount.password);
+authProcess = sessionManager.auth(constants.adminAccount.username, constants.adminAccount.password);
 
-    authProcess.then((loginData) => {
-        let productsDataRequest;
+authProcess.then((loginData) => {
+    let productsDataRequest;
 
-        if (loginData && loginData.session_id) {
-            productsManager = new prodsMng(loginData);
-            productsDataRequest = productsManager.requestProductsData();
-            productsDataRequest.then((productsData) => {
-                app.set('appProducts', productsData);
-            }).catch((err) => {
-                console.log('Error while trying to get Odoo products Data');
-            });
+    if (loginData && loginData.session_id) {
+        productsManager = new prodsMng(loginData);
+        productsDataRequest = productsManager.requestProductsData();
+        
+        productsDataRequest.then((productsData) => {
+            app.set('appProducts', productsData);
             ordersManager = new ordersMng(loginData, dbManager,io.of('/orders'), io.of('/dashboard'));
             ordersManager.initLoop();
-        }else {
-            console.log('Error while trying to access global data');
-        }
-    })/*.catch((data) => {
-        console.log('Unable to access global data');
-    })*/;
 
-//App Router
-app.use('/', routes);
+            //App Router
+            app.use('/', routes);
 
-//Web Server Init
-http.listen(port, () => {
-    console.log('listening on *:' + port);
+            //Web Server Init
+            http.listen(port, () => {
+                console.log('listening on *:' + port);
+            });
+        }).catch((err) => {
+            console.log('Error while trying to get Odoo products Data');
+        });
+    }else {
+        console.log('Error while trying to access global data');
+    }
+}).catch((data) => {
+    console.log('Unable to connect with Odoo Server');
 });
+
