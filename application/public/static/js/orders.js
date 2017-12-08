@@ -2,6 +2,8 @@ $(function () {
     let self, sckId, csOrdersArray, currentRow = {}, currentOrderData = {}, override = true, actionEnabled = false,
     socket = Qticket.getIOInstance('orders'), body = $('body'), blockedClass = 'blocked', disabledClass = 'disabled', selectedClass = 'selected', activeClass = 'active',
     ordersContainer = body.find('.orders-screen'),
+    ordersThumbsContainer = ordersContainer.find('.inner-container .orders-thumbs'),
+    ordersFullContainer = ordersContainer.find('.inner-container .orders-full'),
     orderDetailsContainer = body.find('.order-details-screen'),
     productsSection = orderDetailsContainer.find('.products-section'),
     productCards = productsSection.find('.product-card'),
@@ -37,7 +39,7 @@ $(function () {
                                         <div class="col-12">\
                                             {{each(prop, val) orderDBData.productRows}}\
                                                 <div class="row no-gutters">\
-                                                    <div class="col-12 product-name" data-id="{val.id}">${val.name}</div>\
+                                                    <div class="col-12 product-name" data-id="${val.id}">${val.name}</div>\
                                                     <div class="col-6 product-price">&#8353;<span class="value">${val.price}</span></div>\
                                                     <div class="col-6 product-qty"><span class="value">${val.qty}</span>&nbsp;Kg</div>\
                                                 </div>\
@@ -73,11 +75,10 @@ $(function () {
             });
         },
         updateOrder: (orderData) => {
-            socket.emit('updateOrder', orderData, (confirmation) => {
-                //Rollback
-                //resolve(confirmation);
-
-                console.log(confirmation);
+            return new Promise((resolve, reject) => {
+                socket.emit('updateOrder', orderData, (confirmation) => {
+                    resolve(confirmation);
+                });
             });
         },
         attachListeners: () => {
@@ -92,18 +93,20 @@ $(function () {
                 uiManager.toggleOrderBlocking(orderID, false);
             });
 
-            socket.on('ordersUpdate', (socketMsg) => {
-                //@TODO Check on Sequence check functionality
-                //dataSet = socketManager.checkSocketMsg(socketMsg);
-                dataSet = {status: true, data: socketMsg.data};
-                if (dataSet.status) {
-                    socketManager.updateOrdersView(dataSet.data);
-                }
-            });
-
             socket.on('orderUpdate', (data) => {
-                //@TODO Update Single Order 
-                let pOrder = ordersContainer.find('.order-card[data-id="'+data.id+'"]').parent().replaceWith($.tmpl(templates.nOrderCard, data));
+                //@TODO Update Single Order
+                let cOrder = ordersContainer.find('.order-card[data-id="'+data.id+'"]').parent(),
+                    cOrderSection = cOrder.parent(),
+                    nOrder = $.tmpl(templates.nOrderCard, data);
+
+                if (cOrderSection.hasClass('.orders-full')) {
+                    cOrder.replaceWith(nOrder);
+                } else {
+                    cOrder.remove();
+                    ordersFullContainer.prepend(nOrder);
+                }
+                //@ToRemove
+                //let pOrder = ordersContainer.find('.order-card[data-id="'+data.id+'"]').parent().replaceWith($.tmpl(templates.nOrderCard, data));
             });
 
             socket.on('init', (ordersArray) => {
@@ -185,8 +188,8 @@ $(function () {
             let thumbOrdersArray = ordersArray.filter(x => x.orderDBData === undefined),
                 fullOrdersArray = ordersArray.filter(x => x.orderDBData !== undefined);
 
-            $.tmpl(templates.nOrderCard, thumbOrdersArray).appendTo( ".orders-screen .inner-container .orders-thumbs");
-            $.tmpl(templates.nOrderCard, fullOrdersArray).appendTo( ".orders-screen .inner-container .orders-full");
+            $.tmpl(templates.nOrderCard, thumbOrdersArray).appendTo(ordersThumbsContainer);
+            $.tmpl(templates.nOrderCard, fullOrdersArray).appendTo(ordersFullContainer);
         },
         init: () => {
             uiManager.attachListeners();
@@ -196,11 +199,7 @@ $(function () {
     uiDetailScreenManager = {
         //IO Related functions
         sendOrderData: (data) => {
-            return new Promise((resolve, reject) => {
-                socket.emit('updateOrder', data, (confirmation) => {
-                    resolve(confirmation);
-                });
-            });
+            return socketManager.updateOrder(data);
         },
         getOrderProductsArray: () => {
             let orderRows = oDProductsList.find('.order-row'),
@@ -217,12 +216,9 @@ $(function () {
                     });
                 });
 
-            console.log(orderRowsArray)
-
             return orderRowsArray;
         },
         gatherToStoreOrderData: (ordState) => {
-            console.log(currentOrderData);
             let orderRowsInfo = uiDetailScreenManager.getOrderProductsArray(),
                 orderDataObj ={
                     orderid: currentOrderData.id,
@@ -381,7 +377,7 @@ $(function () {
             productCards.removeClass(selectedClass);
             uiDetailScreenManager.disableActionButtons;
             clientInfoBar.html('');
-            currentRow = undefined;
+            currentRow = {};
             currentOrderData = {};
             oDProductsList.empty();
         },
@@ -445,6 +441,7 @@ $(function () {
                 
                 orderUnblocking.then((confirmation) => {
                     if (confirmation) {
+                        currentRow = {};
                         uiDetailScreenManager.leaveDetailScreen();
                     } else {
                         Qticket.throwAlert('Error while unlocking order');

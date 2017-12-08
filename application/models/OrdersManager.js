@@ -148,6 +148,7 @@ class OrdersManager {
 
             saveOrderPromise.then((confirmation) => {
                 ordersObj.drafts[sOrderIndex].orderDBData = updateData;
+                ordersObj.drafts[sOrderIndex].isBlocked = undefined;
                 ioOrders.emit('orderUpdate', ordersObj.drafts[sOrderIndex]);
                 resolve();
             }).catch((err) => {
