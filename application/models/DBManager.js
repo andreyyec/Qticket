@@ -22,8 +22,6 @@ class DBManager {
     }
 
     saveOrder(nOrderData, prevSaved = false) {
-        console.log('nOrderData');
-        console.log(nOrderData);
         return new Promise((resolve, reject) => {
             let result, order = new orderModel(nOrderData);
 

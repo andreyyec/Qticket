@@ -176,6 +176,11 @@ body.loading .cssload-content {
   .order-card .card-header {
     background-color: #0275d8;
     border-color: #0275d8; }
+  .order-card.done {
+    border-color: #5cb85c; }
+    .order-card.done .card-header {
+      background-color: #5cb85c;
+      border-color: #5cb85c; }
   .order-card.blocked {
     border-color: #f0ad4e; }
     .order-card.blocked .card-header {

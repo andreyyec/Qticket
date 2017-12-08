@@ -5,7 +5,16 @@
 		background-color: $bootstrap-primary;
     	border-color: $bootstrap-primary;
 	}
-	
+
+	&.done {
+		border-color: $bootstrap-success;
+
+		.card-header{
+			background-color: $bootstrap-success;
+	    	border-color: $bootstrap-success;
+    	}
+	}
+
 	&.blocked {
 		border-color: $bootstrap-warning;
 

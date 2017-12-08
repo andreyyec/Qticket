@@ -105,7 +105,7 @@ class OrdersManager {
             return {
                 orderState: nOrderD.orderState,
                 odooOrderRef: sOrderD.id,
-                ticketNumber: sOrderD.order,
+                ticketNumber: (sOrderD.order)?sOrderD.order:0,
                 client: {
                     id: sOrderD.client[0], 
                     name: sOrderD.client[1]
@@ -190,7 +190,7 @@ class OrdersManager {
                     index = serverData.index,
                     order = serverData.document;
 
-                if (order.isBlocked === undefined) {
+                if (order.isBlocked === undefined || (orderDBData && orderDBData.orderState !== 'done')) {
                     ordersObj.drafts[index].isBlocked = {socket: socket.id, user: data.user};
                     ioOrders.emit('orderBlocked', {orderID: data.orderID, user: data.user});
                     returnFn({order: order, orderAvailable: true});

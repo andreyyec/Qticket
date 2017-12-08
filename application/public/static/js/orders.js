@@ -1,6 +1,6 @@
 $(function () {
     let self, sckId, csOrdersArray, currentRow = {}, currentOrderData = {}, override = true, actionEnabled = false,
-    socket = Qticket.getIOInstance('orders'), body = $('body'), blockedClass = 'blocked', disabledClass = 'disabled', selectedClass = 'selected', activeClass = 'active',
+    socket = Qticket.getIOInstance('orders'), body = $('body'), blockedClass = 'blocked', disabledClass = 'disabled', selectedClass = 'selected', activeClass = 'active', doneClass = 'done',
     ordersContainer = body.find('.orders-screen'),
     ordersThumbsContainer = ordersContainer.find('.inner-container .orders-thumbs'),
     ordersFullContainer = ordersContainer.find('.inner-container .orders-full'),
@@ -17,6 +17,7 @@ $(function () {
     modifierButtons = oDKeypad.find('.modifier'),
     keyButtons = oDKeypad.find('.key'),
     cancelButton = oDSection.find('.action-buttons-bar .cancel'),
+    dbActionButtons = oDSection.find('.action-buttons-bar .send'),
     saveButton = oDSection.find('.action-buttons-bar .save'),
     doneButton = oDSection.find('.action-buttons-bar .done'),
     removeModifier = $(modifierButtons[0]),
@@ -25,16 +26,16 @@ $(function () {
     //===> Templates Object
     templates= {
         nOrderCard: '<div class="col-6 col-sm-4 col-md-3">\
-                        <div class="card card-inverse order-card" data-id="${id}" data-client-id="${client[0]}" data-client="${client[1]}" data-ticket="${ticket}">\
+                        <div class="card card-inverse order-card {{if $data.isBlocked}}blocked{{else $data.orderDBData && $data.orderDBData.orderState && $data.orderDBData.orderState == "done"}}done{{/if}}" data-id="${id}" data-client-id="${client[0]}" data-client="${client[1]}" data-ticket="${ticket}">\
                             <div class="card-header card-header">\
                                 ${id}\
                             </div>\
                             <div class="card-block bg-white card-body">\
                                 <div class="row no-gutters client-info-section">\
                                     <div class="col-8 client">${client[1]}</div>\
-                                    <div class="col-4 ticket">{{if (ticket !== false)}}${ticket}{{else}}-{{/if}}</div>\
+                                    <div class="col-4 ticket">{{if (ticket !== undefined) && (ticket !== false)}}${ticket}{{else}}-{{/if}}</div>\
                                 </div>\
-                                {{if (orderDBData)}}\
+                                {{if $data.orderDBData}}\
                                     <div class="row no-gutters products-section">\
                                         <div class="col-12">\
                                             {{each(prop, val) orderDBData.productRows}}\
@@ -143,8 +144,8 @@ $(function () {
     uiManager = {
         toggleScreens: () => {
             if (ordersContainer.hasClass(activeClass)) {
-                ordersContainer.removeClass(activeClass);
                 orderDetailsContainer.addClass(activeClass);
+                ordersContainer.removeClass(activeClass);
             }else {
                 ordersContainer.addClass(activeClass);
                 orderDetailsContainer.removeClass(activeClass);
@@ -168,7 +169,11 @@ $(function () {
             ordersContainer.on('click', '.order-card', (e) => {
                 let target = $(e.currentTarget);
 
-                if (!target.hasClass(blockedClass)) {
+                if(target.hasClass(blockedClass)) {
+                    Qticket.throwAlert('Order Blocked');
+                }else if (target.hasClass(doneClass)) {
+                    Qticket.throwAlert('Order Closed', 'success');
+                }else {    
                     let data = {id:target.data('id'), order:target.data('ticketNumber'), client: {id: target.data('client-id'),name: target.data('client')}},
                         orderAvailable = socketManager.blockOrder(data.id);
 
@@ -179,8 +184,8 @@ $(function () {
                             Qticket.throwAlert('Order Blocked');
                         };
                     });
-                }else {
-                    Qticket.throwAlert('Order Blocked');
+                
+                    
                 }
             });
         },
@@ -221,7 +226,7 @@ $(function () {
         gatherToStoreOrderData: (ordState) => {
             let orderRowsInfo = uiDetailScreenManager.getOrderProductsArray(),
                 orderDataObj ={
-                    orderid: currentOrderData.id,
+                    orderid: (currentOrderData.id !== undefined) ? currentOrderData.id : 0,
                     orderState: ordState,
                     productRows: orderRowsInfo,
                     activityLog: {
@@ -348,11 +353,9 @@ $(function () {
         },
         toggleOrderActionButtons: (activate) => {
             if (activate) {
-                saveButton.removeClass(disabledClass);
-                doneButton.removeClass(disabledClass);
+                dbActionButtons.removeClass(disabledClass);
             } else {
-                saveButton.addClass(disabledClass);
-                doneButton.addClass(disabledClass);
+                dbActionButtons.addClass(disabledClass);
             }
         },
         resetProductsActionButtons: () => {
@@ -408,6 +411,8 @@ $(function () {
 
             if (oDProductsList.find('.row').length == 0 && !saveButton.hasClass(disabledClass)) {
                 uiDetailScreenManager.toggleOrderActionButtons(false);
+            }else if (oDProductsList.find('.row').length > 0 && saveButton.hasClass(disabledClass)){
+                uiDetailScreenManager.toggleOrderActionButtons(true);
             }
         },
         updateCurrentRow: function (row) {
@@ -450,9 +455,12 @@ $(function () {
                 });
             });
 
-            saveButton.on('click', (e) => {
-                if (!saveButton.hasClass(disabledClass)) {
-                    let sendOrderPrms = uiDetailScreenManager.sendOrderData(uiDetailScreenManager.gatherToStoreOrderData('saved'));
+            dbActionButtons.on('click', (e) => {
+                let button = $(e.target),
+                    orderState = (button.hasClass('done')?'done':'saved');
+
+                if (!button.hasClass(disabledClass)) {
+                    let sendOrderPrms = uiDetailScreenManager.sendOrderData(uiDetailScreenManager.gatherToStoreOrderData(orderState));
                     
                     sendOrderPrms.then((confirmation) => {
                         if (confirmation) {
@@ -464,12 +472,6 @@ $(function () {
                         console.log(err);
                         Qticket.throwAlert('Error Saving order to the database');
                     });
-                }
-            });
-
-            doneButton.on('click', (e) => {
-                if (!doneButton.hasClass(disabledClass)) {
-                    // Done procedure
                 }
             });
 
