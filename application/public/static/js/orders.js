@@ -1,3 +1,7 @@
+/*
+    @ToREMOVE Debug function
+*/
+
 $(function () {
     let self, sckId, csOrdersArray, currentRow = {}, currentOrderData = {}, override = true, actionEnabled = false,
     socket = Qticket.getIOInstance('orders'), body = $('body'), blockedClass = 'blocked', disabledClass = 'disabled', selectedClass = 'selected', activeClass = 'active', doneClass = 'done',
@@ -85,6 +89,20 @@ $(function () {
         attachListeners: () => {
             console.log('Web Socket connection established');
 
+            socket.on('screenUpdate', (dataArray) => {
+                for (let i in dataArray.added) {
+                    uiManager.addOrder(dataArray.added[i]);
+                }
+
+                for (let i in dataArray.updated) {
+                    uiManager.updateOrderById(dataArray.updated[i]);   
+                }
+
+                for (let i in dataArray.removed) {
+                    uiManager.removeOrderById(dataArray.removed[i]);
+                }
+            });
+
             socket.on('orderBlocked', (data) => {
                 uiManager.toggleOrderBlocking(data.orderID, true, data.user.username);
                 // [NOTE] Add functionality to show blocking username on the order
@@ -106,8 +124,6 @@ $(function () {
                     cOrder.remove();
                     ordersFullContainer.prepend(nOrder);
                 }
-                //@ToRemove
-                //let pOrder = ordersContainer.find('.order-card[data-id="'+data.id+'"]').parent().replaceWith($.tmpl(templates.nOrderCard, data));
             });
 
             socket.on('init', (ordersArray) => {
@@ -162,8 +178,27 @@ $(function () {
                 }
             });
         },
-        ordersUpdate: () => {
-            
+        addOrder: (data) => {
+            ordersThumbsContainer.prepend($.tmpl(templates.nOrderCard, data));
+        },
+        updateOrderById: (data) => {
+            let cOrder = ordersContainer.find('.order-card[data-id="'+data.id+'"]').parent(),
+                cOrderSection = cOrder.parent(),
+                nOrder = $.tmpl(templates.nOrderCard, data);
+
+            if (cOrderSection.hasClass('.orders-full')) {
+                cOrder.replaceWith(nOrder);
+            } else {
+                if (data.orderDBData) {
+                    cOrder.remove();
+                    ordersFullContainer.prepend(nOrder);
+                } else {
+                    cOrder.replaceWith(nOrder);
+                }
+            }
+        },
+        removeOrderById: (id) => {
+            return cOrder = ordersContainer.find('.order-card[data-id="'+id+'"]').parent().remove();
         },
         attachListeners: () => {
             ordersContainer.on('click', '.order-card', (e) => {

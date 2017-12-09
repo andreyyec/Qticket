@@ -1,8 +1,8 @@
 const constants = {
 	public: {
 		protocol: 'http',
-		//hostname: '192.168.2.47:3000',
-		hostname: 'localhost:3000',
+		hostname: '192.168.2.47:3000',
+		//hostname: 'localhost:3000',
 		basePath: function(){this.basePath = this.protocol+'://'+this.hostname+'/'}
 	},
 	adminAccount: {
@@ -10,7 +10,7 @@ const constants = {
 		password: 'admin'
 	},
 	appSettings: {
-		purchaseListRefreshTime: 10000,
+		purchaseListRefreshTime: 2000,
 	},
 	database: {
 		mongooseConnectionString: 'mongodb://localhost:27017/qticket',

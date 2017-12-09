@@ -1,11 +1,9 @@
 
 => Work log
 
-1) Working on DB abstraction using moongose
-2) Establishing sessions using express-session (when session expired unable to login again) (MOVE PRODUCTS FROM USER SESSION TO SERVER)
-3) Working on save/done events
-4) Add order status evaluation when rendering the page
-5) Orders being saved into the database, need to finish UI events after saving information, and update logic
+1) Check if draft is being edited before to remove
+2) Establishing sessions using express-session (when session expired unable to login again)
+
 
 
 => Enhancements pending list

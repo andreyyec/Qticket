@@ -193,11 +193,12 @@ body.loading .cssload-content {
       .order-card .card-body .client-info-section div {
         padding: 2px; }
       .order-card .card-body .client-info-section .ticket {
-        border-left: 1px solid #ddd;
-        text-align: center; }
+        border-left: 1px solid black;
+        text-align: center;
+        font-weight: bold; }
     .order-card .card-body .products-section {
       padding: 2px;
-      border-top: 1px solid #ddd; }
+      border-top: 1px solid black; }
 
 .product-card {
   padding: 5px; }

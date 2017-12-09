@@ -35,14 +35,15 @@
 			}
 
 			.ticket{
-				border-left: 1px solid $gray-card-inner;
+				border-left: 1px solid black;
 				text-align: center;
+				font-weight: bold;
 			}
 		}
 
 		.products-section{
 			padding: 2px;
-			border-top: 1px solid $gray-card-inner;
+			border-top: 1px solid black;
 		}
 	}
 }

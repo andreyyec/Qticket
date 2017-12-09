@@ -23,15 +23,16 @@ class OrdersManager {
 
     getDocumentFromArray (array, property, value, getIndex = false) {
         if (array.constructor === Array) {
+            let doc = array.filter(x => x[property] === value);
+            
             if (getIndex) {
-                let doc = array.filter(x => x[property] === value);
                 if (doc) {
                     return {document: doc[0], index: array.findIndex(x => x[property] === value)};
                 } else {
                     return {document: undefined, index: undefined};    
                 }
             }else {
-                return array.findIndex(x => x[property] === value);
+                return doc[0];
             }
         } else {
             return false;
@@ -320,6 +321,24 @@ class OrdersManager {
         return eChangesList;
     }
 
+    getIOUpdatesOrders(changesList){
+        let ioDraftsUpdatesObject = {added:[], updated:[], removed:[]};
+
+        for(let i in changesList.added) {
+            ioDraftsUpdatesObject.added.push(self.getDocumentFromArray(ordersObj.drafts, 'id', changesList.added[i].id));
+        }
+
+        for(let i in changesList.updated) {
+            ioDraftsUpdatesObject.updated.push(self.getDocumentFromArray(ordersObj.drafts, 'id', changesList.updated[i].id));
+        }
+
+        for(let i in changesList.removed) {
+            ioDraftsUpdatesObject.removed.push(changesList.removed[i]);
+        }
+
+        return ioDraftsUpdatesObject;
+    }
+
     updateAppInMemoryList(changesList) {
         let updtbject, getDbSavedInfo, updateEvFlag = false;
 
@@ -362,7 +381,7 @@ class OrdersManager {
             self.logDbError('getting DB order records',err);
         }).then(() => {
             if (updateEvFlag) {
-                ioDashb.emit('update', self.enhancedDashboardUpdateList(ordersObj));
+                ioOrders.emit('screenUpdate', self.getIOUpdatesOrders(changesList.drafts));
             }
         });
     }
