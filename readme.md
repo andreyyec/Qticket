@@ -1,9 +1,8 @@
 
 => Work log
 
-1) Fix error on user sessions when expired
-2) Check if draft is being edited before to remove
-3) Establishing sessions using express-session (when session expired unable to login again)
+1) Check if draft is being edited before to remove
+2) Establishing sessions using express-session (when session expired unable to login again)
 
 
 
