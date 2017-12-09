@@ -8,7 +8,20 @@ let sessionData, sessionManager = new sessMng();
 
 // ====> Session Routes
 
+router.get('/login', (req, res) => {
+    console.log('login');
+    if (sessionManager.sessionValidate(req.session)) {
+        res.redirect('/');
+    } else {
+        res.render('pages/login', {
+            layout: false,
+            errorMsg: (req.query.error !== undefined) ? 'Invalid Username or Password' : undefined 
+        });
+    }
+});
+
 router.post('/session/login', (req, res) => {
+    console.log('session/login');
     let userDataRequest, productsDataRequest,
         userData = req.body,
         authProcess = sessionManager.auth(userData.username, userData.password);
@@ -41,28 +54,11 @@ router.post('/session/login', (req, res) => {
     });
 });
 
-router.get('/login', (req, res) => {
-    if (sessionManager.isValidSession(req.session)) {
-        res.redirect('/');
-    } else {
-        res.render('pages/login', {
-            layout: false,
-            errorMsg: (req.query.error !== undefined) ? 'Invalid Username or Password' : undefined 
-        });
-    }
-});
-
-router.get('/logout', (req, res) => {
-    req.session.destroy(function(err) {
-        res.redirect('/login');
-    });
-});
-
 // ====> Application Routes
 
     // middleware to check for a valid user session
 router.use(function checkUserSession (req, res, next) {
-    if (sessionManager.isValidSession(req.session)) {
+    if (sessionManager.sessionValidate(req.session)) {
         sessionData = req.session;
         next();
     } else {
@@ -71,6 +67,7 @@ router.use(function checkUserSession (req, res, next) {
 });
 
 router.get('/', (req, res) => {
+    console.log('/');
     res.render('pages/dashboard', {
         activeTab : 1,
         tabTitle: 'Dashboard - Qticket',
@@ -133,7 +130,13 @@ router.get('/reports', (req, res) => {
     });
 });*/
 
-    // 404 default route
+router.get('/logout', (req, res) => {
+    req.session.destroy(function(err) {
+        res.redirect('/login');
+    });
+});
+
+// 404 default route
 router.get('*', (req, res) => {
     res.render('pages/404', {
         session: sessionData,

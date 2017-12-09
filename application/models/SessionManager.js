@@ -4,7 +4,7 @@ const   constants = require('../config/constants'),
         http = require('http'),
         request = require('request');
 
-let self, cookie, productsArray,
+let self, cookie,
     dbManager = new dbMng();
 
 class SessionManager {
@@ -13,8 +13,27 @@ class SessionManager {
         self = this;
     }
 
+    getMinutesDiff(lastModified) {
+        return Math.floor((Math.abs(new Date().getTime() - new Date(lastModified).getTime())/1000)/60);
+    }
+
     isValidSession(session) {
-        return (session !== undefined && session.user !== undefined/* && session.products !== undefined*/) ? true : false;
+        if (!session.isStickySession) {
+            return (session && session.user && session.lastModified && self.getMinutesDiff(session.lastModified) <= constants.appSettings.sessionDurationTime) ? true : false;
+        } else {
+            return (session && session.user) ? true : false;
+        }
+    }
+
+    sessionValidate(session) {
+        let isValid = self.isValidSession(session);
+        if (isValid) {
+            session.lastModified = new Date();
+        } else {
+            session.user = undefined;
+            session.lastModified = undefined;
+        }
+        return isValid;
     }
 
     auth(username, password) {
@@ -93,8 +112,13 @@ class SessionManager {
                         userData: userData
                     };
 
+                    session.lastModified = new Date();
+
                     if (userData.purchase_type_user === 'tablero') {
-                        dashBUser = true;
+                        let year = 1000 * 60 * 60 * 24 * 365;
+                        session.isStickySession = true;
+                        req.session.cookie.expires = new Date(Date.now() + year)
+                        req.session.cookie.maxAge = year;
                     }
 
                     resolve(dashBUser);

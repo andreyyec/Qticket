@@ -10,11 +10,11 @@ const constants = {
 		password: 'admin'
 	},
 	appSettings: {
-		purchaseListRefreshTime: 2000,
+		purchaseListRefreshTime: 2, //seconds
+		sessionDurationTime: 30 //minutes
 	},
 	database: {
 		mongooseConnectionString: 'mongodb://localhost:27017/qticket',
-		mongoConnectionString: '',
 		dbHost: 'localhost',
 		dbName: 'qticket',
 		dbPort: 27017,

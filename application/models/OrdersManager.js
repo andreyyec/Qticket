@@ -433,7 +433,7 @@ class OrdersManager {
 
         setInterval(() => {
             self.requestProcedure();
-        }, constants.appSettings.purchaseListRefreshTime);
+        }, constants.appSettings.purchaseListRefreshTime * 1000);
     }
 }
 
