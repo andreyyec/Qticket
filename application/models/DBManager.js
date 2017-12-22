@@ -11,7 +11,7 @@ class DBManager {
     constructor() {
         self = this;
 
-        Mongoose.connect(constants.database.mongooseConnectionString);
+        Mongoose.connect(constants.database.dbConnString);
 
         self.db = db;
 

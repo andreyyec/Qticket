@@ -403,3 +403,6 @@ body.loading .cssload-content {
 @media (min-width: 1200px) {
   .login .container .card.card-login {
     width: 40%; } }
+
+.content-container.search .table-responsive {
+  margin: 20px 0; }
