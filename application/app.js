@@ -6,14 +6,18 @@ const   express = require('express'),
         MongoStore = require('connect-mongo')(session), 
         http = require('http').Server(app),
         io = require('socket.io')(http),
-        port = process.env.PORT || 3000,
         constants = require('./config/constants'),
         routes = require('./config/routes'),
+        port = constants.public.port || 3000,
         dbMng = require(constants.paths.models + 'DBManager'),
         sessinMng = require(constants.paths.models + 'SessionManager'),
         prodsMng = require(constants.paths.models + 'ProductsManager'),
         ordersMng = require(constants.paths.models + 'OrdersManager');
 
+
+function debbuger(msg) {
+    console.log(`[Debug] => ${msg}`);
+}
 
 //DB settings
 let authProcess, ordersManager, productsManager, sessionManager = new sessinMng(), dbManager = new dbMng();
@@ -45,8 +49,12 @@ app.use(session({
 
 //App -> Odoo Purchases List Init
 authProcess = sessionManager.auth(constants.adminAccount.username, constants.adminAccount.password);
+debbuger('Connecting with Odoo Server');
 
 authProcess.then((loginData) => {
+    debbuger('Connected');
+    debbuger('Fetching products information from Odoo Server');
+
     let productsDataRequest;
 
     if (loginData && loginData.session_id) {
@@ -54,6 +62,7 @@ authProcess.then((loginData) => {
         productsDataRequest = productsManager.requestProductsData();
         
         productsDataRequest.then((productsData) => {
+            debbuger('Fetched');
             app.set('appProducts', productsData);
             ordersManager = new ordersMng(loginData, dbManager,io.of('/orders'), io.of('/dashboard'));
             ordersManager.initLoop();
@@ -66,12 +75,12 @@ authProcess.then((loginData) => {
                 console.log('listening on *:' + port);
             });
         }).catch((err) => {
-            console.log('Error while trying to get Odoo products Data');
+            debbuger('Unable to fetch products from Odoo');
         });
     }else {
-        console.log('Error while trying to access global data');
+        debbuger('Error while trying to access global data');
     }
 }).catch((data) => {
-    console.log('Unable to connect with Odoo Server');
+    debbuger('Unable to connect with Odoo Server');
 });
 

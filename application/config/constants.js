@@ -1,28 +1,29 @@
 const constants = {
 	public: {
 		protocol: 'http',
-		hostname: '192.168.2.47:3000',
-		//hostname: 'localhost:3000',
-		basePath: function(){this.basePath = this.protocol+'://'+this.hostname+'/'}
+		hostname: 'localhost',
+		port: 3000,
+		basePath: ''
+	},
+	appSettings: {
+		//purchaseListRefreshTime: 2, //seconds
+		purchaseListRefreshTime: 10, //seconds
+		sessionDurationTime: 30 //minutes
 	},
 	adminAccount: {
 		username: 'admin',
 		password: 'admin'
 	},
-	appSettings: {
-		purchaseListRefreshTime: 2, //seconds
-		sessionDurationTime: 30 //minutes
-	},
 	database: {
-		mongooseConnectionString: 'mongodb://localhost:27017/qticket',
-		dbHost: 'localhost',
-		dbName: 'qticket',
-		dbPort: 27017,
-		dbOptions: {}
+		host: 'localhost',
+		name: 'qticket',
+		port: 27017,
+		options: {},
+		dbConnString: ''
 	},
 	odooParams: {
 		protocol: 'http',
-		host: '34.210.127.118',
+		host: '52.41.145.237',
 		port: '8070',
 		db: 'andrey'
 	},
@@ -34,8 +35,13 @@ const constants = {
 	secure: {
 		secret: 'R3c1C1aD0rASaNm1Gu3L'
 	}
-}
+}, 
+utils = {
+	getBasePath: () => {return `${constants.public.protocol}://${constants.public.hostname}:${constants.public.port}/`},
+	getDBConnString: () => {return `mongodb://${constants.database.host}:${constants.database.port}/${constants.database.name}`}
+};
 
-constants.public.basePath();
+constants.public.basePath = utils.getBasePath();
+constants.database.dbConnString = utils.getDBConnString();
 
 module.exports = constants;

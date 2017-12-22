@@ -3,7 +3,7 @@
 		session: <%- (typeof constants != "undefined" ? JSON.stringify(session.user) : "") %>,
 		constants: <%- (typeof constants != "undefined" ? JSON.stringify(constants) : "") %>,
 		getIOInstance: function(relativePath) {
-			return io.connect(window.Qticket.constants.basePath+relativePath);
+			return io.connect(window.Qticket.constants.basePath + relativePath);
 		},
         isLoadingActive: function() {
             return ($('body').hasClass('loading')) ? true : false;

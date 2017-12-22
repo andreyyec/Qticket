@@ -21,6 +21,14 @@
     <link href="public/vendor/sb-admin/css/sb-admin.css" rel="stylesheet">
     <!-- Custom CSS styles-->
     <link href="public/static/css/screen.css" rel="stylesheet">
+
+    <!-- CSS Vendor files -->
+    <% if(locals.cssvendorfiles !== undefined){ %>
+        <% for(var i=0; i < cssvendorfiles.length; i++) {%>
+            <link href="public/vendor/<%= cssvendorfiles[i] %>.css" rel="stylesheet">
+        <% } %>
+    <% } %>
+    <!-- ./CSS Vendor files -->
 </head>
 
 <body class="fixed-nav bg-dark" id="page-top">
@@ -68,6 +76,14 @@
     <script src="public/vendor/noty/noty.min.js"></script>
     <!-- Custom scripts for all pages-->
     <script src="public/vendor/sb-admin/js/sb-admin.min.js"></script>
+
+    <!-- Custom JS Vendor files -->
+    <% if(locals.jsvendorfiles !== undefined){ %>
+        <% for(var i=0; i < jsvendorfiles.length; i++) {%>
+            <script src="public/vendor/<%= jsvendorfiles[i] %>.js"></script>
+        <% } %>
+    <% } %>
+    <!-- ./JS Files -->
 
     <!-- Global Functions Object -->
     <%- include partials/global_object.ejs %>
