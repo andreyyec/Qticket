@@ -140,7 +140,7 @@ router.get('/logout', (req, res) => {
 //API Endpoints
 router.get('/rest/test', (req, res) => {
     res.send(
-        {
+        /*{
           "data": [
             [
               "Tiger Nixon",
@@ -599,8 +599,19 @@ router.get('/rest/test', (req, res) => {
               "$112,000"
             ]
           ]
-        }
-    );
+        }*/
+    { 
+        "data": [
+            [
+                "Donna Snider",
+                "Customer Support",
+                "New York",
+                "4226",
+                "2011/01/25",
+                "$112,000"
+            ]
+        ]
+    });
 });
 
 // 404 default route
