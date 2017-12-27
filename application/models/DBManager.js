@@ -10,15 +10,20 @@ class DBManager {
 
     constructor() {
         self = this;
-
-        Mongoose.connect(constants.database.dbConnString);
-
         self.db = db;
+    }
+
+    connect() {
+        Mongoose.connect(constants.database.dbConnString, { useMongoClient: true });
 
         db.on('error', console.error.bind(console, 'connection error:'));
         db.once('openUri', () => {
             console.log('DB Connection established');
         });
+    }
+
+    disconnect() {
+        db.close();
     }
 
     saveOrder(nOrderData, prevSaved = false) {
@@ -61,7 +66,21 @@ class DBManager {
         });
     }
 
-    exampleGetOrder(id) {
+    getOrdersbyFilters(filters, fields, limit = 200) {
+        return new Promise((resolve, reject) => {
+            let query = orderModel.find(filters, fields).lean().limit(limit);
+
+            query.exec(function (err, docs) {
+                if (err) {
+                    reject({error: err});
+                } else {
+                    resolve({data: docs});
+                }
+            });
+        });
+    }
+
+    getOrderById(id) {
         return orderModel.findOne({id: id}, (err,obj) => {
             if (err) {
                 return {status: 'error'};

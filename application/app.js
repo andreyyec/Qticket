@@ -19,6 +19,12 @@ function debbuger(msg) {
     console.log(`[Debug] => ${msg}`);
 }
 
+function exitHandler(options, dbManager) {
+    if (options.cleanup) console.log('clean');
+    if (options.exit) process.exit();
+    dbManager.disconnect();
+}
+
 //DB settings
 let authProcess, ordersManager, productsManager, sessionManager = new sessinMng(), dbManager = new dbMng();
 
@@ -46,6 +52,9 @@ app.use(session({
     rolling: true,
     cookie: {expires: false}
 }));
+
+/*Starts DB Connection*/
+dbManager.connect();
 
 //App -> Odoo Purchases List Init
 authProcess = sessionManager.auth(constants.adminAccount.username, constants.adminAccount.password);
@@ -83,4 +92,20 @@ authProcess.then((loginData) => {
 }).catch((data) => {
     debbuger('Unable to connect with Odoo Server');
 });
+
+
+/*CleanUP Procedures*/
+
+//do something when app is closing
+process.on('exit', exitHandler.bind(null,{cleanup:true}, dbManager));
+
+//catches ctrl+c event
+process.on('SIGINT', exitHandler.bind(null, {exit:true}, dbManager));
+
+// catches "kill pid" (for example: nodemon restart)
+process.on('SIGUSR1', exitHandler.bind(null, {exit:true}, dbManager));
+process.on('SIGUSR2', exitHandler.bind(null, {exit:true}, dbManager));
+
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {exit:true}, dbManager));
 

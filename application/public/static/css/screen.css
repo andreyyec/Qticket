@@ -200,6 +200,15 @@ body.loading .cssload-content {
       padding: 2px;
       border-top: 1px solid black; }
 
+.filter-bar.card {
+  border-radius: 1rem 1rem .25rem .25rem; }
+  .filter-bar.card .card-header {
+    border-radius: 1rem 1rem 0 0;
+    padding: 0.35rem 1.25rem; }
+  .filter-bar.card .card-body {
+    border: 0;
+    margin: 0; }
+
 .product-card {
   padding: 5px; }
   .product-card .product-card-inner {

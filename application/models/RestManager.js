@@ -1,13 +1,13 @@
-const   constants = require('../config/constants'),
-        odooSettings = constants.odooParams,
-        http = require('http'),
-        request = require('request');
+const   validator = require("check-data-type"),
+        constants = require('../config/constants'),
+        odooSettings = constants.odooParams;
+        
 
 let self, dbInstance;
 
 class RestManager {
 
-    constructor(session, dbInst, ioOrdersInstance, ioDashbInstance) {
+    constructor(dbInst) {
         self = this;
         dbInstance = dbInst;
     }
@@ -35,9 +35,59 @@ class RestManager {
         }
     }
 
-    getAjaxData(requestParams){
-        return dbInstance.getOrders(requestParams);
+    validateRequestFilters(filtersList, validationRules) {
+        return true;
+    }
+
+    processDataTableSummary(data){
+        let summary = data/*, parentArray = []*/;
+
+        for(let i in summary) {
+            let objToArray = [], obj = summary[i];
+            obj.client = obj.client.name;
+            obj.date = obj.activityLog[obj.activityLog.length - 1].date;
+            obj.activityLog = undefined;
+
+            /*for(let x in obj) {
+                objToArray.push(obj[x]);
+            }
+            parentArray.push(objToArray);*/
+        }
+
+        return summary;
+    }
+
+    getOrdersByFilters(filters = {}, fields = {}, summary = false) {
+        return new Promise((resolve, reject) => {
+            let validationRules = [{
+                name: 'reference',
+                type: String,
+                maxlenght: 30
+            },{
+                name: 'date',
+                type: Date
+            },{
+                name: 'ticket',
+                type: Number
+            }];
+
+            if (self.validateRequestFilters(filters, validationRules)) {
+                let result = dbInstance.getOrdersbyFilters(filters, fields);
+                
+                result.then((data) => {
+                    if (!summary) {
+                        resolve({data: data})
+                    } else {
+                        resolve({data: self.processDataTableSummary(data.data)});
+                    }
+                }).catch((err) => {
+                    reject({error: err});
+                });
+            } else {
+                reject({error: 'Invalid Parameters'});
+            }
+        });
     }
 }
 
-module.exports = OrdersManager;
+module.exports = RestManager;
