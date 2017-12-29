@@ -272,6 +272,8 @@ $(function () {
                     }
                 };
 
+            console.log(orderDataObj);
+
             return orderDataObj;
         },
         // Validation Methods
@@ -290,6 +292,7 @@ $(function () {
                     element.html('0.');
                 } else {
                     element.html(nValue.html());
+                    uiDetailScreenManager.toggleOrderActionButtons(true);
                 }
                 override = false;
             } else {
@@ -343,6 +346,7 @@ $(function () {
         },
         validateOrderBeforeSend: () => {
             //Check that orders count with at least one product row
+            return true
         },
         //UI Related functions
         toggleTabs: () => {
@@ -495,18 +499,20 @@ $(function () {
                     orderState = (button.hasClass('done')?'done':'saved');
 
                 if (!button.hasClass(disabledClass)) {
-                    let sendOrderPrms = uiDetailScreenManager.sendOrderData(uiDetailScreenManager.gatherToStoreOrderData(orderState));
+                    if (uiDetailScreenManager.validateOrderBeforeSend()) {
+                        let sendOrderPrms = uiDetailScreenManager.sendOrderData(uiDetailScreenManager.gatherToStoreOrderData(orderState));
                     
-                    sendOrderPrms.then((confirmation) => {
-                        if (confirmation) {
-                            uiDetailScreenManager.leaveDetailScreen();
-                        } else {
+                        sendOrderPrms.then((confirmation) => {
+                            if (confirmation) {
+                                uiDetailScreenManager.leaveDetailScreen();
+                            } else {
+                                Qticket.throwAlert('Error Saving order to the database');
+                            }
+                        }).catch((err) => {
+                            console.log(err);
                             Qticket.throwAlert('Error Saving order to the database');
-                        }
-                    }).catch((err) => {
-                        console.log(err);
-                        Qticket.throwAlert('Error Saving order to the database');
-                    });
+                        });
+                    }
                 }
             });
 

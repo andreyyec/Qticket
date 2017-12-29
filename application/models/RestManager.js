@@ -40,18 +40,13 @@ class RestManager {
     }
 
     processDataTableSummary(data){
-        let summary = data/*, parentArray = []*/;
+        let summary = data;
 
         for(let i in summary) {
             let objToArray = [], obj = summary[i];
             obj.client = obj.client.name;
             obj.date = obj.activityLog[obj.activityLog.length - 1].date;
             obj.activityLog = undefined;
-
-            /*for(let x in obj) {
-                objToArray.push(obj[x]);
-            }
-            parentArray.push(objToArray);*/
         }
 
         return summary;
@@ -72,7 +67,7 @@ class RestManager {
             }];
 
             if (self.validateRequestFilters(filters, validationRules)) {
-                let result = dbInstance.getOrdersbyFilters(filters, fields);
+                let result = dbInstance.getOrdersbyFilters(filters, fields, -1);
                 
                 result.then((data) => {
                     if (!summary) {

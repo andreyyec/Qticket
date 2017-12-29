@@ -103,10 +103,11 @@ class OrdersManager {
                 
             }
         } else {
+            console.log(sOrderD);
             return {
                 orderState: nOrderD.orderState,
                 odooOrderRef: sOrderD.id,
-                ticketNumber: (sOrderD.order)?sOrderD.order:0,
+                ticketNumber: (sOrderD.ticket)?sOrderD.ticket:0,
                 client: {
                     id: sOrderD.client[0], 
                     name: sOrderD.client[1]

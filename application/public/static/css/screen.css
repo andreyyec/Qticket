@@ -172,7 +172,8 @@ body.loading .cssload-content {
     -moz-transform: rotate(360deg); } }
 
 .order-card {
-  border-color: #0275d8; }
+  border-color: #0275d8;
+  cursor: pointer; }
   .order-card .card-header {
     background-color: #0275d8;
     border-color: #0275d8; }
