@@ -18,10 +18,10 @@ $(function () {
         },
         init: () => {
             ordersTable.DataTable({
-                'ajax': {
-                    'url': '/rest/orders/get',
-                    'type': 'POST',
-                    'dataSrc': (json) => {
+                ajax: {
+                    url: '/rest/orders/get',
+                    type: 'POST',
+                    dataSrc: (json) => {
                         let return_data = json.data;
                         
                         for (let i in return_data) {
@@ -32,17 +32,17 @@ $(function () {
                         return return_data;
                     },
                 },
-                'aoColumnDefs': [
-                    { 'bVisible': false, 'aTargets': [0] }
+                aoColumnDefs: [
+                    { bVisible: false, aTargets: [0] }
                 ],
-                'columns': [
-                    { 'data': '_id' },
-                    { 'data': 'odooOrderRef' },
-                    { 'data': 'client' },
-                    { 'data': 'date' },
-                    { 'data': 'ticketNumber' },
+                columns: [
+                    { data: '_id' },
+                    { data: 'odooOrderRef' },
+                    { data: 'client' },
+                    { data: 'date' },
+                    { data: 'ticketNumber' },
                 ],
-                'order': [[2,'desc']]
+                order: [[2,'desc']]
             });
             tableManager.attachListeners();
         }
