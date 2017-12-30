@@ -119,7 +119,7 @@ router.get('/reports', (req, res) => {
     });
 });
 
-/*router.get('/settings', (req, res) => {
+/*router.get('/administration/settings', (req, res) => {
     res.render('pages/settings', {
         activeTab : 5,
         tabTitle: 'Settings - Qticket',
@@ -131,6 +131,18 @@ router.get('/reports', (req, res) => {
     });
 });*/
 
+router.get('/administration/orders/duplicate', (req, res) => {
+    res.render('pages/adm_orders_duplicate', {
+        activeTab : 6,
+        tabTitle: 'Settings - Qticket',
+        mainTitle: 'Settings',
+        subTitle: '',
+        //jsfiles: [],
+        constants: constants.public,
+        session: sessionData
+    });
+});
+
 router.get('/logout', (req, res) => {
     req.session.destroy(function(err) {
         res.redirect('/login');
@@ -138,33 +150,16 @@ router.get('/logout', (req, res) => {
 });
 
 //API Endpoints
-router.get('/rest/test', (req, res) => {
-    res.send({ "data": [
-                ["Donna Snider",
-                "Customer Support",
-                "New York",
-                "4226",
-                "2011/01/25",
-                "$112,000"
-                ],["Donna Snider",
-                "Customer Support",
-                "New York",
-                "4226",
-                "2011/01/25",
-                "$112,000"
-                ]
-            ]});
-});
-
-router.post('/rest/orders/get', (req, res) => {
-    let fields = {'_id':1, 'odooOrderRef':1, 'client':1, 'ticketNumber':1, 'activityLog':1},
-        //filters = req.body,
+router.post('/rest/orders/get/', (req, res) => {
+    let //filters = (req.body) ? req.body : {},
         filters = {},
-        ordersPrm = restManager.getOrdersByFilters(filters, fields, true);
+        ordersPrm = restManager.getDataTablesSearchRecords(filters, true);
+
+    console.log(req.body);
 
     ordersPrm.then((data) => {
         res.send(data);
-    }).catch((err)=>{
+    }).catch((err) => {
         console.log(err);
         res.send({error: 'Unable to pull data from server'});
     });

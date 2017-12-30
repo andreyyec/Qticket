@@ -414,5 +414,13 @@ body.loading .cssload-content {
   .login .container .card.card-login {
     width: 40%; } }
 
+.content-container.search #filters-bar .filter-actions {
+  text-align: right;
+  padding-top: 10px; }
+  .content-container.search #filters-bar .filter-actions label {
+    margin-right: 5px; }
+    .content-container.search #filters-bar .filter-actions label #all-registries {
+      margin-right: 5px; }
+
 .content-container.search .table-responsive {
   margin: 20px 0; }

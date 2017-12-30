@@ -52,19 +52,23 @@ class RestManager {
         return summary;
     }
 
-    getOrdersByFilters(filters = {}, fields = {}, summary = false) {
+    getDataTablesSearchRecords(filters = {}, summary = false) {
         return new Promise((resolve, reject) => {
-            let validationRules = [{
-                name: 'reference',
-                type: String,
-                maxlenght: 30
-            },{
-                name: 'date',
-                type: Date
-            },{
-                name: 'ticket',
-                type: Number
-            }];
+            let fields = {'_id':1, 'odooOrderRef':1, 'client':1, 'ticketNumber':1, 'activityLog':1},
+                validationRules = [{
+                    name: 'orderRef',
+                    type: String,
+                    maxlenght: 30
+                },{
+                    name: 'client',
+                    type: String,
+                    maxlenght: 30
+                },{
+                    name: 'date',
+                    type: Date
+                }];
+
+            //db.users.find({"name": /.*m.*/})
 
             if (self.validateRequestFilters(filters, validationRules)) {
                 let result = dbInstance.getOrdersbyFilters(filters, fields, -1);

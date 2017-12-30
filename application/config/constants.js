@@ -1,7 +1,7 @@
 const constants = {
 	public: {
 		protocol: 'http',
-		hostname: '192.168.1.108',
+		hostname: 'localhost',
 		port: 3000,
 		basePath: ''
 	},
@@ -24,7 +24,7 @@ const constants = {
 	odooParams: {
 		protocol: 'http',
 		host: '52.41.145.237',
-		port: '8070',
+		port: '8069',
 		db: 'andrey'
 	},
 	paths: {

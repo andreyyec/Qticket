@@ -1,4 +1,19 @@
 .content-container.search {
+	#filters-bar {
+		.filter-actions {
+			text-align: right;
+			padding-top: 10px;
+
+			label {
+				margin-right: 5px;
+
+				#all-registries {
+					margin-right: 5px;
+				}
+			}
+		}
+	}
+
 	.table-responsive {
 		margin: 20px 0;
 	}

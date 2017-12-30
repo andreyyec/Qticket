@@ -1,7 +1,6 @@
 $(function () {
-    var scope,
-    Qticket = window.Qticket,
-    socket = Qticket.getIOInstance('dashboard');
+    const Qticket = window.Qticket,
+    socket = Qticket.getIOInstance('dashboard'),
     body = $('body'),
     hideClass = 'hide',
     contentContainer = body.find('.content-container'),
@@ -21,7 +20,10 @@ $(function () {
                         </div>\
                         <div class="ticket ticket-info">${client[1]}</div>\
                     </div>'
-    },
+    };
+
+    let scope;
+    
     socketManager = {
         attachListeners: function() {
             socket.on('data', function(data) {
@@ -69,7 +71,7 @@ $(function () {
         init: function() {
             this.connect();
         }
-    }
+    },
     dashboardManager = {
         webSocketStart: function() {
             Qticket.toggleLoadScreen(true);

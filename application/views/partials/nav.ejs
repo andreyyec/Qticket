@@ -27,6 +27,16 @@
                     <a class="nav-link" href="/reports"><i class="fa fa-fw fa-area-chart"></i><span class="nav-link-text">Reports</span></a>
                 </li>
             <% } %>
+            <% if (session.user.role === 'administrativo' || session.user.role === 'super') { %>
+                <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Settings">
+                    <a href="#" data-toggle="collapse" data-target="#adm-dropdown" class="" aria-expanded="true"><i class="fa fa-fw fa-arrows-v"></i> Administration <i class="fa fa-fw fa-caret-down"></i></a>
+                    <ul id="adm-dropdown" class="collapse in" aria-expanded="true" style="">
+                        <li class="nav-item">
+                            <a href="#">Duplicate Order</a>
+                        </li>
+                    </ul>
+                </li>
+            <% } %>
             <!-- <%# if (session.user.role === 'super') { %> 
             <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Settings">
                 <a class="nav-link" href="/settings">

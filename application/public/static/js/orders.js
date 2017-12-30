@@ -1,70 +1,68 @@
-/*
-    @ToREMOVE Debug function
-*/
-
 $(function () {
-    let self, sckId, csOrdersArray, currentRow = {}, currentOrderData = {}, override = true, actionEnabled = false,
-    socket = Qticket.getIOInstance('orders'), body = $('body'), blockedClass = 'blocked', disabledClass = 'disabled', selectedClass = 'selected', activeClass = 'active', doneClass = 'done',
-    ordersContainer = body.find('.orders-screen'),
-    ordersThumbsContainer = ordersContainer.find('.inner-container .orders-thumbs'),
-    ordersFullContainer = ordersContainer.find('.inner-container .orders-full'),
-    orderDetailsContainer = body.find('.order-details-screen'),
-    productsSection = orderDetailsContainer.find('.products-section'),
-    productCards = productsSection.find('.product-card'),
-    oDSection = orderDetailsContainer.find('.order-details-section'),
-    clientInfoBar = oDSection.find('.client-info'),
-    oDProductsList = oDSection.find('.order-details-products-list'),
-    oDProductsHolder = oDSection.find('.order-products-holder'),
-    mobileTabs = orderDetailsContainer.find('.mobile-tabs .tab'),
-    mobileSections = orderDetailsContainer.find('.display-section'),
-    oDKeypad = oDSection.find('.order-keypad'),
-    modifierButtons = oDKeypad.find('.modifier'),
-    keyButtons = oDKeypad.find('.key'),
-    cancelButton = oDSection.find('.action-buttons-bar .cancel'),
-    dbActionButtons = oDSection.find('.action-buttons-bar .send'),
-    saveButton = oDSection.find('.action-buttons-bar .save'),
-    doneButton = oDSection.find('.action-buttons-bar .done'),
-    removeModifier = $(modifierButtons[0]),
-    priceModifier = $(modifierButtons[1]),
-    qtyModifier = $(modifierButtons[2]),
-    //===> Templates Object
-    templates= {
-        nOrderCard: '<div class="col-6 col-sm-4 col-md-3">\
-                        <div class="card card-inverse order-card {{if $data.isBlocked}}blocked{{else $data.orderDBData && $data.orderDBData.orderState && $data.orderDBData.orderState == "done"}}done{{/if}}" data-id="${id}" data-client-id="${client[0]}" data-client="${client[1]}" data-ticket="${ticket}">\
-                            <div class="card-header card-header">\
-                                ${id}\
-                            </div>\
-                            <div class="card-block bg-white card-body">\
-                                <div class="row no-gutters client-info-section">\
-                                    <div class="col-8 client">${client[1]}</div>\
-                                    <div class="col-4 ticket">{{if (ticket !== undefined) && (ticket !== false)}}${ticket}{{else}}-{{/if}}</div>\
+    const socket = Qticket.getIOInstance('orders'), body = $('body'), blockedClass = 'blocked', disabledClass = 'disabled', selectedClass = 'selected', activeClass = 'active', doneClass = 'done',
+        ordersContainer = body.find('.orders-screen'),
+        ordersThumbsContainer = ordersContainer.find('.inner-container .orders-thumbs'),
+        ordersFullContainer = ordersContainer.find('.inner-container .orders-full'),
+        orderDetailsContainer = body.find('.order-details-screen'),
+        productsSection = orderDetailsContainer.find('.products-section'),
+        productCards = productsSection.find('.product-card'),
+        oDSection = orderDetailsContainer.find('.order-details-section'),
+        clientInfoBar = oDSection.find('.client-info'),
+        oDProductsList = oDSection.find('.order-details-products-list'),
+        oDProductsHolder = oDSection.find('.order-products-holder'),
+        mobileTabs = orderDetailsContainer.find('.mobile-tabs .tab'),
+        mobileSections = orderDetailsContainer.find('.display-section'),
+        oDKeypad = oDSection.find('.order-keypad'),
+        modifierButtons = oDKeypad.find('.modifier'),
+        keyButtons = oDKeypad.find('.key'),
+        cancelButton = oDSection.find('.action-buttons-bar .cancel'),
+        dbActionButtons = oDSection.find('.action-buttons-bar .send'),
+        saveButton = oDSection.find('.action-buttons-bar .save'),
+        doneButton = oDSection.find('.action-buttons-bar .done'),
+        removeModifier = $(modifierButtons[0]),
+        priceModifier = $(modifierButtons[1]),
+        qtyModifier = $(modifierButtons[2]),
+        templates= {
+            nOrderCard: '<div class="col-6 col-sm-4 col-md-3">\
+                            <div class="card card-inverse order-card {{if $data.isBlocked}}blocked{{else $data.orderDBData && $data.orderDBData.orderState && $data.orderDBData.orderState == "done"}}done{{/if}}" data-id="${id}" data-client-id="${client[0]}" data-client="${client[1]}" data-ticket="${ticket}">\
+                                <div class="card-header card-header">\
+                                    ${id}\
                                 </div>\
-                                {{if $data.orderDBData}}\
-                                    <div class="row no-gutters products-section">\
-                                        <div class="col-12">\
-                                            {{each(prop, val) orderDBData.productRows}}\
-                                                <div class="row no-gutters">\
-                                                    <div class="col-12 product-name" data-id="${val.id}">${val.name}</div>\
-                                                    <div class="col-6 product-price">&#8353;<span class="value">${val.price}</span></div>\
-                                                    <div class="col-6 product-qty"><span class="value">${val.qty}</span>&nbsp;Kg</div>\
-                                                </div>\
-                                            {{/each}}\
-                                        </div>\
+                                <div class="card-block bg-white card-body">\
+                                    <div class="row no-gutters client-info-section">\
+                                        <div class="col-8 client">${client[1]}</div>\
+                                        <div class="col-4 ticket">{{if (ticket !== undefined) && (ticket !== false)}}${ticket}{{else}}-{{/if}}</div>\
                                     </div>\
-                                {{/if}}\
+                                    {{if $data.orderDBData}}\
+                                        <div class="row no-gutters products-section">\
+                                            <div class="col-12">\
+                                                {{each(prop, val) orderDBData.productRows}}\
+                                                    <div class="row no-gutters">\
+                                                        <div class="col-12 product-name" data-id="${val.id}">${val.name}</div>\
+                                                        <div class="col-6 product-price">&#8353;<span class="value">${val.price}</span></div>\
+                                                        <div class="col-6 product-qty"><span class="value">${val.qty}</span>&nbsp;Kg</div>\
+                                                    </div>\
+                                                {{/each}}\
+                                            </div>\
+                                        </div>\
+                                    {{/if}}\
+                                </div>\
                             </div>\
+                        </div>',
+            row:    '<div class="order-row" data-id="${id}">\
+                        <div class="row inner" >\
+                            <div class="col-8 bold product-name">${product}</div>\
+                            <div class="col-4 product-price">&cent;<span class="price">${price}</span></div>\
+                            <div class="col-12 product-qty">Cantidad: <span class="bold qty">{{if (qty)}}${qty}{{else}}1{{/if}}</span></div>\
                         </div>\
-                    </div>',
-        row:    '<div class="order-row" data-id="${id}">\
-                    <div class="row inner" >\
-                        <div class="col-8 bold product-name">${product}</div>\
-                        <div class="col-4 product-price">&cent;<span class="price">${price}</span></div>\
-                        <div class="col-12 product-qty">Cantidad: <span class="bold qty">{{if (qty)}}${qty}{{else}}1{{/if}}</span></div>\
-                    </div>\
-                </div>'
-    },
+                    </div>'
+        };
+
+    let self, sckId, csOrdersArray, currentRow = {}, currentOrderData = {}, override = true, actionEnabled = false;
+    //===> Templates Object
+    
     //===> Socket Manager
-    socketManager = {
+    const socketManager = {
         blockOrder: (orderId) => {
             return new Promise((resolve, reject) => {
                 socket.emit('blockOrder', {orderID: orderId, user: {username: Qticket.session.username, name:Qticket.session.displayname}}, (confirmation) => {
@@ -133,11 +131,6 @@ $(function () {
             socket.on('disconnect', () => {
                 Qticket.toggleLoadScreen(true);
             });            
-        },
-        debug: () => {
-            socket.emit('debug', (data) => {
-                console.log(data);
-            });
         },
         socketConnect: () => {
             socket.on('connect', () => {
@@ -271,8 +264,6 @@ $(function () {
                         }
                     }
                 };
-
-            console.log(orderDataObj);
 
             return orderDataObj;
         },
@@ -579,7 +570,8 @@ $(function () {
                 $('[data-toggle="tooltip"]').tooltip();   
             });
         }
-    }
+    };
+
     self = this;
     uiManager.init();
     uiDetailScreenManager.init();
