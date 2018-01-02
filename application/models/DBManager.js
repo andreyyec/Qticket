@@ -66,15 +66,15 @@ class DBManager {
         });
     }
 
-    getOrdersbyFilters(filters, fields, order = 1, limit = 200) {
+    getOrdersbyFilter(filters = {}, fields = {}, order = 1, limit = 200) {
         return new Promise((resolve, reject) => {
             let query = orderModel.find(filters, fields).sort({$natural: order}).lean().limit(limit);
 
             query.exec(function (err, docs) {
                 if (err) {
-                    reject({error: err});
+                    reject(err);
                 } else {
-                    resolve({data: docs});
+                    resolve(docs);
                 }
             });
         });

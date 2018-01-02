@@ -43,7 +43,9 @@ app.use(bodyParser.urlencoded({
 }));
 
 app.use(bodyParser.json());
+
 app.use('/public', express.static(__dirname+'/public'));
+
 app.use(session({
     secret: constants.secure.secret,
     resave: false,

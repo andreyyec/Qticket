@@ -7,7 +7,7 @@ const constants = {
 	},
 	appSettings: {
 		//purchaseListRefreshTime: 2, //seconds
-		purchaseListRefreshTime: 10, //seconds
+		purchaseListRefreshTime: 1, //seconds
 		sessionDurationTime: 30 //minutes
 	},
 	adminAccount: {

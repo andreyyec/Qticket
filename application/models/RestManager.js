@@ -52,9 +52,32 @@ class RestManager {
         return summary;
     }
 
-    getDataTablesSearchRecords(filters = {}, summary = false) {
+    getOrderByOdooId(id) {
         return new Promise((resolve, reject) => {
-            let fields = {'_id':1, 'odooOrderRef':1, 'client':1, 'ticketNumber':1, 'activityLog':1},
+            let filters = {'odooOrderRef': id},
+                validationRules = [{
+                    name: 'odooOrderRef',
+                    type: String,
+                    maxlenght: 30
+                }];
+
+            if (self.validateRequestFilters(filters, validationRules)) {
+                let result = dbInstance.getOrdersbyFilter(filters);
+                
+                result.then((data) => {
+                    resolve(data)
+                }).catch((err) => {
+                    reject({error: err});
+                });
+            } else {
+                reject({error: 'Invalid Parameters'});
+            }
+        });
+    }
+
+    getDataTablesSearchRecords(filters = {}) {
+        return new Promise((resolve, reject) => {
+            let fields = {'_id':1, 'odooOrderRef':1, 'client':1, 'ticketNumber':1, 'orderState':1, 'activityLog':1},
                 validationRules = [{
                     name: 'orderRef',
                     type: String,
@@ -71,14 +94,10 @@ class RestManager {
             //db.users.find({"name": /.*m.*/})
 
             if (self.validateRequestFilters(filters, validationRules)) {
-                let result = dbInstance.getOrdersbyFilters(filters, fields, -1);
+                let result = dbInstance.getOrdersbyFilter(filters, fields, -1);
                 
                 result.then((data) => {
-                    if (!summary) {
-                        resolve({data: data})
-                    } else {
-                        resolve({data: self.processDataTableSummary(data.data)});
-                    }
+                    resolve({data: self.processDataTableSummary(data)});
                 }).catch((err) => {
                     reject({error: err});
                 });

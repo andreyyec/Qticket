@@ -41,6 +41,7 @@ $(function () {
                     { data: 'client' },
                     { data: 'date' },
                     { data: 'ticketNumber' },
+                    { data: 'orderState' },
                 ],
                 order: [[2,'desc']]
             });

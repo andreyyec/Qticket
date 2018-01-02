@@ -107,6 +107,29 @@ router.get('/search', (req, res) => {
     });
 });
 
+router.get('/search/details/:orderid', (req, res) => {
+
+    let orderInfo, orderDetails = restManager.getOrderByOdooId(req.params.orderid);
+    
+    orderDetails.then((data) => {
+        orderInfo = data;
+    }).catch((err) => {
+        orderInfo = err;
+        console.log(err);
+    }).then(() => {
+        res.render('pages/se_order_details', {
+            activeTab : 3,
+            tabTitle: 'Order Details - Qticket',
+            mainTitle: 'Search',
+            subTitle: 'Order Details',
+            orderInfo: orderInfo,
+            jsfiles: ['order-details'],
+            constants: constants.public,
+            session: sessionData
+        });
+    });
+});
+
 router.get('/reports', (req, res) => {
     res.render('pages/reports', {
         activeTab : 4,
@@ -154,8 +177,6 @@ router.post('/rest/orders/get/', (req, res) => {
     let //filters = (req.body) ? req.body : {},
         filters = {},
         ordersPrm = restManager.getDataTablesSearchRecords(filters, true);
-
-    console.log(req.body);
 
     ordersPrm.then((data) => {
         res.send(data);
