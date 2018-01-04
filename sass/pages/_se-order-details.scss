@@ -1,0 +1,52 @@
+.order-details {
+	.row.section{
+		margin-top: 20px;
+		
+		&.order-header {
+			.row.provider {
+				background-color: $row-odd;
+			}
+
+			.key {
+				font-weight: bold;
+			}
+		}
+
+		&.products-table {
+			table tfoot {
+				tr.total-line {
+					background-color: white;
+
+					td {
+						font-weight: bold;
+						
+						&.key {
+							text-align: right;
+						}	
+					}
+					
+				}
+			}
+		}
+
+		&.activity-log {
+			.log-entry {
+				span.bold {
+					font-weight: bold;
+				}
+
+				span.action {
+					&.added {color:$bootstrap-success;}
+					&.updated {color:$bootstrap-warning;}
+					&.deleted {color:$bootstrap-danger;}
+				}
+
+				.wax-stamp .user{
+					color: $bootstrap-primary;
+				}
+			}
+		}
+	}
+}
+
+

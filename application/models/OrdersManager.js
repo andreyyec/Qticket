@@ -75,11 +75,13 @@ class OrdersManager {
 
             //Get Deleted Products
             if (savedOrderProducts.length > 0) {
-                for(let i in savedOrderProducts) {
+                for (let i = 0; i <= savedOrderProducts.length - 1; i++) {
                     activityLogs.push({id:savedOrderProducts[i].id, product:savedOrderProducts[i].name, action:'deleted', qty:null, price:null});
                 }
             }
         }
+
+        console.log(activityLogs);
 
         return activityLogs;
     }

@@ -1,5 +1,6 @@
 $(function () {
     const empty = '',
+        detailEndPoint = Qticket.constants.basePath + 'search/details/',
         refInp = $('#reference'),
         clientInp = $('#client'),
         dateInp = $('#date'),
@@ -16,10 +17,10 @@ $(function () {
                     url: '/rest/orders/get',
                     type: 'POST',
                     data: (d) => {
-                        d.orderRef = orderRef;
-                        d.client = client;
-                        d.date = ordDate;
-                        d.all = all;
+                        if (orderRef !== '') d.orderRef = orderRef;
+                        if (client !== '') d.client = client;
+                        if (ordDate !== '') d.date = ordDate;
+                        if (all !== '') d.all = all;
                     },
                     dataSrc: (json) => {
                         let return_data = json.data;
@@ -51,13 +52,9 @@ $(function () {
         },
         attachListeners: () => {
             ordersTable.on('click', 'tr', function () {
-                let target = $(this);
-
-                if (target.hasClass('selected')) {
-                    target.removeClass('selected');
-                } else {
-                    ordersTable.find('tr.selected').removeClass('selected');
-                    target.addClass('selected');
+                let target = $(this).find('td:first-child').html();
+                if (target) {
+                    window.location.href = detailEndPoint+target+'/';    
                 }
             });
         },
@@ -108,7 +105,10 @@ $(function () {
                 filtersManager.updateDataTable();
             });
 
-            allCheckBox.on('change', filtersManager.updateDataTable());
+            allCheckBox.on('change', (e) => {
+                all = ($(e.target).is(":checked"))? true : empty;
+                filtersManager.updateDataTable();
+            });
 
             resetFiltersBtn.on('click', filtersManager.resetFilters);
         },

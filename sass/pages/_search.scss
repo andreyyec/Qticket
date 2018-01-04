@@ -16,5 +16,9 @@
 
 	.table-responsive {
 		margin: 20px 0;
+
+		table tbody tr{
+			cursor: pointer;
+		}
 	}
 }

@@ -8,23 +8,23 @@
             <li class="nav-item <% if (activeTab === 1) { %> active <% } %>" data-toggle="tooltip" data-placement="right" title="Dashboard">
                 <a class="nav-link" href="/">
                     <i class="fa fa-fw fa-dashboard"></i>
-                    <span class="nav-link-text">Dashboard</span>
+                    <span class="nav-link-text"> Dashboard</span>
                 </a>
             </li>
             <% if (session.user.role === 'limitado' || session.user.role === 'administrativo' || session.user.role === 'super') { %>
                 <li class="nav-item <% if (activeTab === 2) { %> active <% } %>" data-toggle="tooltip" data-placement="right" title="Orders">
                     <a class="nav-link" href="/orders">
                         <i class="fa fa-fw fa-shopping-cart"></i>
-                        <span class="nav-link-text">Orders</span>
+                        <span class="nav-link-text"> Orders</span>
                     </a>
                 </li>
             <% } %>
             <% if (session.user.role === 'administrativo' || session.user.role === 'super') { %>
                 <li class="nav-item <% if (activeTab === 3) { %> active <% } %>" data-toggle="tooltip" data-placement="right" title="Orders Search">
-                    <a class="nav-link" href="/search"><i class="fa fa-fw fa-search"></i><span class="nav-link-text">Search</span></a>
+                    <a class="nav-link" href="/search"><i class="fa fa-fw fa-search"></i><span class="nav-link-text"> Search</span></a>
                 </li>
                 <li class="nav-item <% if (activeTab === 4) { %> active <% } %>" data-toggle="tooltip" data-placement="right" title="Reports">
-                    <a class="nav-link" href="/reports"><i class="fa fa-fw fa-area-chart"></i><span class="nav-link-text">Reports</span></a>
+                    <a class="nav-link" href="/reports"><i class="fa fa-fw fa-area-chart"></i><span class="nav-link-text"> Reports</span></a>
                 </li>
             <% } %>
             <% if (session.user.role === 'administrativo' || session.user.role === 'super') { %>
@@ -32,7 +32,7 @@
                     <a class="nav-link" href="#" data-toggle="collapse" data-target="#adm-dropdown" class="" aria-expanded="true"><i class="fa fa-fw fa-gear"></i> Administration <i class="fa fa-fw fa-caret-down"></i></a>
                     <ul id="adm-dropdown" class="collapse in" aria-expanded="true" style="">
                         <li class="nav-item">
-                            <a class="nav-link" href="#"><i class="fa fa-fw fa-copy"></i>Duplicate Order</a>
+                            <a class="nav-link" href="/administration/orders/duplicate/"><i class="fa fa-fw fa-copy"></i> Duplicate Order</a>
                         </li>
                     </ul>
                 </li>
@@ -57,11 +57,15 @@
                 <%= mainTitle %> <span class="small">> <%= subTitle %></span>
             </li>
         </ul>
+        
         <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a class="nav-link" data-toggle="modal" data-target="#logoutModal">
-          <i class="fa fa-fw fa-sign-out"></i>Logout
-        </a>
+            <li class="dropdown open">
+                <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown" aria-expanded="true"><i class="fa fa-user"></i> <%= session.user.username%><b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                    <li class="nav-link">
+                        <a href="#" data-toggle="modal" data-target="#logoutModal"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
+                    </li>
+                </ul>
             </li>
         </ul>
     </div>

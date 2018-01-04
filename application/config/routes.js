@@ -98,7 +98,7 @@ router.get('/search', (req, res) => {
         activeTab : 3,
         tabTitle: 'Orders - Qticket',
         mainTitle: 'Search',
-        subTitle: 'Order',
+        subTitle: 'index',
         cssvendorfiles: ['datatables/datatables.min'],
         jsvendorfiles: ['datatables/datatables.min'],
         jsfiles: ['search'],
@@ -157,9 +157,9 @@ router.get('/reports', (req, res) => {
 router.get('/administration/orders/duplicate', (req, res) => {
     res.render('pages/adm_orders_duplicate', {
         activeTab : 6,
-        tabTitle: 'Settings - Qticket',
-        mainTitle: 'Settings',
-        subTitle: '',
+        tabTitle: 'Administration - Qticket',
+        mainTitle: 'Administration',
+        subTitle: 'Order Duplicate',
         //jsfiles: [],
         constants: constants.public,
         session: sessionData
@@ -174,8 +174,7 @@ router.get('/logout', (req, res) => {
 
 //API Endpoints
 router.post('/rest/orders/get/', (req, res) => {
-    let //filters = (req.body) ? req.body : {},
-        filters = {},
+    let filters = req.body,
         ordersPrm = restManager.getDataTablesSearchRecords(filters, true);
 
     ordersPrm.then((data) => {
