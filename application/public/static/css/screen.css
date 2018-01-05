@@ -465,5 +465,8 @@ body.loading .cssload-content {
     color: #f0ad4e; }
   .order-details .row.section.activity-log .log-entry span.action.deleted {
     color: #d9534f; }
-  .order-details .row.section.activity-log .log-entry .wax-stamp .user {
+  .order-details .row.section.activity-log .log-entry span.action.primary {
     color: #0275d8; }
+  .order-details .row.section.activity-log .log-entry .wax-stamp .user {
+    color: #0275d8;
+    text-decoration: underline; }

@@ -144,9 +144,6 @@ $(function () {
         // => Init
         init: () => {
             socketManager.socketConnect();
-            Qticket.debug = () => {
-                socketManager.debug();
-            };
         }
     },
     //===> UI Manager

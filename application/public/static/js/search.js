@@ -118,10 +118,6 @@ $(function () {
         }
     };
 
-    window.getVal = () => {
-        console.log(ordDate);
-    }
-
     tableManager.init();
     filtersManager.init();
 });

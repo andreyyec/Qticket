@@ -8,15 +8,13 @@
 -%>
 <div class="order-details">
     <div class="row section order-header">
-        <div class="col-12 <% if (orderInfo.orderState !== 'closed' && session.user.role === 'super'){ %>col-sm-9<% }%>">
+        <div class="col-12 <% if (orderInfo.orderState === 'done' && session.user.role === 'super'){ %>col-sm-9<% }%>">
             <h1><%- orderInfo.odooOrderRef %> Order Details</h1>
         </div>
-        <% if (orderInfo.orderState !== 'closed' && session.user.role === 'super')  { %>
+        <% if (orderInfo.orderState === 'done' && session.user.role === 'super')  { %>
             <div class="col-12 col-sm-3">
-                <% if (orderInfo.orderState === 'saved')  { %>
-                    <div class="btn btn-block btn-success pull-right">Done</div>
-                <% } else if (orderInfo.orderState === 'done')  { %>
-                    <div class="btn btn-block btn-primary pull-right">Back to saved</div>
+                <% if (orderInfo.orderState === 'done')  { %>
+                    <div class="btn btn-block btn-primary pull-right pull-back" data-id="<%- orderInfo.odooOrderRef %>">Back to saved</div>
                 <% } %>
             </div>
         <% } %>
@@ -126,6 +124,11 @@
                                 <li>
                                     <% if(orderInfo.activityLog[x].changeLogs[y].action === 'added' || orderInfo.activityLog[x].changeLogs[y].action === 'updated') {%>
                                         <span class="action bold <% if(orderInfo.activityLog[x].changeLogs[y].action === 'added'){%>added<%}else{%>updated<%}%>"><%= orderInfo.activityLog[x].changeLogs[y].cAction %></span> <%= orderInfo.activityLog[x].changeLogs[y].qty %> of <%= orderInfo.activityLog[x].changeLogs[y].product %> at <%= orderInfo.activityLog[x].changeLogs[y].price %>
+                                    <% } else if(orderInfo.activityLog[x].changeLogs[y].action === 'changed'){%>
+                                        <% 
+                                            orderInfo.activityLog[x].changeLogs[y].cProduct = orderInfo.activityLog[x].changeLogs[y].product.charAt(0).toUpperCase() + orderInfo.activityLog[x].changeLogs[y].product.slice(1); 
+                                        %>
+                                        <span class="bold">Order</span> status <span class="action bold updated"><%= orderInfo.activityLog[x].changeLogs[y].cAction %></span> to <span class="action bold <% if(orderInfo.activityLog[x].changeLogs[y].product === 'saved') {%>primary<%}else{%>added<%}%>"><%= orderInfo.activityLog[x].changeLogs[y].cProduct %></span>
                                     <% } else {%>
                                         <span class="action bold deleted"><%= orderInfo.activityLog[x].changeLogs[y].cAction %></span> <%= orderInfo.activityLog[x].changeLogs[y].qty %>  <%= orderInfo.activityLog[x].changeLogs[y].product %>
                                     <% } %>

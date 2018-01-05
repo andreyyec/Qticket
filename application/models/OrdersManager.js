@@ -81,6 +81,10 @@ class OrdersManager {
             }
         }
 
+        if (nOrderD.orderState !== sOrderD.orderDBData.orderState) {
+            activityLogs.push({id: null, product: nOrderD.orderState, action: 'changed', qty: null, price: null});
+        }
+
         return activityLogs;
     }
 
@@ -172,6 +176,47 @@ class OrdersManager {
         }
     }
 
+    orderPullBackToSaved(data) {
+        return new Promise((resolve, reject) => {
+            let serverData = self.getDocumentFromArray(ordersObj.drafts, 'id', data.oId, true),
+                index = serverData.index,
+                order = serverData.document,
+                orderDBData = order.orderDBData;
+
+            if (order && order.isBlocked === undefined) {
+                orderDBData.orderState = 'saved';
+                orderDBData.activityLog.unshift({
+                    user: {
+                        uid: data.uId,
+                        username: data.uName,
+                    }, 
+                    date: new Date(), 
+                    changeLogs: [{
+                        id: null,
+                        product: 'saved',
+                        action: 'changed',
+                        qty: null,
+                        price: null
+                    }],
+                });
+                order.orderDBData = orderDBData;
+                ordersObj.drafts[index] = order;
+
+                let savePromise = self.saveOrderOnDB(orderDBData, true);
+
+                savePromise.then(() => {
+                    ioOrders.emit('orderUpdate', ordersObj.drafts[index]);
+                    resolve();
+                }).catch((err) => {
+                    self.logDbError(err, 'trying to save Order into the DB');
+                    reject();
+                });
+            } else {
+                reject();
+            }
+        });
+    }
+
     attachIOListeners() {
         //Dashboard Web Socket
         ioDashb.on('connection', (socket) => {
@@ -225,8 +270,15 @@ class OrdersManager {
                 });
             });
 
-            socket.on('debug', (returnFn) => {
-                returnFn(ordersObj.drafts);
+            socket.on('pullBackOrder', (data, returnFn) => {
+                let pullBackPromise = self.orderPullBackToSaved(data);
+
+                pullBackPromise.then(() => {
+                    returnFn(true);
+                }).catch((err) => {
+                    self.logDbError(err, 'trying to save Order into the DB');
+                    returnFn(false);
+                });
             });
 
             socket.on('disconnect', () => {

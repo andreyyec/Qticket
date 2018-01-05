@@ -47,10 +47,12 @@
 					&.added {color:$bootstrap-success;}
 					&.updated {color:$bootstrap-warning;}
 					&.deleted {color:$bootstrap-danger;}
+					&.primary {color:$bootstrap-primary;}
 				}
 
 				.wax-stamp .user{
 					color: $bootstrap-primary;
+					text-decoration: underline;
 				}
 			}
 		}
