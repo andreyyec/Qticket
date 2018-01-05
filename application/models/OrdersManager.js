@@ -81,8 +81,6 @@ class OrdersManager {
             }
         }
 
-        console.log(activityLogs);
-
         return activityLogs;
     }
 
@@ -105,7 +103,6 @@ class OrdersManager {
                 
             }
         } else {
-            console.log(sOrderD);
             return {
                 orderState: nOrderD.orderState,
                 odooOrderRef: sOrderD.id,
