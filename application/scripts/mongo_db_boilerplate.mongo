@@ -1,0 +1,15 @@
+// Add first record example
+db.tollboothRecords.insert({"deviceUID":"200111z", "farePaid":"5", "fulldate": "2017-07-10T21:45:50.028Z", "year": "2017", "month": "6", "day": "10", "hour": "15", "minute": "45", "seconds": "50" });
+
+// Add allowed devices
+db.devices.insert({UID:"200111z"});
+
+// Add system users
+db.users.insert({name:"Andrey Castro", username:"acastro", password: "acastro", state: "active"});
+db.users.insert({name:"Erick Lopez", username:"elopez", password: "12345", state: "active"});
+
+//Add system fare over the settings collection
+db.settings.insert({type:"fare", value:"5"});
+
+//Update fare record
+db.settings.update({type: "fare"}, {type: "fare", value: "7"});

@@ -1,0 +1,151 @@
+<% if (!orderInfo.renderError) { %>
+    <% 
+        //EJS Setup
+        orderInfo.date = new Date(orderInfo.date);
+        orderInfo.date = orderInfo.date.getDay()+'/'+(orderInfo.date.getMonth() + 1)+'/'+orderInfo.date.getFullYear();
+        orderInfo.total = 0;
+        orderInfo.cOrderState = orderInfo.orderState.charAt(0).toUpperCase() + orderInfo.orderState.slice(1);
+    -%>
+    <div class="order-details">
+        <div class="row section order-header">
+            <div class="col-12 <% if (orderInfo.orderState === 'done' && session.user.role === 'super'){ %>col-sm-9<% }%>">
+                <h1><%- orderInfo.odooOrderRef %> Order Details</h1>
+            </div>
+            <% if (orderInfo.orderState === 'done' && session.user.role === 'super')  { %>
+                <div class="col-12 col-sm-3">
+                    <% if (orderInfo.orderState === 'done')  { %>
+                        <div class="btn btn-block btn-primary pull-right pull-back" data-id="<%- orderInfo.odooOrderRef %>">Back to saved</div>
+                    <% } %>
+                </div>
+            <% } %>
+            <div class="col-12">
+                <div class="row provider">
+                    <div class="col-12 col-sm-3 key">
+                        Provider:
+                    </div>
+                    <div class="col-12 col-sm-9">
+                        <%- orderInfo.client.name %>
+                    </div>
+                </div>
+            </div>
+             <div class="col-12 col-sm-6">
+                <div class="row">
+                    <div class="col-6 key">
+                        Reference:
+                    </div>
+                    <div class="col-6">
+                        <%- orderInfo.odooOrderRef %>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6">
+                <div class="row">
+                    <div class="col-6 key">
+                        Status:
+                    </div>
+                    <div class="col-6">
+                        <span class="<% if (orderInfo.orderState === 'closed'){ %>danger<%} else if (orderInfo.orderState === 'done'){ %>success<%} else if (orderInfo.orderState === 'saved'){%>primary<%}%>"><%- orderInfo.cOrderState %></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6">
+                <div class="row">
+                    <div class="col-6 key">
+                        Date:
+                    </div>
+                    <div class="col-6">
+                        <%= orderInfo.date %>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6">
+                <div class="row">
+                    <div class="col-6 key">
+                        Ticket:
+                    </div>
+                    <div class="col-6">
+                        <%- orderInfo.ticketNumber %>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row section products-table">
+            <div class="col-12">
+                <table class="table table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% for(var i=0; i < orderInfo.productRows.length; i++) { %>
+                            <tr>
+                                <td><%= orderInfo.productRows[i].name %></td>
+                                <td><%= orderInfo.productRows[i].qty %></td>
+                                <td><%= orderInfo.productRows[i].price %></td>
+                                <td><%= orderInfo.productRows[i].qty * orderInfo.productRows[i].price %></td>
+                                <% orderInfo.total += orderInfo.productRows[i].qty * orderInfo.productRows[i].price %>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-line">
+                            <td class="total key" colspan="3">Total:</td>
+                            <td class="total value"><%= orderInfo.total %></td>
+                        </tr>
+                    </tfooter>
+                </table>
+            </div>
+        </div>
+        <div class="row section activity-log">
+            <div class="col-12">
+                <div class="page-header">
+                    <h3>Activity:</h3>
+                </div>
+
+                <div class="">
+                    <% for(let x=0; x < orderInfo.activityLog.length; x++) { %>
+                        <% 
+                            // Format log date
+                            let cDate = new Date(orderInfo.activityLog[x].date);
+                            orderInfo.activityLog[x].fDate = cDate.getDay()+'/'+(cDate.getMonth() + 1)+'/'+cDate.getFullYear();
+                            orderInfo.activityLog[x].fTime = cDate.getHours()+':'+cDate.getMinutes()+':'+cDate.getSeconds()
+                        %>
+                        <div class="well log-entry">
+                            <ul>
+                                 <% for(let y=0; y < orderInfo.activityLog[x].changeLogs.length; y++) { %>
+                                    <% 
+                                        // Capitalize Action
+                                        orderInfo.activityLog[x].changeLogs[y].cAction = orderInfo.activityLog[x].changeLogs[y].action.charAt(0).toUpperCase() + orderInfo.activityLog[x].changeLogs[y].action.slice(1); 
+                                    %>
+                                    <li>
+                                        <% if(orderInfo.activityLog[x].changeLogs[y].action === 'added' || orderInfo.activityLog[x].changeLogs[y].action === 'updated') {%>
+                                            <span class="action bold <% if(orderInfo.activityLog[x].changeLogs[y].action === 'added'){%>added<%}else{%>updated<%}%>"><%= orderInfo.activityLog[x].changeLogs[y].cAction %></span> <%= orderInfo.activityLog[x].changeLogs[y].qty %> of <%= orderInfo.activityLog[x].changeLogs[y].product %> at <%= orderInfo.activityLog[x].changeLogs[y].price %>
+                                        <% } else if(orderInfo.activityLog[x].changeLogs[y].action === 'changed'){%>
+                                            <% 
+                                                orderInfo.activityLog[x].changeLogs[y].cProduct = orderInfo.activityLog[x].changeLogs[y].product.charAt(0).toUpperCase() + orderInfo.activityLog[x].changeLogs[y].product.slice(1); 
+                                            %>
+                                            <span class="bold">Order</span> status <span class="action bold updated"><%= orderInfo.activityLog[x].changeLogs[y].cAction %></span> to <span class="action bold <% if(orderInfo.activityLog[x].changeLogs[y].product === 'saved') {%>primary<%}else{%>added<%}%>"><%= orderInfo.activityLog[x].changeLogs[y].cProduct %></span>
+                                        <% } else {%>
+                                            <span class="action bold deleted"><%= orderInfo.activityLog[x].changeLogs[y].cAction %></span> <%= orderInfo.activityLog[x].changeLogs[y].qty %>  <%= orderInfo.activityLog[x].changeLogs[y].product %>
+                                        <% } %>
+                                        </li>
+                                 <% } %>
+                            </ul>
+                            <div class="wax-stamp"><span class="user bold"><%= orderInfo.activityLog[x].user.username %></span> at <%= orderInfo.activityLog[x].fDate %> <%= orderInfo.activityLog[x].fTime %></div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+<% } else {%>
+    <div class="order-details">
+        <div class="error well">
+            <h3>Unable to find information for Order <%- orderInfo.orderId %></h3>
+        </div>
+    </div>
+<% } %>

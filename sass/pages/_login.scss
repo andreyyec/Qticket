@@ -1,0 +1,17 @@
+.login {
+	.container {
+		.card.card-login {
+			@include tablet-upper{
+				width: 60%;
+			}
+
+			@include desktop-upper {
+				width: 50%;
+			}
+
+			@include desktop-large {
+				width: 40%;
+			}
+		}
+	}
+}

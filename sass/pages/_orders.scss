@@ -1,0 +1,200 @@
+.screen-holder {
+    height: calc(100vh - 56px);
+
+    .row{
+
+        &.orders-screen {
+            display: none;
+
+            &.active {
+                display: flex;
+            }
+
+            .inner-container {
+                .orders-thumbs {
+                    padding-top: 10px;
+
+                    .order-card {
+                        cursor: pointer;
+
+                        .card-header {
+                            font-weight: bold;
+                        }
+
+                        .card-body {
+                            align-items: center;
+                            display: flex;
+                            flex-direction: row-reverse;
+                            justify-content: center;
+                            padding: 20px 5px;
+                            text-align: center;
+
+                            .ticket {
+                                border-left: 1px solid gray;
+                                font-size: 26px;
+                                white-space: nowrap;
+                                width: 40%;
+                            }
+                        }
+                    }
+                }
+                .orders-full {
+
+                }
+            }
+        }
+
+        &.order-details-screen {
+            display: none;
+            height: inherit;
+            z-index: 20;
+
+            &.active {
+                display: flex;
+            }
+
+            .order-wrapper {
+                display: flex;
+                flex-wrap: wrap;
+
+                .mobile-tabs {
+                    display: none;
+                    height: 30px;
+                    background-color:  $gray-card-border;
+                    cursor: pointer;
+
+                    @include mobile {
+                        display: block;
+                    }
+
+                    .tab {
+                        background-color: gray;
+                        text-decoration: none;
+                        color: black;
+                        &.active {
+                            background-color: transparent;
+                        }
+                    }
+                }
+
+                .order-details-section {
+                    @include mobile() {
+                        display: none;
+                        position: relative;
+
+                        &.active {
+                            display: block;
+                        }
+                    }
+
+                    .action-buttons-bar {
+                        padding-top: 10px;
+                    }
+                    .client-info {
+                        background-color: $gray-card-border;
+                        border-radius: 5px;
+                        height: 25px;
+                        text-align: center;
+                        margin-top: 10px;
+                    }
+                    .order-products-holder {
+                        height: calc(100% - 249px);
+                        padding: 10px 0;
+
+                        .order-details-products-list {
+                            overflow-y: scroll;
+
+                            @include mobile() {
+                                height: calc(100vh - 353px);
+                            }
+
+                            &.border-inner{
+                                border: 2px solid $gray-card-border;
+                                border-radius: 7px;
+                            }
+
+                            .order-row {
+                                cursor: pointer;
+
+                                &:first-child .inner {
+                                    border-top: 0;
+                                }
+
+                                &.selected {
+                                    background: $row-selected;
+                                }
+
+                                .inner {
+                                    border-top: 1px solid $gray-card-border;
+                                    margin: 0 5px;
+                                    padding: 5px 0;
+                                }
+
+                                .product-price {
+                                    text-align: right;
+                                }
+
+                                .product-qty{
+                                    color: $dark-gray-1;
+
+                                    .qty {
+                                        color: $black;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .order-keypad {
+                        padding: 0 15px;
+                        margin: 0 -15px;
+
+                        .col-3 {
+                            padding: 0 6px;
+                            &.col-left {
+                                padding-left: 0;
+                            }
+                            &.col-right {
+                                padding-right: 0;
+                            }
+                        }
+
+                        .btn {
+                            cursor: default;
+                            text-align: center;
+                            width: 100%;
+                            font-size: 14px;
+                            overflow-x: hidden;
+                            margin-bottom: 6px;
+
+                            &.qty {
+                                height: 78px;
+                                line-height: 54px;
+                                margin-bottom: 0;
+                            }
+                        }
+                    }
+                }
+
+                .products-section {
+                    padding: 10px;
+                    overflow-y: scroll;
+                    z-index: 30;
+
+                    @include mobile{
+                        display: none;
+                        overflow-y: auto;
+
+                        &.active {
+                            display: block;
+                        }
+                    }
+                    
+                    .row {
+                        margin-right: -10px;
+                        margin-left: -10px;
+                    }
+                }   
+            }
+        }   
+    }
+}

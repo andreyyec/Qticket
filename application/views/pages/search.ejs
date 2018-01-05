@@ -1,0 +1,59 @@
+<%- contentFor('breadcrumb') %>
+    <!-- <ol class="breadcrumb">
+        <li class="active">
+            <i class="fa fa-shopping-cart"></i> Orders
+        </li>
+    </ol> -->
+
+<%- contentFor('body') %>
+<div class="content-container search">
+    <div class="row">
+        <div class="col-12">
+            <div class="table-responsive">
+                <div class="filter-bar card card-inverse">
+                    <div class="card-header card-primary clearfix">
+                        <button class="btn btn-default pull-right" type="button" data-toggle="collapse" data-target="#filters-bar" aria-expanded="false" aria-controls="collapseExample"> <span class="oi oi-cog"></span></button>
+                    </div>
+                    <div class="collapse" id="filters-bar">
+                        <div class="card card-body">
+                            <div class="row">
+                                <div class="col-12 col-sm-4">
+                                    <input id="reference" class="form-control" placeholder="# Reference" type="text">
+                                </div>
+                                <div class="col-12 col-sm-4">
+                                    <input id="client" class="form-control" placeholder="Client" type="text">
+                                </div>
+                                <div class="col-12 col-sm-4">
+                                    <input id="date" class="form-control" placeholder="Date" type="date">
+                                </div>
+                            </div>
+                            <div class="row filter-actions">
+                                <div class="col-12">
+                                     <label for="all-registries"><input id="all-registries" type="checkbox" value="all_registries">All Registries</label>
+                                    <button id="reset-filters" class="btn btn-sm btn-danger">Reset Filters</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <table id="ordersTable" class="table table-bordered table-hover table-striped" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th>_id</th>
+                            <th>Odoo Ref.</th>
+                            <th>Name</th>
+                            <th>Created Date</th>
+                            <th>Ticket</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+

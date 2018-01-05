@@ -1,0 +1,50 @@
+.order-card {
+	border-color: $bootstrap-primary;
+	cursor: pointer;
+
+	.card-header {
+		background-color: $bootstrap-primary;
+    	border-color: $bootstrap-primary;
+	}
+
+	&.done {
+		border-color: $bootstrap-success;
+
+		.card-header{
+			background-color: $bootstrap-success;
+	    	border-color: $bootstrap-success;
+    	}
+	}
+
+	&.blocked {
+		border-color: $bootstrap-warning;
+
+		.card-header{
+			background-color: $bootstrap-warning;
+	    	border-color: $bootstrap-warning;
+    	}
+	}
+
+	.card-body {
+		padding: 5px;
+
+		.client-info-section {
+			padding: 2px;
+
+			div {
+				padding: 2px;
+			}
+
+			.ticket{
+				border-left: 1px solid black;
+				text-align: center;
+				font-weight: bold;
+			}
+		}
+
+		.products-section{
+			padding: 2px;
+			border-top: 1px solid black;
+		}
+	}
+}
