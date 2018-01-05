@@ -7,9 +7,18 @@
 -%>
 <div class="order-details">
     <div class="row section order-header">
-        <div class="col-12">
+        <div class="col-12 <% if (orderInfo.orderState !== 'closed' && session.user.role === 'super'){ %>col-sm-9<% }%>">
             <h1><%- orderInfo.odooOrderRef %> Order Details</h1>
         </div>
+        <% if (orderInfo.orderState !== 'closed' && session.user.role === 'super')  { %>
+            <div class="col-12 col-sm-3">
+                <% if (orderInfo.orderState === 'saved')  { %>
+                    <div class="btn btn-block btn-success pull-right">Done</div>
+                <% } else if (orderInfo.orderState === 'done')  { %>
+                    <div class="btn btn-block btn-primary pull-right">Back to saved</div>
+                <% } %>
+            </div>
+        <% } %>
         <div class="col-12">
             <div class="row provider">
                 <div class="col-12 col-sm-3 key">
@@ -128,6 +137,4 @@
             </div>
         </div>
     </div>
-
-    <!%= JSON.stringify(orderInfo) %>
 </div>
