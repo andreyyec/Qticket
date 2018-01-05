@@ -443,6 +443,14 @@ body.loading .cssload-content {
     background-color: rgba(0, 0, 0, 0.05); }
   .order-details .row.section.order-header .key {
     font-weight: bold; }
+  .order-details .row.section.order-header span {
+    font-weight: bold; }
+    .order-details .row.section.order-header span.danger {
+      color: #d9534f; }
+    .order-details .row.section.order-header span.success {
+      color: #5cb85c; }
+    .order-details .row.section.order-header span.primary {
+      color: #0275d8; }
   .order-details .row.section.products-table table tfoot tr.total-line {
     background-color: white; }
     .order-details .row.section.products-table table tfoot tr.total-line td {

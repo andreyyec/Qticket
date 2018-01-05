@@ -4,6 +4,8 @@
     orderInfo.date = new Date(orderInfo.date);
     orderInfo.date = orderInfo.date.getDay()+'/'+(orderInfo.date.getMonth() + 1)+'/'+orderInfo.date.getFullYear();
     orderInfo.total = 0;
+    // Capitalize Action
+    orderInfo.cOrderState = orderInfo.orderState.charAt(0).toUpperCase() + orderInfo.orderState.slice(1); 
 -%>
 <div class="order-details">
     <div class="row section order-header">
@@ -45,7 +47,7 @@
                     Status:
                 </div>
                 <div class="col-6">
-                    <%- orderInfo.orderState %>
+                    <span class="<% if (orderInfo.orderState === 'closed'){ %>danger<%} else if (orderInfo.orderState === 'done'){ %>success<%} else if (orderInfo.orderState === 'saved'){%>primary<%}%>"><%- orderInfo.cOrderState %></span>
                 </div>
             </div>
         </div>

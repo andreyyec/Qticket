@@ -10,6 +10,14 @@
 			.key {
 				font-weight: bold;
 			}
+
+			span {
+				font-weight: bold;
+
+				&.danger{color:$bootstrap-danger;}
+				&.success{color:$bootstrap-success;}
+				&.primary{color:$bootstrap-primary;}
+			}
 		}
 
 		&.products-table {
