@@ -81,7 +81,7 @@ class OrdersManager {
             }
         }
 
-        if (nOrderD.orderState !== sOrderD.orderDBData.orderState) {
+        if (!sOrderD.orderDBData || (sOrderD.orderDBData && sOrderD.orderDBData.orderState && nOrderD.orderState !== sOrderD.orderDBData.orderState)) {
             activityLogs.push({id: null, product: nOrderD.orderState, action: 'changed', qty: null, price: null});
         }
 

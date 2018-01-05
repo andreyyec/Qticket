@@ -112,7 +112,7 @@ router.get('/search/details/:orderid', (req, res) => {
     let orderInfo, orderDetails = restManager.getOrderByOdooId(req.params.orderid);
     
     orderDetails.then((data) => {
-        orderInfo = data;
+        orderInfo = (data === undefined || data.length === 0) ? {renderError:true, orderId:req.params.orderid} : data;
     }).catch((err) => {
         orderInfo = err;
         console.log(err);

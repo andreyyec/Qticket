@@ -470,3 +470,6 @@ body.loading .cssload-content {
   .order-details .row.section.activity-log .log-entry .wax-stamp .user {
     color: #0275d8;
     text-decoration: underline; }
+
+.order-details .error.well {
+  margin-top: 20px; }
