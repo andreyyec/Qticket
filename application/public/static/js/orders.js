@@ -151,14 +151,15 @@ $(function () {
     },
     //===> UI Manager
     uiManager = {
-        toggleScreens: () => {
+        toggleScreens: (prevSaved = false) => {
             if (ordersContainer.hasClass(activeClass)) {
                 orderDetailsContainer.addClass(activeClass);
                 ordersContainer.removeClass(activeClass);
+                uiDetailScreenManager.toggleOrderActionButtons(false, prevSaved);
             }else {
                 ordersContainer.addClass(activeClass);
                 orderDetailsContainer.removeClass(activeClass);
-                uiDetailScreenManager.toggleOrderActionButtons(false);
+                uiDetailScreenManager.toggleOrderActionButtons(false,);
                 uiDetailScreenManager.cleanDetailUI();
             }
         },
@@ -195,7 +196,8 @@ $(function () {
         },
         attachListeners: () => {
             ordersContainer.on('click', '.order-card', (e) => {
-                let target = $(e.currentTarget);
+                let target = $(e.currentTarget),
+                    prevSaved = target.closest('.order-section').hasClass('orders-full');
 
                 if(target.hasClass(blockedClass)) {
                     Qticket.throwAlert('Order Blocked');
@@ -207,7 +209,7 @@ $(function () {
 
                     orderAvailable.then((orderData) => {
                         if (orderData.orderAvailable) {
-                            uiDetailScreenManager.renderOrderInfo(orderData.order);
+                            uiDetailScreenManager.renderOrderInfo(orderData.order, prevSaved);
                         } else {
                             Qticket.throwAlert('Order Blocked');
                         };
@@ -353,7 +355,7 @@ $(function () {
                 $(mobileSections[1]).removeClass(activeClass);
             }
         },
-        renderOrderInfo: (orderData) => {
+        renderOrderInfo: (orderData, prevSaved) => {
             let nRow, productsArray;
 
             currentOrderData = orderData;
@@ -376,16 +378,18 @@ $(function () {
                     nRow = $.tmpl(templates.row, nRowInfo).appendTo(oDProductsList);
                 }
                 uiDetailScreenManager.updateCurrentRow(nRow);
-                //Load Prevoiusly edited products into the list
             }
 
-            uiManager.toggleScreens();
+            uiManager.toggleScreens(prevSaved);
         },
-        toggleOrderActionButtons: (activate) => {
+        toggleOrderActionButtons: (activate, prevSaved = false) => {
             if (activate) {
                 dbActionButtons.removeClass(disabledClass);
             } else {
                 dbActionButtons.addClass(disabledClass);
+                if (prevSaved) {
+                    doneButton.removeClass(disabledClass);
+                }
             }
         },
         resetProductsActionButtons: () => {

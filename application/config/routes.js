@@ -98,7 +98,7 @@ router.get('/search', (req, res) => {
         activeTab : 3,
         tabTitle: 'Orders - Qticket',
         mainTitle: 'Search',
-        subTitle: 'index',
+        subTitle: 'orders',
         cssvendorfiles: ['datatables/datatables.min'],
         jsvendorfiles: ['datatables/datatables.min'],
         jsfiles: ['search'],
@@ -123,7 +123,7 @@ router.get('/search/details/:orderid', (req, res) => {
             mainTitle: 'Search',
             subTitle: 'Order Details',
             orderInfo: orderInfo,
-            jsfiles: ['order-details'],
+            jsfiles: ['se_order_details'],
             constants: constants.public,
             session: sessionData
         });

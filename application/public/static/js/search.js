@@ -26,8 +26,9 @@ $(function () {
                         let return_data = json.data;
                         
                         for (let i in return_data) {
-                            let rDate = new Date(return_data[i].date)
+                            let rDate = new Date(return_data[i].date);
                             return_data[i].date = `${rDate.getDate()}/${rDate.getMonth()+1}/${rDate.getFullYear()}`;
+                            return_data[i].orderState = return_data[i].orderState.charAt(0).toUpperCase() + return_data[i].orderState.slice(1);
                         }
 
                         return return_data;

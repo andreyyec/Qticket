@@ -65,7 +65,7 @@ $(function () {
         },
         connect: function() {
             socket.on('connect', function(sckData) {
-                console.log('WebSocket connected');
+                console.log('Web Socket connection established');
             });
         },
         init: function() {
