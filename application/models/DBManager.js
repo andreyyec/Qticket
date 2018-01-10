@@ -1,7 +1,6 @@
 const   constants = require('../config/constants'),
         Mongoose = require('mongoose'),
         db = Mongoose.connection,
-        //moduleModel = require(constants.paths.dbModels+'ModuleModel'),
         orderModel = require(constants.paths.dbModels+'OrderModel');
 
 let self;

@@ -58,8 +58,7 @@ $(function () {
                     </div>'
         };
 
-    let self, sckId, csOrdersArray, currentRow = {}, currentOrderData = {}, override = true, actionEnabled = false;
-    //===> Templates Object
+    let self, currentRow = {}, currentOrderData = {}, override = true, actionEnabled = false;
     
     //===> Socket Manager
     const socketManager = {

@@ -87,7 +87,8 @@ router.get('/orders', (req, res) => {
         mainTitle: 'Orders',
         subTitle: 'Manager',
         products: req.app.get('appProducts'),
-        jsfiles: ['orders'],
+        jsfiles: ['orders'], // Teller JS
+        //jsfiles: ['orders_lite'], //Cashier JS
         constants: constants.public,
         session: sessionData
     });
@@ -96,7 +97,7 @@ router.get('/orders', (req, res) => {
 router.get('/search', (req, res) => {
     res.render('pages/search', {
         activeTab : 3,
-        tabTitle: 'Orders - Qticket',
+        tabTitle: 'Search - Qticket',
         mainTitle: 'Search',
         subTitle: 'orders',
         cssvendorfiles: ['datatables/datatables.min'],

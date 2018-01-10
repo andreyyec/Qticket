@@ -1,7 +1,8 @@
 const constants = {
 	public: {
 		protocol: 'http',
-		hostname: 'localhost',
+		//hostname: 'localhost',
+		hostname: '192.168.2.47',
 		port: 3000,
 		basePath: ''
 	},

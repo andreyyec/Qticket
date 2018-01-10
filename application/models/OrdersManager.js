@@ -217,6 +217,31 @@ class OrdersManager {
         });
     }
 
+    parseDbToMmrRecords(data) {
+        let records = [];
+        
+        //here1
+        for(let i in data) {
+            let cObj = data[i],
+                orderOnServer = self.getDocumentFromArray(ordersObj.drafts, 'id', cObj.odooOrderRef);
+
+            if (!orderOnServer) {
+                records.push({
+                    id: cObj.odooOrderRef,
+                    client: [cObj.client.id, cObj.client.name],
+                    ticket: cObj.ticketNumber,
+                    orderDBData: cObj
+                });
+            }
+        }
+
+        return records;
+    }
+
+    getCashierDashboardOrders() {
+        return dbInstance.getOrdersbyFilter({}, {}, 1, 100);
+    }
+
     attachIOListeners() {
         //Dashboard Web Socket
         ioDashb.on('connection', (socket) => {
@@ -230,6 +255,22 @@ class OrdersManager {
         //Orders Web Socket
         ioOrders.on('connection', (socket) => {
             socket.emit('init', ordersObj.drafts);
+
+            socket.on('initCashierRequest', (returnFn) => {
+                let getDbSavedInfo = self.getCashierDashboardOrders(),
+                    dataObj = ordersObj.drafts;
+
+                getDbSavedInfo.then((data) => {
+                    if (data) {
+                        let array1 = self.parseDbToMmrRecords(data),
+                            array2 = dataObj.concat(array1);
+
+                        returnFn(array2);
+                    }
+                }).catch((err) => {
+                    returnFn({error: err});
+                });
+            });
 
             socket.on('blockOrder', (data, returnFn) => {
                 let serverData = self.getDocumentFromArray(ordersObj.drafts, 'id', data.orderID, true),
