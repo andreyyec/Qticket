@@ -220,6 +220,15 @@ body.loading .cssload-content {
     border: 0;
     margin: 0; }
 
+nav li.nav-item.expanded {
+  color: white;
+  background-color: #080808; }
+
+nav li.nav-item ul {
+  list-style: none; }
+  nav li.nav-item ul li a {
+    color: #868e96; }
+
 .product-card {
   padding: 5px; }
   .product-card .product-card-inner {
@@ -242,6 +251,19 @@ body.loading .cssload-content {
         font-size: 0.8em; }
   .product-card.selected .product-card-inner {
     background-color: green; }
+
+.content-container.adm-order-transfer .page-header .header-wrapper .styled {
+  border: 1px solid black;
+  padding: 10px;
+  border-radius: 10px;
+  margin: 10px 0; }
+
+.content-container.adm-order-transfer .page-header .header-wrapper .from,
+.content-container.adm-order-transfer .page-header .header-wrapper .to {
+  min-height: 24px; }
+
+.content-container.adm-order-transfer .page-header .header-wrapper button {
+  margin-top: 5px; }
 
 .dashboard .action-buttons-container {
   margin-top: 20px; }

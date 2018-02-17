@@ -1,0 +1,14 @@
+nav {
+	li.nav-item {
+		&.expanded {
+			color: white;
+			background-color: #080808;
+		}
+		ul {
+			list-style: none;
+			li a {
+				color: $nav-copy-default-gray;
+			}
+		}
+	}
+}

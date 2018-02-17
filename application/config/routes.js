@@ -146,6 +146,7 @@ router.get('/reports', (req, res) => {
 /*router.get('/administration/settings', (req, res) => {
     res.render('pages/settings', {
         activeTab : 5,
+        subTab : 1,
         tabTitle: 'Settings - Qticket',
         mainTitle: 'Settings',
         subTitle: '',
@@ -155,13 +156,14 @@ router.get('/reports', (req, res) => {
     });
 });*/
 
-router.get('/administration/orders/duplicate', (req, res) => {
-    res.render('pages/adm_orders_duplicate', {
-        activeTab : 6,
+router.get('/administration/orders/transfer', (req, res) => {
+    res.render('pages/adm_orders_transfer', {
+        activeTab : 5,
+        subTab : 2,
         tabTitle: 'Administration - Qticket',
         mainTitle: 'Administration',
-        subTitle: 'Order Duplicate',
-        //jsfiles: [],
+        subTitle: 'Order Transfer',
+        jsfiles: ['adm_order_transfer'],
         constants: constants.public,
         session: sessionData
     });

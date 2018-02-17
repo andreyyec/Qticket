@@ -80,12 +80,16 @@ class DBManager {
     }
 
     getOrderById(id) {
-        return orderModel.findOne({id: id}, (err,obj) => {
-            if (err) {
-                return {status: 'error'};
-            } else {
-                return {status: 'success', data: obj};
-            }
+        return new Promise((resolve, reject) => {
+            let query = orderModel.findOne({id: id});
+
+            query.exec(function (err, docs) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(docs);
+                }
+            });
         });
     }
 

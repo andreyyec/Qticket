@@ -12,9 +12,11 @@
 @import 'components/loading-overlay';
 @import 'components/order-cards';
 @import 'components/filter-bar';
+@import 'components/nav';
 @import 'components/product-cards';
 
 //Pages
+@import 'pages/adm_order_transfer';
 @import 'pages/dashboard';
 @import 'pages/orders';
 @import 'pages/login';

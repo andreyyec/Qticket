@@ -16,6 +16,11 @@
 			}
 			$('.loading-overlay .cssload-message').html(message);
 		},
+        scrolltop: () => {
+            $('html, body').stop().animate({
+              scrollTop: ($('#page-top').offset().top)
+            }, 400, 'easeInOutExpo');
+        },
 		getUrlParam: function (param) {
             var results = new RegExp('[\?&]' + param + '=([^&#]*)').exec(window.location.href);
             if (results === null){

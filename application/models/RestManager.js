@@ -12,29 +12,6 @@ class RestManager {
         dbInstance = dbInst;
     }
 
-    logDbError(err, msg = 'processing') {
-        console.log('Error while ' + msg);
-        console.log(err);
-    }
-
-    getDocumentFromArray (array, property, value, getIndex = false) {
-        if (array.constructor === Array) {
-            let doc = array.filter(x => x[property] === value);
-            
-            if (getIndex) {
-                if (doc) {
-                    return {document: doc[0], index: array.findIndex(x => x[property] === value)};
-                } else {
-                    return {document: undefined, index: undefined};    
-                }
-            }else {
-                return doc[0];
-            }
-        } else {
-            return false;
-        }
-    }
-
     validateRequestFilters(filtersList, validationRules) {
         let result = true;
 
@@ -150,8 +127,6 @@ class RestManager {
                     name: 'all',
                     type: Boolean
                 }];
-
-            //db.users.find({"name": /.*m.*/})
 
             if (self.validateRequestFilters(filters, validationRules)) {
                 let limit = (filters.all) ? 0 : 200,

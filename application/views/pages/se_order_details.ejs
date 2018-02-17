@@ -129,6 +129,15 @@
                                                 orderInfo.activityLog[x].changeLogs[y].cProduct = orderInfo.activityLog[x].changeLogs[y].product.charAt(0).toUpperCase() + orderInfo.activityLog[x].changeLogs[y].product.slice(1); 
                                             %>
                                             <span class="bold">Order</span> status <span class="action bold updated"><%= orderInfo.activityLog[x].changeLogs[y].cAction %></span> to <span class="action bold <% if(orderInfo.activityLog[x].changeLogs[y].product === 'saved') {%>primary<%}else{%>added<%}%>"><%= orderInfo.activityLog[x].changeLogs[y].cProduct %></span>
+
+                                        <% } else if(orderInfo.activityLog[x].changeLogs[y].action === 'transfered'){%>
+                                            <% 
+                                                orderInfo.activityLog[x].changeLogs[y].cProduct = orderInfo.activityLog[x].changeLogs[y].product.charAt(0).toUpperCase() + orderInfo.activityLog[x].changeLogs[y].product.slice(1); 
+                                            %>
+                                            <span class="bold">Order</span> status <span class="action bold updated"><%= orderInfo.activityLog[x].changeLogs[y].cAction %></span> to <span class="action bold <% if(orderInfo.activityLog[x].changeLogs[y].product === 'saved') {%>primary<%}else{%>added<%}%>"><%= orderInfo.activityLog[x].changeLogs[y].cProduct %></span>
+
+
+
                                         <% } else {%>
                                             <span class="action bold deleted"><%= orderInfo.activityLog[x].changeLogs[y].cAction %></span> <%= orderInfo.activityLog[x].changeLogs[y].qty %>  <%= orderInfo.activityLog[x].changeLogs[y].product %>
                                         <% } %>

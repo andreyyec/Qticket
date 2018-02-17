@@ -1,8 +1,9 @@
 const constants = {
 	public: {
 		protocol: 'http',
-		//hostname: 'localhost',
-		hostname: '192.168.2.47',
+		//hostname: 'localhost', //local
+		//hostname: '192.168.2.108', //casa
+		hostname: '192.168.2.47', //bodega
 		port: 3000,
 		basePath: ''
 	},

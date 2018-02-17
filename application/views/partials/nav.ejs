@@ -19,24 +19,37 @@
                     </a>
                 </li>
             <% } %>
+            
             <% if (session.user.role === 'administrativo' || session.user.role === 'super') { %>
                 <li class="nav-item <% if (activeTab === 3) { %> active <% } %>" data-toggle="tooltip" data-placement="right" title="Orders Search">
                     <a class="nav-link" href="/search"><i class="fa fa-fw fa-search"></i><span class="nav-link-text"> Search</span></a>
                 </li>
-                <li class="nav-item <% if (activeTab === 4) { %> active <% } %>" data-toggle="tooltip" data-placement="right" title="Reports">
+                <!--<li class="nav-item <%# if (activeTab === 4) { %> active <%# } %>" data-toggle="tooltip" data-placement="right" title="Reports">
                     <a class="nav-link" href="/reports"><i class="fa fa-fw fa-area-chart"></i><span class="nav-link-text"> Reports</span></a>
-                </li>
-            <% } %>
-            <% if (session.user.role === 'administrativo' || session.user.role === 'super') { %>
-                <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Settings">
-                    <a class="nav-link" href="#" data-toggle="collapse" data-target="#adm-dropdown" class="" aria-expanded="true"><i class="fa fa-fw fa-gear"></i> Administration <i class="fa fa-fw fa-caret-down"></i></a>
-                    <ul id="adm-dropdown" class="collapse in" aria-expanded="true" style="">
+
+                <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Reports">
+                    <a class="nav-link" href="#" data-toggle="collapse" data-target="#rep-dropdown" class="" aria-expanded="true"><i class="fa fa-fw fa-gear"></i> Reports <i class="fa fa-fw fa-caret-down"></i></a>
+                    <ul id="rep-dropdown" class="collapse in" aria-expanded="true" style="">
                         <li class="nav-item">
-                            <a class="nav-link" href="/administration/orders/duplicate/"><i class="fa fa-fw fa-copy"></i> Duplicate Order</a>
+                            <a class="nav-link" href="/reports/generate"><i class="fa fa-fw fa-dashboard"></i><span class="nav-link-text"> DailyDashboard</span></a>
+                            <a class="nav-link" href="/reports/generate"><i class="fa fa-fw fa-area-chart"></i><span class="nav-link-text"> Generator</span></a>
                         </li>
                     </ul>
                 </li>
-            <% } %>
+
+
+                </li>-->
+
+                <li class="nav-item<% if (activeTab === 5) { %> expanded<% } %>" data-toggle="tooltip" data-placement="right" title="Administration">
+                    <a class="nav-link" href="#" data-toggle="collapse" data-target="#adm-dropdown" class="" aria-expanded="true"><i class="fa fa-fw fa-gear"></i> Administration <i class="fa fa-fw fa-caret-down"></i></a>
+                    <ul id="adm-dropdown" class="collapse in<% if (activeTab === 5) { %> show selected<% } %>" aria-expanded="true" style="">
+                        <li class="nav-item<% if (locals.subTab !== undefined && subTab === 2) { %> active<% } %>">
+                            <a class="nav-link" href="/administration/orders/transfer/"><i class="fa fa-fw fa-copy"></i> Order transfer</a>
+                        </li>
+                    </ul>
+                </li>
+            <% } %> 
+
             <!-- <%# if (session.user.role === 'super') { %> 
             <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Settings">
                 <a class="nav-link" href="/settings">

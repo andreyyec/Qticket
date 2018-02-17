@@ -1,0 +1,21 @@
+.content-container.adm-order-transfer {
+	.page-header {
+		.header-wrapper {
+			.styled {
+				border: 1px solid black;
+				padding: 10px;
+				border-radius:10px;
+				margin: 10px 0;
+			}
+
+			.from,
+			.to{
+				min-height: 24px;
+			}
+
+			button {
+				margin-top: 5px;
+			}
+		}
+	}
+}

@@ -1,12 +1,15 @@
 $(function () {
     const socket = Qticket.getIOInstance('orders'), body = $('body'), blockedClass = 'blocked', disabledClass = 'disabled', selectedClass = 'selected', activeClass = 'active', doneClass = 'done',
-        ordersContainer = body.find('.orders-screen'),
-        ordersThumbsContainer = ordersContainer.find('.inner-container .orders-thumbs'),
-        ordersFullContainer = ordersContainer.find('.inner-container .orders-full'),
-        orderDetailsContainer = body.find('.order-details-screen'),
+        ordersContainer = body.find('.orders-screen .inner-container '),
+        ordersThumbsContainer = ordersContainer.find('.page-body .to'),
+        ordersFullContainer = ordersContainer.find('.page-body .from'),
+        pageHeader = body.find('.header-wrapper'),
+        fromOrderPanel = pageHeader.find('.from'),
+        toOrderPanel = pageHeader.find('.to'),
+        transferBtn = pageHeader.find('.transfer')
         templates= {
             nOrderCard: 
-                '<div class="col-6 col-sm-4 col-md-3">\
+                '<div class="col-12 col-sm-6">\
                     <div class="card card-inverse order-card {{if $data.isBlocked}}blocked{{else $data.orderDBData && $data.orderDBData.orderState && $data.orderDBData.orderState == "done"}}done{{/if}}" data-id="${id}" data-client-id="${client[0]}" data-client="${client[1]}" data-ticket="${ticket}">\
                         <div class="card-header card-header">\
                             ${id}\
@@ -34,7 +37,7 @@ $(function () {
                 </div>'
         };
 
-    let self;
+    let self, fromOrder, fromOrderBBM = false, toOrder, toOrderBBM = false;
     
     //===> Socket Manager
     const socketManager = {
@@ -56,6 +59,13 @@ $(function () {
             return new Promise((resolve, reject) => {
                 socket.emit('updateOrder', orderData, (confirmation) => {
                     resolve(confirmation);
+                });
+            });
+        },
+        transferOrder: (fromOrderId, toOrderId) => {
+            return new Promise((resolve, reject) => {
+                socket.emit('transferOrder', {from: fromOrderId, to: toOrderId, userData: {uId:Qticket.session.uid, uName:Qticket.session.username}}, (confirmation) => {
+                    resolve(true); //@TODO
                 });
             });
         },
@@ -87,7 +97,7 @@ $(function () {
                     cOrderSection = cOrder.parent(),
                     nOrder = $.tmpl(templates.nOrderCard, data);
 
-                if (cOrderSection.hasClass('.orders-full')) {
+                if (cOrderSection.hasClass('.from')) {
                     cOrder.replaceWith(nOrder);
                 } else {
                     cOrder.remove();
@@ -130,6 +140,49 @@ $(function () {
     },
     //===> UI Manager
     uiManager = {
+        enableDataTransferBtn: () => {
+            if (fromOrder && toOrder) {
+                transferBtn.removeClass(disabledClass);
+                window.Qticket.scrolltop(body);
+            } else {
+                transferBtn.addClass(disabledClass);
+            }
+        },
+        clearTicketData: (prevSaved) => {
+            if (prevSaved) {
+                fromOrder = undefined;
+                fromOrderBBM = false;
+                uiManager.toggleTransferModuleData(prevSaved);
+            } else {
+                socketManager.unBlockOrder(toOrder.data.id);
+                toOrder = undefined;
+                toOrderBBM = false;
+                uiManager.toggleTransferModuleData(prevSaved);
+            }
+        },
+        toggleTransferModuleData: (prevSaved, id) => {
+            if (prevSaved) {
+                if (id) {
+                    fromOrderPanel.html(id);
+                } else {
+                    fromOrderPanel.html('');
+                }
+            } else {
+                if (id) {
+                    toOrderPanel.html(id);
+                } else {
+                    toOrderPanel.html('');
+                }
+            }
+            uiManager.enableDataTransferBtn();
+        },
+        toggleTransferBtn: () => {
+            if (fromOrderPanel.html() !== '' && toOrderPanel.html() !== '') {
+                transferBtn.removeClass('disabled');
+            } else {
+                transfer.addClass('disabled');
+            }
+        },
         toggleOrderBlocking: (id, blockState = true, username = undefined) => {
             $.each(ordersContainer.find('.order-card'), (index, element) => {
                 let target = $(element);
@@ -146,7 +199,7 @@ $(function () {
                 cOrderSection = cOrder.parent(),
                 nOrder = $.tmpl(templates.nOrderCard, data);
 
-            if (cOrderSection.hasClass('.orders-full')) {
+            if (cOrderSection.hasClass('.from')) {
                 cOrder.replaceWith(nOrder);
             } else {
                 if (data.orderDBData) {
@@ -164,8 +217,93 @@ $(function () {
             $.tmpl(templates.nOrderCard, thumbOrdersArray).appendTo(ordersThumbsContainer);
             $.tmpl(templates.nOrderCard, fullOrdersArray).appendTo(ordersFullContainer);
         },
+        attachListeners() {
+            socket.on('orderBlocked', (data) => {
+                uiManager.toggleOrderBlocking(data.orderID, true, data.user.username);
+            });
+
+            socket.on('orderUnblocked', (orderID) => {
+                uiManager.toggleOrderBlocking(orderID, false);
+            });
+
+            transferBtn.on('click', () => {
+                if (!$(this).hasClass(disabledClass)) {
+                    let transferOrderPromise = socketManager.transferOrder(fromOrder.data.id, toOrder.data.id);
+
+                    transferOrderPromise.then((success) => {
+                        if (!success) {
+                            Qticket.throwAlert('Transfer Error');
+                        }
+                    });
+                }
+            });
+
+            ordersContainer.on('click', '.order-card', (e) => {
+                let target = $(e.currentTarget),
+                    prevSaved = target.closest('.order-section').hasClass('from');                
+
+                if (prevSaved) {
+                    if (target.hasClass(blockedClass)) {
+                        if (fromOrderBBM) {
+                            if (fromOrderBBM !== target.data('id')) {
+                                Qticket.throwAlert('Order Blocked');
+                            } else {
+                                target.removeClass(blockedClass);
+                                uiManager.clearTicketData(prevSaved);
+                            }
+                        } else {
+                            Qticket.throwAlert('Order Blocked');
+                        }
+                    } else {
+                        if (fromOrder) {
+                            fromOrder.target.removeClass(blockedClass);
+                            uiManager.clearTicketData(prevSaved);
+                        }
+                        let data = {id:target.data('id'), order:target.data('ticketNumber'), client: {id: target.data('client-id'),name: target.data('client')}};
+                        
+                        target.addClass(blockedClass);
+                        fromOrderBBM = data.id;
+                        fromOrder = {data: data, target: target};
+                        uiManager.toggleTransferModuleData(prevSaved, data.id);
+                    }
+                } else {
+                    if (target.hasClass(blockedClass)) {
+                        if (toOrderBBM) {
+                            if (toOrderBBM !== target.data('id')) {
+                                Qticket.throwAlert('Order Blocked');
+                            }
+                            uiManager.clearTicketData(prevSaved);
+                        } else {
+                            Qticket.throwAlert('Order Blocked');
+                        }
+                    } else {
+                        if (toOrder) {
+                            uiManager.clearTicketData(prevSaved);
+                        }
+                        let data = {id:target.data('id'), order:target.data('ticketNumber'), client: {id: target.data('client-id'),name: target.data('client')}},
+                        orderAvailable = socketManager.blockOrder(data.id);
+
+                        orderAvailable.then((orderData) => {
+                            if (!orderData.orderAvailable) {
+                                Qticket.throwAlert('Order Blocked');
+                            } else {
+                                target.addClass(blockedClass);
+                                toOrderBBM = data.id;
+                                toOrder = {data: data, target: target};
+                                uiManager.toggleTransferModuleData(prevSaved, data.id);
+                            }
+                        });
+                    }
+                }
+            });
+        },
+        init: () => {
+            uiManager.attachListeners();
+        }
     };
 
     self = this;
     socketManager.init();
+    uiManager.init();
+
 });
