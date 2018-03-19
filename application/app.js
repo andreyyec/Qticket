@@ -76,7 +76,7 @@ authProcess.then((loginData) => {
             debbuger('Fetched');
             app.set('appProducts', productsData);
             ordersManager = new ordersMng(loginData, dbManager,io.of('/orders'), io.of('/dashboard'));
-            ordersManager.initLoop();
+            ordersManager.start();
 
             //App Router
             app.use('/', routes);
@@ -87,12 +87,14 @@ authProcess.then((loginData) => {
             });
         }).catch((err) => {
             debbuger('Unable to fetch products from Odoo');
+            console.log(err);
         });
     }else {
         debbuger('Error while trying to access global data');
     }
-}).catch((data) => {
+}).catch((err) => {
     debbuger('Unable to connect with Odoo Server');
+    console.log(err);
 });
 
 

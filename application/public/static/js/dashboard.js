@@ -11,14 +11,14 @@ $(function () {
     draftsColumn = tcksDashb.find('.drafts-column'),
     ordersColumn = tcksDashb.find('.orders-column'),
     templates = {
-        orderRow:   '<div class="ticket-row" data-id="${id}" data-client="${client[1]}" data-ticket"${ticket}">\
+        orderRow:   '<div class="ticket-row" data-id="${id}" data-client-id="${client.id}" data-client="${client.name}" data-ticket"${ticket}">\
                         <div class="ticket ticket-number">\
                             <span class="title">FICHA:</span>\
                             <span class="number">\
                                 {{if (ticket !== false)}}${ticket}{{else}}-{{/if}}\
                             </span>\
                         </div>\
-                        <div class="ticket ticket-info">${client[1]}</div>\
+                        <div class="ticket ticket-info">${client.name}</div>\
                     </div>'
     };
 
@@ -109,6 +109,8 @@ $(function () {
             Qticket.toggleLoadScreen(false);
         },
         dashbScreenUpdate: function(data) {
+            console.log(data);
+
             let draftsCol, ordersCol;
 
             draftsColumn.empty();

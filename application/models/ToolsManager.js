@@ -18,18 +18,20 @@ class ToolsManager {
         console.log(err);
     }
 
-    getDocumentFromArray (array, property, value, getIndex = false) {
+    getDocumentFromArray (array, property, value, workingMode = 0) {
         if (array.constructor === Array) {
             let doc = array.filter(x => x[property] === value);
             
-            if (getIndex) {
-                if (doc) {
+            switch (workingMode) {
+                case 0:
+                    return doc[0];
+                    break;
+                case 1:
+                    return array.findIndex(x => x[property] === value);
+                    break;
+                case 2:
                     return {document: doc[0], index: array.findIndex(x => x[property] === value)};
-                } else {
-                    return {document: undefined, index: undefined};    
-                }
-            }else {
-                return doc[0];
+                break;
             }
         } else {
             return false;

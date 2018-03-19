@@ -1,15 +1,14 @@
 const constants = {
 	public: {
 		protocol: 'http',
-		//hostname: 'localhost', //local
+		hostname: 'localhost', //local
 		//hostname: '192.168.2.108', //casa
-		hostname: '192.168.2.47', //bodega
+		//hostname: '192.168.2.47', //bodega
 		port: 3000,
 		basePath: ''
 	},
 	appSettings: {
-		//purchaseListRefreshTime: 2, //seconds
-		purchaseListRefreshTime: 1, //seconds
+		purchaseListRefreshTime: 5, //seconds
 		sessionDurationTime: 30 //minutes
 	},
 	adminAccount: {

@@ -24,13 +24,13 @@ $(function () {
         qtyModifier = $(modifierButtons[2]),
         templates= {
             nOrderCard: '<div class="col-6 col-sm-4 col-md-3">\
-                            <div class="card card-inverse order-card {{if $data.isBlocked}}blocked{{else $data.orderDBData && $data.orderDBData.orderState && $data.orderDBData.orderState == "done"}}done{{/if}}" data-id="${id}" data-client-id="${client[0]}" data-client="${client[1]}" data-ticket="${ticket}">\
+                            <div class="card card-inverse order-card {{if $data.isBlocked}}blocked{{else $data.orderDBData && $data.orderDBData.orderState && $data.orderDBData.orderState == "done"}}done{{/if}}" data-id="${id}" data-client-id="${client.id}" data-client="${client.name}" data-ticket="${ticket}">\
                                 <div class="card-header card-header">\
                                     ${id}\
                                 </div>\
                                 <div class="card-block bg-white card-body">\
                                     <div class="row no-gutters client-info-section">\
-                                        <div class="col-8 client">${client[1]}</div>\
+                                        <div class="col-8 client">${client.name}</div>\
                                         <div class="col-4 ticket">{{if (ticket !== undefined) && (ticket !== false)}}${ticket}{{else}}-{{/if}}</div>\
                                     </div>\
                                     {{if $data.orderDBData}}\
@@ -355,7 +355,7 @@ $(function () {
             let nRow, productsArray;
 
             currentOrderData = orderData;
-            clientInfoBar.html(orderData.client[1]);
+            clientInfoBar.html(orderData.client.name);
 
             if (orderData.orderDBData !== undefined) {
                 productsArray = orderData.orderDBData.productRows;

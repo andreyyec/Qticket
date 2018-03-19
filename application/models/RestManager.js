@@ -73,7 +73,7 @@ class RestManager {
         return data;
     }
 
-    processDataTableSummary(data){
+    parseToDataTableSummary(data){
         for(let i in data) {
             data[i].client = data[i].client.name;
             data[i].activityLog = undefined;
@@ -134,7 +134,7 @@ class RestManager {
 
                 result.then((data) => {
                     data = self.getOrdersDate(data);
-                    resolve({data: self.processDataTableSummary(data)});
+                    resolve({data: self.parseToDataTableSummary(data)});
                 }).catch((err) => {
                     reject({error: err});
                 });

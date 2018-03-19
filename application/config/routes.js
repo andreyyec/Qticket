@@ -188,6 +188,18 @@ router.post('/rest/orders/get/', (req, res) => {
     });
 });
 
+router.post('/rest/orders/get/', (req, res) => {
+    let filters = req.body,
+        ordersPrm = restManager.getDataTablesSearchRecords(filters, true);
+
+    ordersPrm.then((data) => {
+        res.send(data);
+    }).catch((err) => {
+        console.log(err);
+        res.send({error: 'Unable to pull data from server'});
+    });
+});
+
 // 404 default route
 router.get('*', (req, res) => {
     res.render('pages/404', {
