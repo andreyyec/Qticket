@@ -1,6 +1,7 @@
 const   validator = require("check-data-type"),
         constants = require('../config/constants'),
-        odooSettings = constants.odooParams;
+        odooSettings = constants.odooParams,
+        dbStates = {0:'draft', 1:'saved', 2:'done', 3:'closed', 4:'canceled'};
         
 
 let self, dbInstance;
@@ -66,8 +67,9 @@ class RestManager {
         return queryObj;
     }
 
-    getOrdersDate(data) {
+    _parseDataToDataTables(data) {
         for(let i in data) {
+            data[i].orderState = dbStates[data[i].orderState];
             data[i].date = data[i].activityLog[data[i].activityLog.length - 1].date;
         }
         return data;
@@ -94,7 +96,7 @@ class RestManager {
                 let result = dbInstance.getOrdersbyFilter(filters);
                 
                 result.then((data) => {
-                    data = self.getOrdersDate(data);
+                    data = self._parseDataToDataTables(data);
                     if (data[0]) {
                         resolve(data[0]);
                     } else {
@@ -133,7 +135,7 @@ class RestManager {
                     result = dbInstance.getOrdersbyFilter(self.processDataTablesDbFilters(filters), fields, -1, limit);
 
                 result.then((data) => {
-                    data = self.getOrdersDate(data);
+                    data = self._parseDataToDataTables(data);
                     resolve({data: self.parseToDataTableSummary(data)});
                 }).catch((err) => {
                     reject({error: err});
