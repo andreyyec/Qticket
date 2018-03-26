@@ -3,18 +3,21 @@ const   constants = require('../config/constants'),
         http = require('http'),
         request = require('request'),
         Order = require(constants.paths.models + 'Order'),
-        Tools = require(constants.paths.models + 'ToolsManager')
+        Tools = require(constants.paths.models + 'ToolsManager'),
+        sections = {drafts: 'drafts', approved: 'approved', confirmed: 'confirmed'},
         states = {added: 'added', updated: 'updated', removed: 'removed'};
 
 class OrdersManager {
 
     constructor(session, dbInst, ioOrdersInstance, ioDashbInstance) {
+        this._draftsSecUpdated = false;
+        this._dashbUpdated = false;
         this._tools = new Tools();
         this._dbInstance = dbInst;
         this._ioOrders = ioOrdersInstance;
         this._ioDashb = ioDashbInstance;
         this._cookie = request.cookie('session_id='+session.session_id);
-        this._usoml = {'drafts': [], 'approved': [], 'confirmed': []};
+        this._usoml = {'drafts': {}, 'approved': {}, 'confirmed': {}};
     }
 
     _getIdsObj() {
@@ -73,9 +76,27 @@ class OrdersManager {
         dashbData.drafts.sort((x, y) => { return x.last_update - y.last_update;});
         dashbData.orders.sort((x, y) => { return x.last_update - y.last_update;});
 
-        console.log(dashbData);
-
         return dashbData;
+    }
+
+    _getOrdersData() {
+        let wsckOrders = {};//
+        for(let ordInd in this._usoml.drafts) {
+            let cOrder = this._usoml.drafts[ordInd];
+            wsckOrders[cOrder.getId()] = cOrder.getWSocketInf();
+        }
+        return wsckOrders;
+    }
+
+    _releaseOrderOnDisconnect(socketId) {
+        for(let ordInd in this._usoml[sections.drafts]) {
+            if (!this._usoml[sections.drafts][ordInd].isAvailable()) {
+                if (this._usoml[sections.drafts][ordInd].getSocketId() === socketId) {
+                    this._usoml[sections.drafts][ordInd].unblock(0, true);
+                    this._ioOrders.emit('orderUnblocked', this._usoml[sections.drafts][ordInd].getId());
+                }
+            }
+        }
     }
 
     _attachIOListeners() { //@WORK IN PROGRESS
@@ -90,29 +111,25 @@ class OrdersManager {
 
         //Orders Web Socket
         this._ioOrders.on('connection', (socket) => {
-            //socket.emit('init', ordersObj.drafts);
+            socket.emit('init', this._getOrdersData());
 
             socket.on('blockOrder', (data, returnFn) => {
-                /*let serverData = this.getDocumentFromArray(ordersObj.drafts, 'id', data.orderID, true),
-                    index = serverData.index,
-                    order = serverData.document;
+                if (this._usoml[sections.drafts][data.orderId] && this._usoml[sections.drafts][data.orderId].block(socket, data.user)) {
+                    this._ioOrders.emit('orderBlocked', {orderId: data.orderId, user: data.user});
 
-                if (order.isBlocked === undefined || (orderDBData && orderDBData.orderState !== 'done')) {
-                    ordersObj.drafts[index].isBlocked = {socket: socket.id, user: data.user};
-                    ioOrders.emit('orderBlocked', {orderID: data.orderID, user: data.user});
-                    returnFn({order: order, orderAvailable: true});
+                    returnFn(this._usoml[sections.drafts][data.orderId].getWSocketInf());
                 } else {
-                    returnFn({orderAvailable: false});
-                }*/
+                    returnFn(false);
+                }
             });
 
-            socket.on('unblockOrder', (orderID, returnFn) => {
-                /*let serverData = this.getDocumentFromArray(ordersObj.drafts, 'id', orderID, true),
-                    index = serverData.index;
-
-                ordersObj.drafts[index].isBlocked = undefined;
-                returnFn(true);
-                ioOrders.emit('orderUnblocked', orderID);*/
+            socket.on('unblockOrder', (data, returnFn) => {
+                if (this._usoml[sections.drafts][data.orderId] && this._usoml[sections.drafts][data.orderId].unblock(data.user)) {
+                    this._ioOrders.emit('orderUnblocked', data.orderId);
+                    returnFn(true);
+                } else {
+                    returnFn(false);
+                }
             });
 
             socket.on('deleteOrder', (orderID) => {
@@ -120,15 +137,23 @@ class OrdersManager {
                 //socket.emit('deleteOrderEvent', orderID);
             });
 
-            socket.on('updateOrder', (nOrder, returnFn) => {
-                /*let saveProcedurePromise = this.updateOrderOnDB(nOrder);
+            socket.on('updateOrder', async (nOrder, returnFn) => {
+                if (this._usoml[sections.drafts][nOrder.id]) {
+                    try {
+                        let updateConfirmation = await this._usoml[sections.drafts][nOrder.id].update(nOrder);
 
-                saveProcedurePromise.then(() => {
-                    returnFn(true);
-                }).catch((err) => {
-                    this.logDbError(err, 'trying to save Order into the DB');
-                    returnFn(false);
-                });*/
+                        if (updateConfirmation) {
+                            this._ioOrders.emit('orderUpdated', this._usoml[sections.drafts][nOrder.id].getWSocketInf());
+                            returnFn(true);
+                        } else {
+                            this.logDbError('', 'trying to save Order into the DB');
+                            returnFn(false);
+                        }
+                    } catch(err) {
+                        this.logDbError(err, 'trying to save Order into the DB');
+                        returnFn(false);
+                    }   
+                }
             });
 
             socket.on('pullBackOrder', (data, returnFn) => {
@@ -143,9 +168,8 @@ class OrdersManager {
             });
 
             socket.on('disconnect', () => {
-                //this.checkOrdersOnSocketDisconnect(socket.id);
+                this._releaseOrderOnDisconnect(socket.id);
             });
-
         });
     }
 
@@ -159,7 +183,7 @@ class OrdersManager {
                 }
             }
         }
-        this._ioDashb.emit('update', this._getDashboardData());
+        this._uiUpdate(data.drafts);
     }
 
     _usomlActionSwitch(section, subS, order) {
@@ -170,22 +194,39 @@ class OrdersManager {
         }
 
         if (subS === states.updated || subS === states.removed) {
-            savOrdInd = this._getUSOMLDataById((subS === states.removed) ? order : order.getId(), section, 1);
+            savOrdInd = this._getUSOMLDataById((subS === states.removed) ? order : orderObj.getId(), section, 1);
         }
 
         switch(subS) {
             case states.added:
-                this._usoml[section].push(orderObj);
+                this._usoml[section][orderObj.getId()] = orderObj;
                 break;
             case states.updated:
-                this._usoml[section][savOrdInd] = orderObj;
+                this._usoml[section][order.id].odooUpdate(order);
                 break;
             case states.removed:
-                this._usoml[section].splice(savOrdInd, 1);
+                delete this._usoml[section][order];
                 break;
             default:
                 console.log('Unrecognized action');
                 break;
+        }
+
+        this._dashbUpdated = true;
+
+        if (section === sections.drafts) {
+            this._draftsSecUpdated = true;
+        }
+    }
+
+    _uiUpdate(data) {
+        if (this._dashbUpdated) {
+            this._ioDashb.emit('update', this._getDashboardData());
+            
+            if (this._draftsSecUpdated === true) {
+                this._ioOrders.emit('screenUpdate', data);
+                this._draftsSecUpdated = false;
+            }
         }
     }
 

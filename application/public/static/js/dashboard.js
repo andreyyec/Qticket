@@ -21,8 +21,6 @@ $(function () {
                         <div class="ticket ticket-info">${client.name}</div>\
                     </div>'
     };
-
-    let scope;
     
     socketManager = {
         attachListeners: function() {
@@ -102,15 +100,13 @@ $(function () {
             }
         },
         dashbScreenInit: function(data) {
-            self.dashboardManager.dashbScreenUpdate(data);
+            dashboardManager.dashbScreenUpdate(data);
 
             dashboardManager.attachDashboardListeners();
             tcksDashb.removeClass(hideClass);
             Qticket.toggleLoadScreen(false);
         },
         dashbScreenUpdate: function(data) {
-            console.log(data);
-
             let draftsCol, ordersCol;
 
             draftsColumn.empty();
@@ -141,7 +137,7 @@ $(function () {
             body.unbind('keydown');
         },
         startProcedure: function() {
-            scope.webSocketStart();
+            this.webSocketStart();
             startButton.addClass(hideClass);
             stopButton.removeClass(hideClass);
         },
@@ -151,14 +147,13 @@ $(function () {
             });
 
             stopButton.on('click', function(e) {
-                scope.dashbScreenStop();
+                dashboardManager.dashbScreenStop();
                 startButton.removeClass(hideClass);
                 stopButton.addClass(hideClass);
             });
     	},
     	init: function() {
-    		scope = this;
-			scope.attachListeners();
+			this.attachListeners();
             if (Qticket.getUrlParam('dashinit') === 'true') {
                 dashboardManager.startProcedure();
             }

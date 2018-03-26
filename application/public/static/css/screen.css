@@ -329,13 +329,18 @@ nav li.nav-item ul {
           display: flex;
           flex-direction: row-reverse;
           justify-content: center;
-          padding: 20px 5px;
+          padding: 10px 5px;
           text-align: center; }
           .screen-holder .row.orders-screen .inner-container .orders-thumbs .order-card .card-body .ticket {
             border-left: 1px solid gray;
             font-size: 26px;
             white-space: nowrap;
             width: 40%; }
+    .screen-holder .row.orders-screen .inner-container .order-card .card-block.user-block-info {
+      background-color: gainsboro;
+      padding: 5px; }
+      .screen-holder .row.orders-screen .inner-container .order-card .card-block.user-block-info .blocker {
+        padding-left: 10px; }
   .screen-holder .row.order-details-screen {
     display: none;
     height: inherit;

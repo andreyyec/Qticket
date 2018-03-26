@@ -3,7 +3,7 @@ const   mongoose = require('mongoose'),
 
 let OrderSchema = new Schema({
     odooOrderRef: String,
-    orderState: String,
+    orderState: Number,
     ticketNumber: Number,
     client: {
         id: String, 
@@ -22,6 +22,7 @@ let OrderSchema = new Schema({
         }, 
         date: Date, 
         changeLogs: [{
+            atype: String,
             id: Number,
             product: String,
             action: String,

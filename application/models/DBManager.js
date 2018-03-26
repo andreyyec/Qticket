@@ -25,26 +25,77 @@ class DBManager {
         db.close();
     }
 
-    saveOrder(nOrderData, prevSaved = false) {
+    /*getOrderById(id) {
         return new Promise((resolve, reject) => {
-            let result, order = new orderModel(nOrderData);
+            let query = orderModel.findOne({id: id});
 
-            if (!prevSaved) {
-                order.save((err) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(true);
-                    }
-                });
+            orderModel.findOne({id: id}, (err, docs) => {
+                if (err) {
+                    console.log(err);
+                    return false;
+                } else {
+                    return docs;
+                }
+            });
+        });
+    }*/
+
+    getOrderById(id) {
+        return orderModel.findOne({id: id}, (err,obj) => {
+            if (err) {
+                return {status: 'error'};
             } else {
-                orderModel.findOneAndUpdate({odooOrderRef: nOrderData.odooOrderRef}, nOrderData, (err)=> {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(true);
+                return {status: 'success', data: obj};
+            }
+        });
+    }
+
+    getOrderByOdooRef(ref) {
+        return new Promise((resolve, reject) => {
+            orderModel.findOne({odooOrderRef: ref}).lean().exec((err, order) => {
+                if (!err) {
+                    if(order) {
+                        resolve(order);
                     }
-                });
+                } else {
+                    console.log(err);
+                }
+                resolve(false);
+            });
+        });
+    }
+
+    saveOrder(orderData) {
+        return new Promise((resolve, reject) => {
+            orderModel.findOneAndUpdate({odooOrderRef: orderData.odooOrderRef}, orderData, {upsert:true}, (err, order)=> {    
+                if (err) {
+                    console.log(err);
+                    resolve(false);
+                } else {  
+                    resolve(true);
+                }
+            });
+        });
+    }
+
+    _orderSave(order) {
+        order.save((err) => {
+            if (err) {
+                console.log(err);
+                return false;
+            } else {
+                return true;
+            }
+        });
+    }
+
+    _orderFindAndUpdate(order) {
+        orderModel.findOneAndUpdate({odooOrderRef: order.odooOrderRef}, order, (err)=> {
+            if (err) {
+                console.log(err);
+                return false;
+            } else {
+                return true;
             }
         });
     }
@@ -68,20 +119,6 @@ class DBManager {
     getOrdersbyFilter(filters = {}, fields = {}, order = 1, limit = 200) {
         return new Promise((resolve, reject) => {
             let query = orderModel.find(filters, fields).sort({$natural: order}).lean().limit(limit);
-
-            query.exec(function (err, docs) {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(docs);
-                }
-            });
-        });
-    }
-
-    getOrderById(id) {
-        return new Promise((resolve, reject) => {
-            let query = orderModel.findOne({id: id});
 
             query.exec(function (err, docs) {
                 if (err) {
