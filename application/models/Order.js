@@ -39,35 +39,46 @@ class Order {
     	return (translation)? this._State : this._state;
     }
 
-    _getOrderChangesObj(updateObjProdRows) {
-    	//console.log('Creating Changes Object');
+    _getOrderChangesObj(nProdRows) {
+    	let updateObjProdRows = nProdRows,
+    		currentProdRows = this._productRows,
+    		changesObj = {added:[], updated:[], removed:[]},
+    		toRemoveO = [], toRemoveN = [];
 
-    	let changesObj = {added:[], updated:[], removed:[]},
-    		match = false;
+		for(let oRow in currentProdRows) {
+			for(let nRow in updateObjProdRows) {
+				if (updateObjProdRows[nRow].id === currentProdRows[oRow].id) {
+					toRemoveO.push(oRow);
+					toRemoveN.push(nRow);
+					if (parseFloat(updateObjProdRows[nRow].price) !== parseFloat(currentProdRows[oRow].price) || parseFloat(updateObjProdRows[nRow].qty) !== parseFloat(currentProdRows[oRow].qty)) {
+						changesObj['updated'].push(updateObjProdRows[nRow]);
+					}
+				}
+			}
+		}
 
-    	//Get Added rows
-    	for(let nRow in updateObjProdRows) {
-    		for(let oRow in this._productRows) {
-    			//Repeated or updated
-    			if (updateObjProdRows[nRow].id === this._productRows[oRow].id) {
-    				if (updateObjProdRows[nRow].price === this._productRows[oRow].id && updateObjProdRows[nRow].qty === this._productRows[oRow].qty) {
-    					this._productRows.splice(oRow, 1);
-    				} else {
-    					changesObj['updated'].push(updateObjProdRows[nRow]);
-    				}
-    			}
-    		}
-    		//Added Rows
-    		changesObj['added'].push(updateObjProdRows[nRow]);
+    	//Sort Indexes
+    	toRemoveO.sort((a, b) => {return b-a});
+    	toRemoveN.sort((a, b) => {return b-a});
+
+    	//Remove Duplicated Rows
+    	for(let indO of toRemoveO) {
+    		currentProdRows.splice(indO, 1);
+    	}
+
+    	for(let indN of toRemoveN) {
+    		updateObjProdRows.splice(indN, 1);
+    	}
+
+    	//Added Rows
+    	for(let row of updateObjProdRows) {
+    		changesObj['added'].push(row);
     	}
 
     	//Deleted Rows
-    	for (let row in this._productRows) {
-    		changesObj['removed'].push(this._productRows[row]);
+    	for (let row of currentProdRows) {
+    		changesObj['removed'].push(row);
     	}
-
-    	//console.log('=> Changes Object');
-    	//console.log(changesObj);
 
     	return changesObj;
     }
@@ -88,7 +99,7 @@ class Order {
     	}
 
     	if (state !== this._state) {
-    		nLog = this._pushLogLine(nLog, this._getLogLine('state', 'changed', state));
+    		nLog = this._pushLogLine(nLog, this._getLogLine('state', 'changed', state, dbStates[state]));
     	}
 
     	return nLog;
@@ -146,10 +157,6 @@ class Order {
 		}
     }
 
-    _setState(state) {
-    	this._state = state;
-    }
-
     _pushLogLine(logEntry, logline) {
     	logEntry.changeLogs.unshift(logline);
     	return logEntry;
@@ -198,8 +205,11 @@ class Order {
     }
 
     async update(updateObj) {
+    	let updateObjTpl;
+
     	if (this._state < 2) {
-    		this._pushLogEntry(this._getLogsDiff(updateObj.state, updateObj.blocked, this._getOrderChangesObj(updateObj.productRows)));
+    		updateObjTpl = JSON.parse(JSON.stringify(updateObj));
+    		this._pushLogEntry(this._getLogsDiff(updateObjTpl.state, updateObjTpl.blocked, this._getOrderChangesObj(updateObjTpl.productRows)));
     		this._productRows = updateObj.productRows;
     		this._state = updateObj.state;
 
@@ -215,7 +225,7 @@ class Order {
     }
 
     async close() {
-    	
+
     }
 
 	async _loadFromDB(orderId) {
@@ -223,7 +233,7 @@ class Order {
 			let orderData = await this._db.getOrderByOdooRef(orderId);
 
 			if (orderData !== false) {
-				this.state = orderData.orderState;
+				this._state = orderData.orderState;
 				this._productRows = orderData.productRows;
 				this._activityLog = orderData.activityLog;
 			}

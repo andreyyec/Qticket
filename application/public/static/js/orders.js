@@ -220,7 +220,7 @@ $(function () {
                 if(target.hasClass(blockedClass)) {
                     Qticket.throwAlert('Order Blocked');
                 }else if (target.hasClass(doneClass)) {
-                    Qticket.throwAlert('Order Closed', 'success');
+                    Qticket.throwAlert('Order Completed', 'success');
                 }else {    
                     let orderId = target.data('id'),
                         orderAvailable = socketManager.blockOrder(orderId);

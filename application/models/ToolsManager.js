@@ -1,24 +1,22 @@
 const   constants = require('../config/constants');
 
-let self;
-
 class ToolsManager {
 
     constructor() {
-        self = this;
+
     }
 
-    logDbError(err, msg = 'accesing the database') {
+    static logDbError(err, msg = 'accesing the database') {
         console.log('[Error][Database] Error while ' + msg);
         console.log(err);
     }
 
-    logApplicationError(err, msg = 'Application Error') {
+    static logApplicationError(err, msg = 'Application Error') {
         console.log('[Error][Application] =>' + msg);
         console.log(err);
     }
 
-    getDocumentFromArray (array, property, value, workingMode = 0) {
+    static getDocumentFromArray (array, property, value, workingMode = 0) {
         if (array.constructor === Array) {
             let doc = array.filter(x => x[property] === value);
             

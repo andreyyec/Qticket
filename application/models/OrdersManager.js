@@ -146,11 +146,11 @@ class OrdersManager {
                             this._ioOrders.emit('orderUpdated', this._usoml[sections.drafts][nOrder.id].getWSocketInf());
                             returnFn(true);
                         } else {
-                            this.logDbError('', 'trying to save Order into the DB');
+                            Tools.logDbError('', 'trying to save Order into the DB');
                             returnFn(false);
                         }
                     } catch(err) {
-                        this.logDbError(err, 'trying to save Order into the DB');
+                        Tools.logDbError(err, 'trying to save Order into the DB');
                         returnFn(false);
                     }   
                 }
@@ -162,7 +162,7 @@ class OrdersManager {
                 pullBackPromise.then(() => {
                     returnFn(true);
                 }).catch((err) => {
-                    this.logDbError(err, 'trying to save Order into the DB');
+                    Tools.logDbError(err, 'trying to save Order into the DB');
                     returnFn(false);
                 });*/
             });
