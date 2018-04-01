@@ -25,7 +25,7 @@ $(function () {
     uiManager = {
         attachListeners: () => {
             pullBackBtn.on('click', (e) => {
-                let pbPromise = socketManager.pullBackOrder({oId:$(e.target).data('id'), uId:Qticket.session.uid, uName:Qticket.session.username});
+                let pbPromise = socketManager.pullBackOrder({orderId:$(e.target).data('id'), user:{id:Qticket.session.uid, username:Qticket.session.username}});
 
                 pbPromise.then((confirmation) => {
                     if (confirmation) {

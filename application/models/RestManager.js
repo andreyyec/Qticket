@@ -1,5 +1,5 @@
-const   validator = require("check-data-type"),
-        constants = require('../config/constants'),
+//const   validator = require("check-data-type"),
+const   constants = require('../config/constants'),
         odooSettings = constants.odooParams,
         dbStates = {0:'draft', 1:'saved', 2:'done', 3:'closed', 4:'canceled'};
         

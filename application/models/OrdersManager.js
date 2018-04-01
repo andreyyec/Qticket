@@ -132,9 +132,25 @@ class OrdersManager {
                 }
             });
 
-            socket.on('deleteOrder', (orderID) => {
-                //@TODO: Validation, DB save, then event
-                //socket.emit('deleteOrderEvent', orderID);
+            socket.on('cancelOrder', async (data, returnFn) => {
+                if (this._usoml[sections.drafts][data.orderId]) {
+                    try {
+                        let conf = await this._usoml[sections.drafts][data.orderId].cancel(data.user);
+
+                        if (conf) {
+                            this._ioOrders.emit('orderCancelled', this._usoml[sections.drafts][data.orderId].getWSocketInf());
+                            returnFn(true);
+                        } else {
+                            returnFn(false);
+                        }
+                    } catch(err) {
+                        Tools.logDbError(err, 'trying to save Order into the DB');
+                        returnFn(false);
+                    }
+                } else {
+                    Tools.logApplicationError('Unable to find Order');
+                    returnFn(false);
+                }
             });
 
             socket.on('updateOrder', async (nOrder, returnFn) => {
@@ -153,18 +169,31 @@ class OrdersManager {
                         Tools.logDbError(err, 'trying to save Order into the DB');
                         returnFn(false);
                     }   
+                } else {
+                    Tools.logApplicationError('Unable to find Order');
+                    returnFn(false);
                 }
             });
 
-            socket.on('pullBackOrder', (data, returnFn) => {
-                /*let pullBackPromise = this.orderPullBackToSaved(data);
+            socket.on('pullBackOrder', async (data, returnFn) => {
+                if (this._usoml[sections.drafts][data.orderId]) {
+                    try {
+                        let conf = await this._usoml[sections.drafts][data.orderId].pullback(data.user);
 
-                pullBackPromise.then(() => {
-                    returnFn(true);
-                }).catch((err) => {
+                        if (conf) {
+                            this._ioOrders.emit('orderUpdated', this._usoml[sections.drafts][data.orderId].getWSocketInf());
+                            returnFn(true);
+                        } else {
+                            returnFn(false);
+                        }
+                    } catch(err) {
+                        Tools.logDbError(err, 'trying to save Order into the DB');
+                        returnFn(false);
+                    }
+                } else {
                     Tools.logDbError(err, 'trying to save Order into the DB');
                     returnFn(false);
-                });*/
+                }
             });
 
             socket.on('disconnect', () => {
@@ -205,6 +234,8 @@ class OrdersManager {
                 this._usoml[section][order.id].odooUpdate(order);
                 break;
             case states.removed:
+                //@HERE
+                // Trigger Close function in case that order was saved
                 delete this._usoml[section][order];
                 break;
             default:

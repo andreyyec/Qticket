@@ -69,8 +69,7 @@ class DBManager {
         return new Promise((resolve, reject) => {
             orderModel.findOneAndUpdate({odooOrderRef: orderData.odooOrderRef}, orderData, {upsert:true}, (err, order)=> {    
                 if (err) {
-                    console.log(err);
-                    resolve(false);
+                    reject(err);
                 } else {  
                     resolve(true);
                 }

@@ -17,7 +17,6 @@ $(function () {
                     url: '/rest/orders/get',
                     type: 'POST',
                     data: (d) => {
-                        console.log(d);
                         if (orderRef !== '') d.orderRef = orderRef;
                         if (client !== '') d.client = client;
                         if (ordDate !== '') d.date = ordDate;

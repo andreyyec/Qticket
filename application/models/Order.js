@@ -1,8 +1,10 @@
 const   constants = require('../config/constants'),
-		tools = require(constants.paths.models + 'ToolsManager'),
+		Tools = require(constants.paths.models + 'ToolsManager'),
         dbStates = {0:'draft', 1:'saved', 2:'done', 3:'closed', 4:'canceled'};
 
 class Order {
+
+	// {Constructor}
 
     constructor(db, sck, odooOrderRef, client, ticketNumber, lastUpdate) {
         this._db = db;
@@ -19,8 +21,14 @@ class Order {
         this._loadFromDB(this._odooOrderRef);
     }
 
+    // {Public Methods}
+
     getId() {
     	return this._odooOrderRef;
+    }
+
+    getState() {
+    	return this._state;
     }
 
     getSocketId() {
@@ -37,94 +45,6 @@ class Order {
 
     getOrderState(translation) {
     	return (translation)? this._State : this._state;
-    }
-
-    _getOrderChangesObj(nProdRows) {
-    	let updateObjProdRows = nProdRows,
-    		currentProdRows = this._productRows,
-    		changesObj = {added:[], updated:[], removed:[]},
-    		toRemoveO = [], toRemoveN = [];
-
-		for(let oRow in currentProdRows) {
-			for(let nRow in updateObjProdRows) {
-				if (updateObjProdRows[nRow].id === currentProdRows[oRow].id) {
-					toRemoveO.push(oRow);
-					toRemoveN.push(nRow);
-					if (parseFloat(updateObjProdRows[nRow].price) !== parseFloat(currentProdRows[oRow].price) || parseFloat(updateObjProdRows[nRow].qty) !== parseFloat(currentProdRows[oRow].qty)) {
-						changesObj['updated'].push(updateObjProdRows[nRow]);
-					}
-				}
-			}
-		}
-
-    	//Sort Indexes
-    	toRemoveO.sort((a, b) => {return b-a});
-    	toRemoveN.sort((a, b) => {return b-a});
-
-    	//Remove Duplicated Rows
-    	for(let indO of toRemoveO) {
-    		currentProdRows.splice(indO, 1);
-    	}
-
-    	for(let indN of toRemoveN) {
-    		updateObjProdRows.splice(indN, 1);
-    	}
-
-    	//Added Rows
-    	for(let row of updateObjProdRows) {
-    		changesObj['added'].push(row);
-    	}
-
-    	//Deleted Rows
-    	for (let row of currentProdRows) {
-    		changesObj['removed'].push(row);
-    	}
-
-    	return changesObj;
-    }
-
-    _getLogsDiff(state, userInfo, changesObj) {
-		let nLog = this._getLogEntry(userInfo.id, userInfo.username);
-
-    	for(let prod of changesObj.removed) {
-    		nLog = this._pushLogLine(nLog, this._getLogLine('item', 'removed', prod.id, prod.name));
-    	}
-
-    	for(let prod of changesObj.updated) {
-    		nLog = this._pushLogLine(nLog, this._getLogLine('item', 'updated', prod.id, prod.name, prod.qty, prod.price));
-    	}
-
-    	for(let prod of changesObj.added) {
-    		nLog = this._pushLogLine(nLog, this._getLogLine('item', 'added', prod.id, prod.name,  prod.qty, prod.price));
-    	}
-
-    	if (state !== this._state) {
-    		nLog = this._pushLogLine(nLog, this._getLogLine('state', 'changed', state, dbStates[state]));
-    	}
-
-    	return nLog;
-    }
-
-    _getLogEntry(userId, username) {
-    	return {
-    		user: {
-    			uid: userId,
-    			username: username
-    		},
-    		date: new Date(),
-    		changeLogs: []
-    	}
-    }
-
-    _getLogLine(type, action, productId = 0, name = '', qty = 0, price = 0) {
-    	return {
-            atype: type,
-            id: productId,
-            product: name,
-            action: action,
-            qty: parseFloat(qty),
-            price: parseFloat(price)
-        }
     }
 
     getDashBInf() {
@@ -144,26 +64,6 @@ class Order {
     		blocked: (this.isAvailable()) ? false : this._blocked.user,
     		productRows: (this._productRows.length > 0) ? this._productRows : undefined
     	}
-    }
-
-    _getDBObj() {
-		return {
-		    odooOrderRef: this._odooOrderRef,
-		    orderState: this._state,
-		    ticketNumber: this._ticket,
-		    client: this._client,
-		    productRows: this._productRows,
-		    activityLog: this._activityLog
-		}
-    }
-
-    _pushLogLine(logEntry, logline) {
-    	logEntry.changeLogs.unshift(logline);
-    	return logEntry;
-    }
-
-    _pushLogEntry(logEntry) {
-    	this._activityLog.unshift(logEntry);
     }
 
     isAvailable() {
@@ -224,8 +124,160 @@ class Order {
     	return false;
     }
 
-    async close() {
+    async updateState(state, user) {
+    	let conf = this._setState(state, user);
 
+    	if (conf) {
+    		return await this._saveToDB();
+    	} else {
+    		Tools.logApplicationError('Order was already on state: ' + this.getState());
+    		return false;
+    	}
+    }
+
+    async pullback(user) {
+    	return await this._updateState(1, user);
+    }
+
+    async close(user) {
+    	return await this._updateState(3, user);
+    }
+
+    async cancel(user) {
+    	return await this._updateState(4, user);
+    }
+
+    // {Private Methods}
+
+    _getOrderChangesObj(nProdRows) {
+    	let updateObjProdRows = nProdRows,
+    		currentProdRows = this._productRows,
+    		changesObj = {added:[], updated:[], removed:[]},
+    		toRemoveO = [], toRemoveN = [];
+
+		for(let oRow in currentProdRows) {
+			for(let nRow in updateObjProdRows) {
+				if (updateObjProdRows[nRow].id === currentProdRows[oRow].id) {
+					toRemoveO.push(oRow);
+					toRemoveN.push(nRow);
+					if (parseFloat(updateObjProdRows[nRow].price) !== parseFloat(currentProdRows[oRow].price) || parseFloat(updateObjProdRows[nRow].qty) !== parseFloat(currentProdRows[oRow].qty)) {
+						changesObj['updated'].push(updateObjProdRows[nRow]);
+					}
+				}
+			}
+		}
+
+    	//Sort Indexes
+    	toRemoveO.sort((a, b) => {return b-a});
+    	toRemoveN.sort((a, b) => {return b-a});
+
+    	//Remove Duplicated Rows
+    	for(let indO of toRemoveO) {
+    		currentProdRows.splice(indO, 1);
+    	}
+
+    	for(let indN of toRemoveN) {
+    		updateObjProdRows.splice(indN, 1);
+    	}
+
+    	//Added Rows
+    	for(let row of updateObjProdRows) {
+    		changesObj['added'].push(row);
+    	}
+
+    	//Deleted Rows
+    	for (let row of currentProdRows) {
+    		changesObj['removed'].push(row);
+    	}
+
+    	return changesObj;
+    }
+
+    _getLogsDiff(state, userInfo, changesObj, justState = false) {
+		let nLog = this._getLogEntry(userInfo.id, userInfo.username);
+
+		if (!justState) {
+			for(let prod of changesObj.removed) {
+    			nLog = this._pushLogLine(nLog, this._getLogLine('item', 'removed', prod.id, prod.name));
+	    	}
+
+	    	for(let prod of changesObj.updated) {
+	    		nLog = this._pushLogLine(nLog, this._getLogLine('item', 'updated', prod.id, prod.name, prod.qty, prod.price));
+	    	}
+
+	    	for(let prod of changesObj.added) {
+	    		nLog = this._pushLogLine(nLog, this._getLogLine('item', 'added', prod.id, prod.name,  prod.qty, prod.price));
+	    	}
+		}
+
+    	if (state !== this.getState()) {
+    		nLog = this._pushLogLine(nLog, this._getLogLine('state', 'changed', state, dbStates[state]));
+    	}
+
+    	return nLog;
+    }
+
+    _getLogEntry(userId, username) {
+    	return {
+    		user: {
+    			uid: userId,
+    			username: username
+    		},
+    		date: new Date(),
+    		changeLogs: []
+    	}
+    }
+
+    _getLogLine(type, action, productId = 0, name = '', qty = 0, price = 0) {
+    	return {
+            atype: type,
+            id: productId,
+            product: name,
+            action: action,
+            qty: parseFloat(qty),
+            price: parseFloat(price)
+        }
+    }
+
+    _getDBObj() {
+		return {
+		    odooOrderRef: this._odooOrderRef,
+		    orderState: this._state,
+		    ticketNumber: this._ticket,
+		    client: this._client,
+		    productRows: this._productRows,
+		    activityLog: this._activityLog
+		}
+    }
+
+    _setState(state, user) {
+    	if (this._state !== state) {
+    		this._pushLogEntry(this._getLogsDiff(state, user, {}, true));
+    		this._state = state;
+    		return true;
+    	} else {
+    		return false;
+    	}
+    }
+
+    _pushLogLine(logEntry, logline) {
+    	logEntry.changeLogs.unshift(logline);
+    	return logEntry;
+    }
+
+    _pushLogEntry(logEntry) {
+    	this._activityLog.unshift(logEntry);
+    }
+
+    async _updateState(state, user) {
+    	let conf = this._setState(state, user);
+
+    	if (conf) {
+    		return await this._saveToDB();
+    	} else {
+    		Tools.logApplicationError('Order was already on state: ' + this.getState());
+    		return false;
+    	}
     }
 
 	async _loadFromDB(orderId) {
@@ -238,15 +290,25 @@ class Order {
 				this._activityLog = orderData.activityLog;
 			}
 			
-		} catch (e) {
+		} catch (err) {
 			console.log('Error while getting data from DB');
-			console.log(e);
+			console.log(err);
 		}
     }
 
     async _saveToDB() {
-    	let res =  await this._db.saveOrder(this._getDBObj());
-		return res;
+		try{
+			let res =  await this._db.saveOrder(this._getDBObj());
+
+    		if (res) {
+				return true;
+			} else {
+				return false;
+			}
+    	} catch(err) {
+    		Tools.logDbError(err, 'updating the order State, Unable to save on DB.');
+    		return false;
+		}
     }
 }
 
