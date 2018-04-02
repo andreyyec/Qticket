@@ -92,7 +92,7 @@ class OrdersManager {
         for(let ordInd in this._usoml[sections.drafts]) {
             if (!this._usoml[sections.drafts][ordInd].isAvailable()) {
                 if (this._usoml[sections.drafts][ordInd].getSocketId() === socketId) {
-                    this._usoml[sections.drafts][ordInd].unblock(0, true);
+                    this._usoml[sections.drafts][ordInd].unblock(constants.qticketManagerAccount, true);
                     this._ioOrders.emit('orderUnblocked', this._usoml[sections.drafts][ordInd].getId());
                 }
             }
@@ -128,27 +128,6 @@ class OrdersManager {
                     this._ioOrders.emit('orderUnblocked', data.orderId);
                     returnFn(true);
                 } else {
-                    returnFn(false);
-                }
-            });
-
-            socket.on('cancelOrder', async (data, returnFn) => {
-                if (this._usoml[sections.drafts][data.orderId]) {
-                    try {
-                        let conf = await this._usoml[sections.drafts][data.orderId].cancel(data.user);
-
-                        if (conf) {
-                            this._ioOrders.emit('orderCancelled', this._usoml[sections.drafts][data.orderId].getWSocketInf());
-                            returnFn(true);
-                        } else {
-                            returnFn(false);
-                        }
-                    } catch(err) {
-                        Tools.logDbError(err, 'trying to save Order into the DB');
-                        returnFn(false);
-                    }
-                } else {
-                    Tools.logApplicationError('Unable to find Order');
                     returnFn(false);
                 }
             });
@@ -196,6 +175,51 @@ class OrdersManager {
                 }
             });
 
+
+            /* Update to eliminate the order from the server memory*/
+            socket.on('closeOrder', async (data, returnFn) => {
+                if (this._usoml[sections.drafts][data.orderId]) {
+                    try {
+                        let conf = await this._usoml[sections.drafts][data.orderId].close(data.user);
+
+                        if (conf) {
+                            this._ioOrders.emit('orderUpdated', this._usoml[sections.drafts][data.orderId].getWSocketInf());
+                            returnFn(true);
+                        } else {
+                            returnFn(false);
+                        }
+                    } catch(err) {
+                        Tools.logDbError(err, 'trying to save Order into the DB');
+                        returnFn(false);
+                    }
+                } else {
+                    Tools.logDbError(err, 'trying to save Order into the DB');
+                    returnFn(false);
+                }
+            });
+
+            /* Update to eliminate the order from the server memory*/
+            socket.on('cancelOrder', async (data, returnFn) => {
+                if (this._usoml[sections.drafts][data.orderId]) {
+                    try {
+                        let conf = await this._usoml[sections.drafts][data.orderId].cancel(data.user);
+
+                        if (conf) {
+                            this._ioOrders.emit('orderUpdated', this._usoml[sections.drafts][data.orderId].getWSocketInf());
+                            returnFn(true);
+                        } else {
+                            returnFn(false);
+                        }
+                    } catch(err) {
+                        Tools.logDbError(err, 'trying to save Order into the DB');
+                        returnFn(false);
+                    }
+                } else {
+                    Tools.logApplicationError('Unable to find Order');
+                    returnFn(false);
+                }
+            });
+
             socket.on('disconnect', () => {
                 this._releaseOrderOnDisconnect(socket.id);
             });
@@ -234,9 +258,15 @@ class OrdersManager {
                 this._usoml[section][order.id].odooUpdate(order);
                 break;
             case states.removed:
-                //@HERE
-                // Trigger Close function in case that order was saved
+                if (section === sections.drafts && this._usoml[section][order.id].getState() < 3) {
+                    console.log('=> Closing a draft');
+                    console.log(constants.qticketManagerAccount);
+
+                    this._usoml[section][order.id].close(constants.qticketManagerAccount);
+                }
+
                 delete this._usoml[section][order];
+                
                 break;
             default:
                 console.log('Unrecognized action');

@@ -59,7 +59,7 @@ app.use(session({
 dbManager.connect();
 
 //App -> Odoo Purchases List Init
-authProcess = sessionManager.auth(constants.adminAccount.username, constants.adminAccount.password);
+authProcess = sessionManager.auth(constants.odooAdminAccount.username, constants.odooAdminAccount.password);
 debbuger('Connecting with Odoo Server');
 
 authProcess.then((loginData) => {
