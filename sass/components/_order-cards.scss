@@ -25,6 +25,24 @@
     	}
 	}
 
+	&.canceled {
+		border-color: $bootstrap-danger;
+
+		.card-header{
+			background-color: $bootstrap-danger;
+	    	border-color: $bootstrap-danger;
+    	}
+	}
+
+	&.closed {
+		border-color: $bootstrap-dark;
+
+		.card-header{
+			background-color: $bootstrap-dark;
+	    	border-color: $bootstrap-dark;
+    	}
+	}
+
 	.card-body {
 		padding: 5px;
 

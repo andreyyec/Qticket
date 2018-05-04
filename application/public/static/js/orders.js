@@ -1,5 +1,5 @@
 $(function () {
-    const socket = Qticket.getIOInstance('orders'), body = $('body'), hideClass = 'hide', blockedClass = 'blocked', disabledClass = 'disabled', selectedClass = 'selected', activeClass = 'active', doneClass = 'done',
+    const socket = Qticket.getIOInstance('orders'), body = $('body'), hideClass = 'hide', blockedClass = 'blocked', disabledClass = 'disabled', selectedClass = 'selected', activeClass = 'active', doneClass = 'done', canceledClass = 'canceled', closedClass = 'closed',
         user = {id: Qticket.session.uid, username:Qticket.session.username, role: Qticket.session.role, displayName: Qticket.session.displayname},
         ordersContainer = body.find('.orders-screen'),
         ordersThumbsContainer = ordersContainer.find('.inner-container .orders-thumbs'),
@@ -221,6 +221,10 @@ $(function () {
                     Qticket.throwAlert('Order Blocked');
                 }else if (target.hasClass(doneClass)) {
                     Qticket.throwAlert('Order Completed', 'success');
+                }else if (target.hasClass(canceledClass)) {
+                    Qticket.throwAlert('Order Canceled', 'error');
+                }else if (target.hasClass(closedClass)) {
+                    Qticket.throwAlert('Order Closed', 'error');
                 }else {    
                     let orderId = target.data('id'),
                         orderAvailable = socketManager.blockOrder(orderId);

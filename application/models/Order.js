@@ -8,7 +8,8 @@ class Order {
 
     constructor(db, sck, odooOrderRef, client, ticketNumber, lastUpdate) {
         this._db = db;
-        this._sck = sck;
+		this._sck = sck;
+		this._createdOn = new Date();
         this._odooOrderRef = odooOrderRef;
         this._client = client;
         this._ticket = ticketNumber;
@@ -243,7 +244,8 @@ class Order {
 		return {
 		    odooOrderRef: this._odooOrderRef,
 		    orderState: this._state,
-		    ticketNumber: this._ticket,
+			ticketNumber: this._ticket,
+			createdOn: this._createdOn,
 		    client: this._client,
 		    productRows: this._productRows,
 		    activityLog: this._activityLog
@@ -289,7 +291,6 @@ class Order {
 				this._productRows = orderData.productRows;
 				this._activityLog = orderData.activityLog;
 			}
-			
 		} catch (err) {
 			console.log('Error while getting data from DB');
 			console.log(err);

@@ -3,7 +3,7 @@ const constants = {
 		protocol: 'http',
 		hostname: 'localhost', //local
 		//hostname: '192.168.2.108', //casa
-		//hostname: '192.168.2.47', //bodega
+		//hostname: '192.168.1.147', //bodega
 		port: 3000,
 		basePath: ''
 	},
@@ -11,7 +11,11 @@ const constants = {
 		purchaseListRefreshTime: 5, //seconds
 		sessionDurationTime: 30 //minutes
 	},
-	adminAccount: {
+	qticketManagerAccount: {
+		id: '000',
+		username: 'system'
+	},
+	odooAdminAccount: {
 		username: 'admin',
 		password: 'admin'
 	},

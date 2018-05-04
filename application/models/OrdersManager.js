@@ -39,6 +39,15 @@ class OrdersManager {
         return new Order(this._dbInstance, this._ioOrders, orderInfo.id, orderInfo.client, orderInfo.ticket, orderInfo.last_update);
     }
 
+    _getOrdersData(array) {
+        let wsckOrders = {};
+        for(let ordInd in this._usoml.drafts) {
+            let cOrder = this._usoml.drafts[ordInd];
+            wsckOrders[cOrder.getId()] = cOrder.getWSocketInf();
+        }
+        return wsckOrders;
+    }
+
     _getUSOMLDataById (id, section, workingMode = 0) {
         for(let orderInd in this._usoml[section]) {
             let cOrder = this._usoml[section][orderInd];
@@ -79,13 +88,26 @@ class OrdersManager {
         return dashbData;
     }
 
-    _getOrdersData() {
-        let wsckOrders = {};//
-        for(let ordInd in this._usoml.drafts) {
-            let cOrder = this._usoml.drafts[ordInd];
-            wsckOrders[cOrder.getId()] = cOrder.getWSocketInf();
+    async _getDailyCancelledOrders() {
+        let data, order, parsedData = [];
+                
+        try {
+            data = await this._dbInstance.getOrdersbyFilter({orderState: 4}, {}, 1, 100);
+
+            if (data.length > 0) {
+               for(let ord of data) {
+                    order = this._getOrderObject({id: ord.odooOrderRef, client: ord.client, ticket: ord.ticketNumber, last_update: null});
+                    parsedData.push(order.getWSocketInf());
+                }
+
+                return parsedData;
+            } else {
+                return [];
+            }
+        } catch(err) {
+            Tools.logDbError('trying to pull daily orders');
+            return false;
         }
-        return wsckOrders;
     }
 
     _releaseOrderOnDisconnect(socketId) {
@@ -112,6 +134,26 @@ class OrdersManager {
         //Orders Web Socket
         this._ioOrders.on('connection', (socket) => {
             socket.emit('init', this._getOrdersData());
+
+            socket.on('pullDailyCancelledOrders', async (returnFn) => {
+
+                let data = await this._getDailyCancelledOrders();
+                returnFn(data);
+                
+                /* let getDbSavedInfo = this._getCashierDashboardOrders(),
+                    dataObj = _usoml.drafts;
+
+                getDbSavedInfo.then((data) => {
+                    if (data) {
+                        let array1 = self.parseDbToMmrRecords(data),
+                            array2 = dataObj.concat(array1);
+
+                        returnFn(array2);
+                    }
+                }).catch((err) => {
+                    returnFn({error: err});
+                }); */
+            });
 
             socket.on('blockOrder', (data, returnFn) => {
                 if (this._usoml[sections.drafts][data.orderId] && this._usoml[sections.drafts][data.orderId].block(socket, data.user)) {
@@ -154,12 +196,59 @@ class OrdersManager {
                 }
             });
 
+
+            /* Review error catched and logging */
             socket.on('pullBackOrder', async (data, returnFn) => {
                 if (this._usoml[sections.drafts][data.orderId]) {
                     try {
                         let conf = await this._usoml[sections.drafts][data.orderId].pullback(data.user);
 
                         if (conf) {
+                            this._ioOrders.emit('orderUpdated', this._usoml[sections.drafts][data.orderId].getWSocketInf());
+                            returnFn(true);
+                        } else {
+                            returnFn(false);
+                        }
+                    } catch(err) {
+                        Tools.logDbError(err, 'trying to save Order into the DB');
+                        returnFn(false);
+                    }
+                } else {
+                    Tools.logDbError(err, 'trying to save Order into the DB');
+                    returnFn(false);
+                }
+            });
+
+            socket.on('cancelOrder', async (data, returnFn) => {
+                if (this._usoml[sections.drafts][data.orderId]) {
+                    try {
+                        let conf = await this._usoml[sections.drafts][data.orderId].cancel(data.user);
+
+                        if (conf) {
+                            this._ioOrders.emit('orderUpdated', this._usoml[sections.drafts][data.orderId].getWSocketInf());
+                            returnFn(true);
+                        } else {
+                            returnFn(false);
+                        }
+                    } catch(err) {
+                        Tools.logDbError(err, 'trying to save Order into the DB');
+                        returnFn(false);
+                    }
+                } else {
+                    Tools.logDbError(err, 'trying to save Order into the DB');
+                    returnFn(false);
+                }
+            });
+
+            socket.on('closeOrder', async (data, returnFn) => {
+                if (this._usoml[sections.drafts][data.orderId]) {
+                    try {
+                        let conf = await this._usoml[sections.drafts][data.orderId].close(data.user);
+
+                        if (conf) {
+
+                            /* @!TODO: Remove order from server memory and websocket clients*/
+
                             this._ioOrders.emit('orderUpdated', this._usoml[sections.drafts][data.orderId].getWSocketInf());
                             returnFn(true);
                         } else {

@@ -1,56 +1,82 @@
 $(function () {
-    const socket = Qticket.getIOInstance('orders'), body = $('body'), blockedClass = 'blocked', disabledClass = 'disabled', selectedClass = 'selected', activeClass = 'active', doneClass = 'done',
-        ordersContainer = body.find('.orders-screen .inner-container '),
-        ordersThumbsContainer = ordersContainer.find('.page-body .to'),
-        ordersFullContainer = ordersContainer.find('.page-body .from'),
-        pageHeader = body.find('.header-wrapper'),
-        fromOrderPanel = pageHeader.find('.from'),
-        toOrderPanel = pageHeader.find('.to'),
-        transferBtn = pageHeader.find('.transfer')
+    const socket = Qticket.getIOInstance('orders'), body = $('body'), hideClass = 'hide', blockedClass = 'blocked', disabledClass = 'disabled', selectedClass = 'selected', activeClass = 'active', doneClass = 'done',
+        user = {id: Qticket.session.uid, username:Qticket.session.username, role: Qticket.session.role, displayName: Qticket.session.displayname},
+        ordersContainer = body.find('.orders-screen'),
+        ordersThumbsContainer = ordersContainer.find('.inner-container .orders-thumbs'),
+        ordersFullContainer = ordersContainer.find('.inner-container .orders-full'),
+        orderDetailsContainer = body.find('.order-details-screen'),
+        productsSection = orderDetailsContainer.find('.products-section'),
+        productCards = productsSection.find('.product-card'),
+        oDSection = orderDetailsContainer.find('.order-details-section'),
+        clientInfoBar = oDSection.find('.client-info'),
+        oDProductsList = oDSection.find('.order-details-products-list'),
+        oDProductsHolder = oDSection.find('.order-products-holder'),
+        mobileTabs = orderDetailsContainer.find('.mobile-tabs .tab'),
+        mobileSections = orderDetailsContainer.find('.display-section'),
+        oDKeypad = oDSection.find('.order-keypad'),
+        modifierButtons = oDKeypad.find('.modifier'),
+        keyButtons = oDKeypad.find('.key'),
+        cancelButton = oDSection.find('.action-buttons-bar .cancel'),
+        dbActionButtons = oDSection.find('.action-buttons-bar .send'),
+        saveButton = oDSection.find('.action-buttons-bar .save'),
+        doneButton = oDSection.find('.action-buttons-bar .done'),
+        removeModifier = $(modifierButtons[0]),
+        priceModifier = $(modifierButtons[1]),
+        qtyModifier = $(modifierButtons[2]),
         templates= {
-            nOrderCard: 
-                '<div class="col-12 col-sm-6">\
-                    <div class="card card-inverse order-card {{if $data.isBlocked}}blocked{{else $data.orderDBData && $data.orderDBData.orderState && $data.orderDBData.orderState == "done"}}done{{/if}}" data-id="${id}" data-client-id="${client[0]}" data-client="${client[1]}" data-ticket="${ticket}">\
-                        <div class="card-header card-header">\
-                            ${id}\
-                        </div>\
-                        <div class="card-block bg-white card-body">\
-                            <div class="row no-gutters client-info-section">\
-                                <div class="col-8 client">${client[1]}</div>\
-                                <div class="col-4 ticket">{{if (ticket !== undefined) && (ticket !== false)}}${ticket}{{else}}-{{/if}}</div>\
-                            </div>\
-                            {{if $data.orderDBData}}\
-                                <div class="row no-gutters products-section">\
-                                    <div class="col-12">\
-                                        {{each(prop, val) orderDBData.productRows}}\
-                                            <div class="row no-gutters">\
-                                                <div class="col-12 product-name" data-id="${val.id}">${val.name}</div>\
-                                                <div class="col-6 product-price">&#8353;<span class="value">${val.price}</span></div>\
-                                                <div class="col-6 product-qty"><span class="value">${val.qty}</span>&nbsp;Kg</div>\
-                                            </div>\
-                                        {{/each}}\
-                                    </div>\
+            orderCard: '<div class="col-6 col-sm-4 col-md-3">\
+                            <div class="card card-inverse order-card ${state} {{if blocked}}blocked{{/if}}" data-id="${id}" data-client-id="${client.id}" data-client="${client.name}" data-ticket="${ticket}">\
+                                <div class="card-header card-header">\
+                                    ${id}\
                                 </div>\
-                            {{/if}}\
+                                <div class="card-block bg-white card-body">\
+                                    <div class="row no-gutters client-info-section">\
+                                        <div class="col-8 client">${client.name}</div>\
+                                        <div class="col-4 ticket">{{if (ticket !== undefined) && (ticket !== false)}}${ticket}{{else}}-{{/if}}</div>\
+                                    </div>\
+                                    {{if $data.productRows}}\
+                                        <div class="row no-gutters products-section">\
+                                            <div class="col-12">\
+                                                {{each(prop, val) productRows}}\
+                                                    <div class="row no-gutters">\
+                                                        <div class="col-12 product-name" data-id="${val.id}">${val.name}</div>\
+                                                        <div class="col-6 product-price">&#8353;<span class="value">${val.price}</span></div>\
+                                                        <div class="col-6 product-qty"><span class="value">${val.qty}</span>&nbsp;Kg</div>\
+                                                    </div>\
+                                                {{/each}}\
+                                            </div>\
+                                        </div>\
+                                    {{/if}}\
+                                </div>\
+                                <div class="card-block user-block-info {{if !$data.blocked}}hide{{/if}}">\
+                                        <div class="blocked-by"><small>Blocked by:</small></div>\
+                                        <div class="blocker">{{if $data.blocked}}${blocked.displayName}{{/if}}</div>\
+                                </div>\
+                            </div>\
+                        </div>',
+            row:    '<div class="order-row" data-id="${id}">\
+                        <div class="row inner" >\
+                            <div class="col-8 bold product-name">${product}</div>\
+                            <div class="col-4 product-price">&cent;<span class="price">${price}</span></div>\
+                            <div class="col-12 product-qty">Cantidad: <span class="bold qty">{{if (qty)}}${qty}{{else}}1{{/if}}</span></div>\
                         </div>\
-                    </div>\
-                </div>'
+                    </div>'
         };
 
-    let self, fromOrder, fromOrderBBM = false, toOrder, toOrderBBM = false;
+    let self, currentRow = {}, currentOrderData = {}, override = true, actionEnabled = false;
     
     //===> Socket Manager
     const socketManager = {
         blockOrder: (orderId) => {
             return new Promise((resolve, reject) => {
-                socket.emit('blockOrder', {orderID: orderId, user: {username: Qticket.session.username, name:Qticket.session.displayname}}, (confirmation) => {
+                socket.emit('blockOrder', {orderId: orderId, user: user}, (confirmation) => {
                     resolve(confirmation);
                 });
             });
         },
         unBlockOrder: (orderId) => {
             return new Promise((resolve, reject) => {
-                socket.emit('unblockOrder', orderId, (confirmation) => {
+                socket.emit('unblockOrder', {orderId: orderId, user: user}, (confirmation) => {
                     resolve(confirmation);
                 });
             });
@@ -59,13 +85,6 @@ $(function () {
             return new Promise((resolve, reject) => {
                 socket.emit('updateOrder', orderData, (confirmation) => {
                     resolve(confirmation);
-                });
-            });
-        },
-        transferOrder: (fromOrderId, toOrderId) => {
-            return new Promise((resolve, reject) => {
-                socket.emit('transferOrder', {from: fromOrderId, to: toOrderId, userData: {uId:Qticket.session.uid, uName:Qticket.session.username}}, (confirmation) => {
-                    resolve(true); //@TODO
                 });
             });
         },
@@ -80,24 +99,26 @@ $(function () {
                 for (let i in dataArray.updated) {
                     uiManager.updateOrderById(dataArray.updated[i]);   
                 }
+
+                for (let i in dataArray.removed) {
+                    uiManager.removeOrderById(dataArray.removed[i]);
+                }
             });
 
             socket.on('orderBlocked', (data) => {
-                uiManager.toggleOrderBlocking(data.orderID, true, data.user.username);
-                // [NOTE] Add functionality to show blocking username on the order
+                uiManager.toggleOrderBlocking(data.orderId, true, data.user);
             });
 
             socket.on('orderUnblocked', (orderID) => {
                 uiManager.toggleOrderBlocking(orderID, false);
             });
 
-            socket.on('orderUpdate', (data) => {
-                //@TODO Update Single Order
+            socket.on('orderUpdated', (data) => {
                 let cOrder = ordersContainer.find('.order-card[data-id="'+data.id+'"]').parent(),
                     cOrderSection = cOrder.parent(),
-                    nOrder = $.tmpl(templates.nOrderCard, data);
+                    nOrder = $.tmpl(templates.orderCard, data);
 
-                if (cOrderSection.hasClass('.from')) {
+                if (cOrderSection.hasClass('.orders-full')) {
                     cOrder.replaceWith(nOrder);
                 } else {
                     cOrder.remove();
@@ -105,27 +126,23 @@ $(function () {
                 }
             });
 
-            socket.on('init', () => {
-                socket.emit('initCashierRequest', (data) => {
-                	if (!data.err) {
-                		 uiManager.initOrdersView(data);
-                	} else {
-                		Qticket.throwAlert('Error while getting orders list');
-                	}
+            socket.on('init', (ordersArray) => {
+                socket.emit('pullDailyCancelledOrders', (dailyCancelledOrders) => {
+                    if(dailyCancelledOrders) {
+                        console.log(dailyCancelledOrders);
+                        //uiManager._initOrdersView(ordersArray, dailyCancelledOrders);
+                    } else {
+                        //@here
+                    }    
                 });
             });
-
-			socket.on('chashierInit', (ordersArray) => {
-                uiManager.initOrdersView(ordersArray);
-            });
-
 
             socket.on('disconnect', () => {
                 Qticket.toggleLoadScreen(true);
             });            
         },
         socketConnect: () => {
-            socket.on('connect',  () => {
+            socket.on('connect', () => {
                 if (!Qticket.isLoadingActive()) {
                     socketManager.attachListeners();
                 }else {
@@ -140,66 +157,42 @@ $(function () {
     },
     //===> UI Manager
     uiManager = {
-        enableDataTransferBtn: () => {
-            if (fromOrder && toOrder) {
-                transferBtn.removeClass(disabledClass);
-                window.Qticket.scrolltop(body);
-            } else {
-                transferBtn.addClass(disabledClass);
+        _toggleScreens: (prevSaved = false) => {
+            if (ordersContainer.hasClass(activeClass)) {
+                orderDetailsContainer.addClass(activeClass);
+                ordersContainer.removeClass(activeClass);
+                uiDetailScreenManager.toggleOrderActionButtons(false, prevSaved);
+            }else {
+                ordersContainer.addClass(activeClass);
+                orderDetailsContainer.removeClass(activeClass);
+                uiDetailScreenManager.toggleOrderActionButtons(false,);
+                uiDetailScreenManager.cleanDetailUI();
             }
         },
-        clearTicketData: (prevSaved) => {
-            if (prevSaved) {
-                fromOrder = undefined;
-                fromOrderBBM = false;
-                uiManager.toggleTransferModuleData(prevSaved);
+
+        toggleOrderBlocking: (orderId, blockState = true, user = undefined) => {
+            let target = ordersContainer.find('.order-card[data-id="'+orderId+'"]'),
+                blockSec = target.find('.user-block-info'),
+                blocker = blockSec.find('.blocker');
+
+            if (blockState === true) {
+                blocker.html(user.displayName);
+                blockSec.removeClass(hideClass);
             } else {
-                socketManager.unBlockOrder(toOrder.data.id);
-                toOrder = undefined;
-                toOrderBBM = false;
-                uiManager.toggleTransferModuleData(prevSaved);
+                blocker.html('');
+                blockSec.addClass(hideClass);
             }
-        },
-        toggleTransferModuleData: (prevSaved, id) => {
-            if (prevSaved) {
-                if (id) {
-                    fromOrderPanel.html(id);
-                } else {
-                    fromOrderPanel.html('');
-                }
-            } else {
-                if (id) {
-                    toOrderPanel.html(id);
-                } else {
-                    toOrderPanel.html('');
-                }
-            }
-            uiManager.enableDataTransferBtn();
-        },
-        toggleTransferBtn: () => {
-            if (fromOrderPanel.html() !== '' && toOrderPanel.html() !== '') {
-                transferBtn.removeClass('disabled');
-            } else {
-                transfer.addClass('disabled');
-            }
-        },
-        toggleOrderBlocking: (id, blockState = true, username = undefined) => {
-            $.each(ordersContainer.find('.order-card'), (index, element) => {
-                let target = $(element);
-                if (target.data('id') === id) {
-                    target.toggleClass(blockedClass, blockState);
-                }
-            });
+            target.toggleClass(blockedClass, blockState);
         },
         addOrder: (data) => {
-            ordersThumbsContainer.prepend($.tmpl(templates.nOrderCard, data));
+            ordersThumbsContainer.prepend($.tmpl(templates.orderCard, data));
         },
         updateOrderById: (data) => {
             let cOrder = ordersContainer.find('.order-card[data-id="'+data.id+'"]').parent(),
                 cOrderSection = cOrder.parent(),
-                nOrder = $.tmpl(templates.nOrderCard, data);
+                nOrder = $.tmpl(templates.orderCard, data);
 
-            if (cOrderSection.hasClass('.from')) {
+            if (cOrderSection.hasClass('.orders-full')) {
                 cOrder.replaceWith(nOrder);
             } else {
                 if (data.orderDBData) {
@@ -210,100 +203,58 @@ $(function () {
                 }
             }
         },
-        initOrdersView: (ordersArray) => {
-            let thumbOrdersArray = ordersArray.filter(x => x.orderDBData === undefined),
-                fullOrdersArray = ordersArray.filter(x => x.orderDBData !== undefined);
-
-            $.tmpl(templates.nOrderCard, thumbOrdersArray).appendTo(ordersThumbsContainer);
-            $.tmpl(templates.nOrderCard, fullOrdersArray).appendTo(ordersFullContainer);
+        removeOrderById: (id) => {
+            ordersContainer.find('.order-card[data-id="'+id+'"]').parent().remove();
         },
-        attachListeners() {
-            socket.on('orderBlocked', (data) => {
-                uiManager.toggleOrderBlocking(data.orderID, true, data.user.username);
-            });
+        _filterOrdersObject(ordsObject, getThumbs = false) {
+            let filteredObjectsArray = [];
 
-            socket.on('orderUnblocked', (orderID) => {
-                uiManager.toggleOrderBlocking(orderID, false);
-            });
+            for(sObjInd in ordsObject) {
+                if (getThumbs && ordsObject[sObjInd].productRows === undefined) {
+                    filteredObjectsArray.push(ordsObject[sObjInd]);
+                } else if (!getThumbs && ordsObject[sObjInd].productRows !== undefined) {
+                    filteredObjectsArray.push(ordsObject[sObjInd]);
+                }
+            }
 
-            transferBtn.on('click', () => {
-                if (!$(this).hasClass(disabledClass)) {
-                    let transferOrderPromise = socketManager.transferOrder(fromOrder.data.id, toOrder.data.id);
+            return filteredObjectsArray;
+        },
+        _attachListeners: () => {
+            ordersContainer.on('click', '.order-card', (e) => {
+                let target = $(e.currentTarget),
+                    prevSaved = target.closest('.order-section').hasClass('orders-full');
 
-                    transferOrderPromise.then((success) => {
-                        if (!success) {
-                            Qticket.throwAlert('Transfer Error');
-                        }
+                if(target.hasClass(blockedClass)) {
+                    Qticket.throwAlert('Order Blocked');
+                }else if (target.hasClass(doneClass)) {
+                    Qticket.throwAlert('Order Completed', 'success');
+                }else {    
+                    let orderId = target.data('id'),
+                        orderAvailable = socketManager.blockOrder(orderId);
+
+                    orderAvailable.then((orderData) => {
+                        if (orderData === false) {
+                            Qticket.throwAlert('Order Blocked');
+                        } else {
+                            uiDetailScreenManager.renderOrderInfo(orderData);
+                        };
                     });
                 }
             });
+        },
+        _initOrdersView: (ordersObj) => {
+            let thumbOrdersObj = uiManager._filterOrdersObject(ordersObj, true),
+                fullOrdersObj = uiManager._filterOrdersObject(ordersObj);
 
-            ordersContainer.on('click', '.order-card', (e) => {
-                let target = $(e.currentTarget),
-                    prevSaved = target.closest('.order-section').hasClass('from');                
-
-                if (prevSaved) {
-                    if (target.hasClass(blockedClass)) {
-                        if (fromOrderBBM) {
-                            if (fromOrderBBM !== target.data('id')) {
-                                Qticket.throwAlert('Order Blocked');
-                            } else {
-                                target.removeClass(blockedClass);
-                                uiManager.clearTicketData(prevSaved);
-                            }
-                        } else {
-                            Qticket.throwAlert('Order Blocked');
-                        }
-                    } else {
-                        if (fromOrder) {
-                            fromOrder.target.removeClass(blockedClass);
-                            uiManager.clearTicketData(prevSaved);
-                        }
-                        let data = {id:target.data('id'), order:target.data('ticketNumber'), client: {id: target.data('client-id'),name: target.data('client')}};
-                        
-                        target.addClass(blockedClass);
-                        fromOrderBBM = data.id;
-                        fromOrder = {data: data, target: target};
-                        uiManager.toggleTransferModuleData(prevSaved, data.id);
-                    }
-                } else {
-                    if (target.hasClass(blockedClass)) {
-                        if (toOrderBBM) {
-                            if (toOrderBBM !== target.data('id')) {
-                                Qticket.throwAlert('Order Blocked');
-                            }
-                            uiManager.clearTicketData(prevSaved);
-                        } else {
-                            Qticket.throwAlert('Order Blocked');
-                        }
-                    } else {
-                        if (toOrder) {
-                            uiManager.clearTicketData(prevSaved);
-                        }
-                        let data = {id:target.data('id'), order:target.data('ticketNumber'), client: {id: target.data('client-id'),name: target.data('client')}},
-                        orderAvailable = socketManager.blockOrder(data.id);
-
-                        orderAvailable.then((orderData) => {
-                            if (!orderData.orderAvailable) {
-                                Qticket.throwAlert('Order Blocked');
-                            } else {
-                                target.addClass(blockedClass);
-                                toOrderBBM = data.id;
-                                toOrder = {data: data, target: target};
-                                uiManager.toggleTransferModuleData(prevSaved, data.id);
-                            }
-                        });
-                    }
-                }
-            });
+            $.tmpl(templates.orderCard, thumbOrdersObj).appendTo(ordersThumbsContainer);
+            $.tmpl(templates.orderCard, fullOrdersObj).appendTo(ordersFullContainer);
         },
         init: () => {
-            uiManager.attachListeners();
+            uiManager._attachListeners();
         }
     };
 
     self = this;
-    socketManager.init();
     uiManager.init();
-
+    socketManager.init();
 });

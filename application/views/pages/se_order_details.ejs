@@ -12,9 +12,11 @@
                 <h1><%- orderInfo.odooOrderRef %> Order Details</h1>
             </div>
             <% if (orderInfo.orderState === 'done' && session.user.role === 'super')  { %>
-                <div class="col-12 col-sm-3">
+                <div class="col-12 col-sm-3 action-buttons">
                     <% if (orderInfo.orderState === 'done')  { %>
-                        <div class="btn btn-block btn-primary pull-right pull-back" data-id="<%- orderInfo.odooOrderRef %>">Back to saved</div>
+                        <div class="btn btn-block btn-primary pull-right do-pull-back" data-id="<%- orderInfo.odooOrderRef %>">Make Draft</div>
+                        <div class="btn btn-block btn-danger pull-right do-cancel" data-id="<%- orderInfo.odooOrderRef %>">Cancel</div>
+                        <div class="btn btn-block btn-dark pull-right do-close" data-id="<%- orderInfo.odooOrderRef %>">Close</div>
                     <% } %>
                 </div>
             <% } %>
@@ -44,7 +46,7 @@
                         Status:
                     </div>
                     <div class="col-6">
-                        <span class="<% if (orderInfo.orderState === 'closed'){ %>danger<%} else if (orderInfo.orderState === 'done'){ %>success<%} else if (orderInfo.orderState === 'saved'){%>primary<%}%>"><%- orderInfo.cOrderState %></span>
+                        <span class="<% if (orderInfo.orderState === 'closed'){ %>dark<%} else if (orderInfo.orderState === 'canceled'){ %>danger<%} else if (orderInfo.orderState === 'done'){ %>success<%} else if (orderInfo.orderState === 'saved'){%>primary<%}%>"><%- orderInfo.cOrderState %></span>
                     </div>
                 </div>
             </div>
@@ -128,15 +130,13 @@
                                             <% 
                                                 orderInfo.activityLog[x].changeLogs[y].cProduct = orderInfo.activityLog[x].changeLogs[y].product.charAt(0).toUpperCase() + orderInfo.activityLog[x].changeLogs[y].product.slice(1); 
                                             %>
-                                            <span class="bold">Order</span> status <span class="action bold updated"><%= orderInfo.activityLog[x].changeLogs[y].cAction %></span> to <span class="action bold <% if(orderInfo.activityLog[x].changeLogs[y].product === 'saved') {%>primary<%}else{%>added<%}%>"><%= orderInfo.activityLog[x].changeLogs[y].cProduct %></span>
+                                            <span class="bold">Order</span> status <span class="action bold updated"><%= orderInfo.activityLog[x].changeLogs[y].cAction %></span> to <span class="action bold <% if(orderInfo.activityLog[x].changeLogs[y].product === 'saved') {%>primary<%} else if(orderInfo.activityLog[x].changeLogs[y].product === 'canceled'){ %>deleted<%} else if(orderInfo.activityLog[x].changeLogs[y].product === 'closed'){ %>dark<%}else{%>added<%}%>"><%= orderInfo.activityLog[x].changeLogs[y].cProduct %></span>
 
                                         <% } else if(orderInfo.activityLog[x].changeLogs[y].action === 'transfered'){%>
                                             <% 
                                                 orderInfo.activityLog[x].changeLogs[y].cProduct = orderInfo.activityLog[x].changeLogs[y].product.charAt(0).toUpperCase() + orderInfo.activityLog[x].changeLogs[y].product.slice(1); 
                                             %>
                                             <span class="bold">Order</span> status <span class="action bold updated"><%= orderInfo.activityLog[x].changeLogs[y].cAction %></span> to <span class="action bold <% if(orderInfo.activityLog[x].changeLogs[y].product === 'saved') {%>primary<%}else{%>added<%}%>"><%= orderInfo.activityLog[x].changeLogs[y].cProduct %></span>
-
-
 
                                         <% } else {%>
                                             <span class="action bold deleted"><%= orderInfo.activityLog[x].changeLogs[y].cAction %></span> <%= orderInfo.activityLog[x].changeLogs[y].qty %>  <%= orderInfo.activityLog[x].changeLogs[y].product %>

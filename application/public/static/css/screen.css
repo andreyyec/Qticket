@@ -197,6 +197,16 @@ body.loading .cssload-content {
     .order-card.blocked .card-header {
       background-color: #f0ad4e;
       border-color: #f0ad4e; }
+  .order-card.canceled {
+    border-color: #d9534f; }
+    .order-card.canceled .card-header {
+      background-color: #d9534f;
+      border-color: #d9534f; }
+  .order-card.closed {
+    border-color: #343a40; }
+    .order-card.closed .card-header {
+      background-color: #343a40;
+      border-color: #343a40; }
   .order-card .card-body {
     padding: 5px; }
     .order-card .card-body .client-info-section {
@@ -494,6 +504,8 @@ nav li.nav-item ul {
     color: #d9534f; }
   .order-details .row.section.activity-log .log-entry span.action.primary {
     color: #0275d8; }
+  .order-details .row.section.activity-log .log-entry span.action.dark {
+    color: #343a40; }
   .order-details .row.section.activity-log .log-entry .wax-stamp .user {
     color: #0275d8;
     text-decoration: underline; }

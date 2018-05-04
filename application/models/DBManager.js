@@ -25,42 +25,29 @@ class DBManager {
         db.close();
     }
 
-    /*getOrderById(id) {
-        return new Promise((resolve, reject) => {
-            let query = orderModel.findOne({id: id});
-
-            orderModel.findOne({id: id}, (err, docs) => {
-                if (err) {
-                    console.log(err);
-                    return false;
-                } else {
-                    return docs;
-                }
-            });
-        });
-    }*/
-
-    getOrderById(id) {
-        return orderModel.findOne({id: id}, (err,obj) => {
-            if (err) {
-                return {status: 'error'};
-            } else {
-                return {status: 'success', data: obj};
-            }
-        });
+    static getWSocketInf(elem) {
+    	return {
+    		id: elem.odooOrderRef,
+    		client: elem.client,
+    		ticket: elem.ticket,
+    		state: dbStates[elem.state],
+    		blocked: (elem.isAvailable()) ? false : elem.blocked.user,
+    		productRows: (elem.productRows.length > 0) ? elem.productRows : undefined
+    	}
     }
 
     getOrderByOdooRef(ref) {
         return new Promise((resolve, reject) => {
             orderModel.findOne({odooOrderRef: ref}).lean().exec((err, order) => {
-                if (!err) {
+                if (err) {
+                    reject(err);
+                } else {
                     if(order) {
                         resolve(order);
+                    } else {
+                        resolve(false);
                     }
-                } else {
-                    console.log(err);
                 }
-                resolve(false);
             });
         });
     }
@@ -126,30 +113,6 @@ class DBManager {
                     resolve(docs);
                 }
             });
-        });
-    }
-
-    exampleFunctions() {
-        let newTestModule = new moduleModel();
-        newTestModule.name = 'TestModule';
-        newTestModule.restricted = false;
-
-        newTestModule.save((err, data) => {
-            if (err) {
-                console.log('Error:' + err);
-            } else {
-                console.log(data);
-            }
-        });
-
-        //newTestModule.create()
-
-        moduleModel.find({}).exec((err, data) => {
-            if (err) {
-                console.log('Error');
-            }else{
-                console.log(data);
-            }
         });
     }
 }

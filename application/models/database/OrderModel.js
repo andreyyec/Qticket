@@ -5,6 +5,7 @@ let OrderSchema = new Schema({
     odooOrderRef: String,
     orderState: Number,
     ticketNumber: Number,
+    createdOn: Date,
     client: {
         id: String, 
         name: String
