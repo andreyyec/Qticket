@@ -31,7 +31,16 @@
 		.card-header{
 			background-color: $bootstrap-danger;
 	    	border-color: $bootstrap-danger;
-    	}
+		}
+		
+		&.selected {
+			border-color: #820d09;
+
+			.card-header{
+				background-color: #820d09;
+				border-color: #820d09;
+			}
+		}
 	}
 
 	&.closed {

@@ -2,8 +2,13 @@ $(function () {
     const socket = Qticket.getIOInstance('orders'), body = $('body'), hideClass = 'hide', blockedClass = 'blocked', disabledClass = 'disabled', selectedClass = 'selected', activeClass = 'active', doneClass = 'done',
         user = {id: Qticket.session.uid, username:Qticket.session.username, role: Qticket.session.role, displayName: Qticket.session.displayname},
         ordersContainer = body.find('.orders-screen'),
-        ordersThumbsContainer = ordersContainer.find('.inner-container .orders-thumbs'),
-        ordersFullContainer = ordersContainer.find('.inner-container .orders-full'),
+        ordersHeader = ordersContainer.find('.page-header'),
+        ordersBody = ordersContainer.find('.page-body'),
+        panelInfoFrom = ordersHeader.find('.from'),
+        panelInfoTo = ordersHeader.find('.to'),
+        transferBtn = ordersHeader.find('.transfer'),
+        ordersThumbsContainer = ordersBody.find('.order-section.from'),
+        ordersFullContainer = ordersBody.find('.order-section.to'),
         orderDetailsContainer = body.find('.order-details-screen'),
         productsSection = orderDetailsContainer.find('.products-section'),
         productCards = productsSection.find('.product-card'),
@@ -24,7 +29,7 @@ $(function () {
         priceModifier = $(modifierButtons[1]),
         qtyModifier = $(modifierButtons[2]),
         templates= {
-            orderCard: '<div class="col-6 col-sm-4 col-md-3">\
+            orderCard: '<div class="col-12 col-md-6">\
                             <div class="card card-inverse order-card ${state} {{if blocked}}blocked{{/if}}" data-id="${id}" data-client-id="${client.id}" data-client="${client.name}" data-ticket="${ticket}">\
                                 <div class="card-header card-header">\
                                     ${id}\
@@ -129,10 +134,10 @@ $(function () {
             socket.on('init', (ordersArray) => {
                 socket.emit('pullDailyCancelledOrders', (dailyCancelledOrders) => {
                     if(dailyCancelledOrders) {
-                        console.log(dailyCancelledOrders);
-                        //uiManager._initOrdersView(ordersArray, dailyCancelledOrders);
+                        uiManager._initOrdersView(uiManager._filterOrdersObject(ordersArray), dailyCancelledOrders);
                     } else {
                         //@here
+                        //Display message that no cancelled orders were found
                     }    
                 });
             });
@@ -206,48 +211,111 @@ $(function () {
         removeOrderById: (id) => {
             ordersContainer.find('.order-card[data-id="'+id+'"]').parent().remove();
         },
-        _filterOrdersObject(ordsObject, getThumbs = false) {
+        _filterOrdersObject(ordsObject) {
             let filteredObjectsArray = [];
 
-            for(sObjInd in ordsObject) {
-                if (getThumbs && ordsObject[sObjInd].productRows === undefined) {
-                    filteredObjectsArray.push(ordsObject[sObjInd]);
-                } else if (!getThumbs && ordsObject[sObjInd].productRows !== undefined) {
-                    filteredObjectsArray.push(ordsObject[sObjInd]);
+            ordsObject = Object.values(ordsObject);
+
+            for(cObj of ordsObject) {
+                if (cObj.state !== 'canceled' && cObj.state !== 'closed') {
+                    filteredObjectsArray.push(cObj);
                 }
             }
-
+            
             return filteredObjectsArray;
+        },
+        _blockOrder: async (target) => {
+            try{
+                let blockStatus = await socketManager.blockOrder(target.data('id'));
+    
+                if (blockStatus === false) {
+                    Qticket.throwAlert('Order Blocked');
+                };
+
+                return blockStatus;
+            } catch(err) {
+                console.log('Error while trying to block order');
+                console.log(err);
+            }
+        },
+        _unblockOrder: async (target) => {
+            try{
+                let unblockStatus = await socketManager.unBlockOrder(target.data('id'));
+    
+                if (unblockStatus === false) {
+                    Qticket.throwAlert('Unable to unblock');
+                };
+
+                return unblockStatus;
+            } catch(err) {
+                console.log('Error while trying to unblock order');
+                console.log(err);
+            }
+        },
+        _togglePanelInfo: (display, section, data) => {
+            if (display) {
+                section.html(data);
+            } else {
+                section.html('');
+            }
+
+            uiManager._toggleTransferButton();
+        },
+        _toggleTransferButton: () => {
+            if (panelInfoFrom.html() !== '' && panelInfoTo.html() !== '') {
+                transferBtn.removeClass('disabled');
+            } else {
+                transferBtn.addClass('disabled');
+            }
         },
         _attachListeners: () => {
             ordersContainer.on('click', '.order-card', (e) => {
-                let target = $(e.currentTarget),
-                    prevSaved = target.closest('.order-section').hasClass('orders-full');
+                let conf, cClass, cSelectedElement, displaySection,
+                    target = $(e.currentTarget),
+                    blocker = target.find('.blocker').html(),
+                    sessionUser = Qticket.session.displayname;
 
-                if(target.hasClass(blockedClass)) {
+                if(target.hasClass(blockedClass) && blocker !== sessionUser) {
                     Qticket.throwAlert('Order Blocked');
-                }else if (target.hasClass(doneClass)) {
-                    Qticket.throwAlert('Order Completed', 'success');
-                }else {    
-                    let orderId = target.data('id'),
-                        orderAvailable = socketManager.blockOrder(orderId);
+                } else {
+                    if(target.hasClass('canceled')) {
+                        cClass = selectedClass;
+                        cIndexElement = 'cancelledSelectedElement';
+                        displaySection = panelInfoFrom;
+                    } else {
+                        cClass = blockedClass;
+                        cIndexElement = 'blockedSelectedElement';
+                        displaySection = panelInfoTo;
+                    }
 
-                    orderAvailable.then((orderData) => {
-                        if (orderData === false) {
-                            Qticket.throwAlert('Order Blocked');
-                        } else {
-                            uiDetailScreenManager.renderOrderInfo(orderData);
-                        };
-                    });
+                    if (target.hasClass(cClass)) {
+                        conf = uiManager._unblockOrder(target);
+                        if(conf) {
+                            target.removeClass(cClass);
+                            this[cIndexElement] = undefined;
+                            uiManager._togglePanelInfo(false, displaySection);
+                        }
+                    } else {
+                        if(this[cIndexElement] !== undefined) {
+                            conf = uiManager._unblockOrder(this[cIndexElement]);
+                            if(conf) {
+                                this[cIndexElement].removeClass(cClass);
+                                uiManager._togglePanelInfo(false, displaySection);
+                            }
+                        }
+                        conf = uiManager._blockOrder(target);
+                        if(conf) {
+                            target.addClass(cClass);
+                            this[cIndexElement] = target;
+                            uiManager._togglePanelInfo(true, displaySection, target.data('id'));
+                        }
+                    }
                 }
             });
         },
-        _initOrdersView: (ordersObj) => {
-            let thumbOrdersObj = uiManager._filterOrdersObject(ordersObj, true),
-                fullOrdersObj = uiManager._filterOrdersObject(ordersObj);
-
-            $.tmpl(templates.orderCard, thumbOrdersObj).appendTo(ordersThumbsContainer);
-            $.tmpl(templates.orderCard, fullOrdersObj).appendTo(ordersFullContainer);
+        _initOrdersView: (validOrders, cancelledOrders) => {
+            $.tmpl(templates.orderCard, cancelledOrders).appendTo(ordersThumbsContainer);
+            $.tmpl(templates.orderCard, validOrders).appendTo(ordersFullContainer);
         },
         init: () => {
             uiManager._attachListeners();

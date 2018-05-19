@@ -89,15 +89,16 @@ class OrdersManager {
     }
 
     async _getDailyCancelledOrders() {
-        let data, order, parsedData = [];
+        let data, genOrder, order, parsedData = [];
                 
         try {
             data = await this._dbInstance.getOrdersbyFilter({orderState: 4}, {}, 1, 100);
 
             if (data.length > 0) {
-               for(let ord of data) {
-                    order = this._getOrderObject({id: ord.odooOrderRef, client: ord.client, ticket: ord.ticketNumber, last_update: null});
-                    parsedData.push(order.getWSocketInf());
+                order = new Order();
+
+                for(let ord of data) {
+                    parsedData.push(order.parseDBtoWsockInfo(ord));
                 }
 
                 return parsedData;
@@ -105,7 +106,7 @@ class OrdersManager {
                 return [];
             }
         } catch(err) {
-            Tools.logDbError('trying to pull daily orders');
+            Tools.logDbError('while trying to pull daily cancelled orders');
             return false;
         }
     }

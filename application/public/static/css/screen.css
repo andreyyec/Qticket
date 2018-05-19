@@ -202,6 +202,11 @@ body.loading .cssload-content {
     .order-card.canceled .card-header {
       background-color: #d9534f;
       border-color: #d9534f; }
+    .order-card.canceled.selected {
+      border-color: #820d09; }
+      .order-card.canceled.selected .card-header {
+        background-color: #820d09;
+        border-color: #820d09; }
   .order-card.closed {
     border-color: #343a40; }
     .order-card.closed .card-header {

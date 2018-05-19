@@ -6,7 +6,7 @@ class Order {
 
 	// {Constructor}
 
-    constructor(db, sck, odooOrderRef, client, ticketNumber, lastUpdate) {
+    constructor(db, sck, odooOrderRef = false, client, ticketNumber = 0, lastUpdate) {
         this._db = db;
 		this._sck = sck;
 		this._createdOn = new Date();
@@ -18,8 +18,10 @@ class Order {
         this._productRows = [];
         this._logs = [];
         this._blocked = false;
-        this._activityLog = [];
-        this._loadFromDB(this._odooOrderRef);
+		this._activityLog = [];
+		if(this._odooOrderRef !== false) {
+			this._loadFromDB(this._odooOrderRef);
+		}
     }
 
     // {Public Methods}
@@ -65,6 +67,17 @@ class Order {
     		blocked: (this.isAvailable()) ? false : this._blocked.user,
     		productRows: (this._productRows.length > 0) ? this._productRows : undefined
     	}
+	}
+	
+	parseDBtoWsockInfo(object) {		
+		return {
+			id: object.odooOrderRef,
+    		client: object.client,
+    		ticket: object.ticketNumber,
+    		state: dbStates[object.orderState],
+    		blocked: false,
+    		productRows: (object.productRows.length > 0) ? object.productRows : undefined
+		}
     }
 
     isAvailable() {
@@ -134,7 +147,7 @@ class Order {
     		Tools.logApplicationError('Order was already on state: ' + this.getState());
     		return false;
     	}
-    }
+	}
 
     async pullback(user) {
     	return await this._updateState(1, user);
@@ -146,7 +159,7 @@ class Order {
 
     async cancel(user) {
     	return await this._updateState(4, user);
-    }
+	}
 
     // {Private Methods}
 
