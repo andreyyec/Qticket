@@ -1,8 +1,9 @@
 import React from 'react';
+import {Typography} from "@material-ui/core";
 
 const Page2 = () => {
   return (
-    <h1>Page2: Andy es mas vegetal</h1>
+    <Typography variant="h3" gutterBottom>Page2: Andy es mas vegetal</Typography>
   );
 }
 
