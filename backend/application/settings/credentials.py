@@ -1,0 +1,3 @@
+# == DATABASE CREDENTIALS == #
+DB_USER = "admin"
+DB_PASSWORD = "lacapri001"
