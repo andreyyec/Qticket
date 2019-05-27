@@ -11,3 +11,10 @@ SQLALCHEMY_DATABASE_URI = "postgresql://%s:%s@%s:%s/%s" % (
             const.DB_PORT,
             const.DB_NAME
         )
+
+REDIS_DATABASE_URI = "redis://%s@%s:%s/%s" % (
+            cred.REDIS_PASSWORD,
+            const.REDIS_HOST,
+            const.REDIS_PORT,
+            const.REDIS_DB_NUMBER
+        )

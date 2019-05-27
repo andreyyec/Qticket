@@ -1,3 +1,6 @@
-# == DATABASE CREDENTIALS == #
-DB_USER = "admin"
-DB_PASSWORD = "lacapri001"
+# == SQL CREDENTIALS == #
+DB_USER = "postgres_admin"
+DB_PASSWORD = "Yxy}Y/j3+f(D@"
+
+# == REDIS CREDENTIALS == #
+REDIS_PASSWORD = ""
