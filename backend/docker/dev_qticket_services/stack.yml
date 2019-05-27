@@ -1,0 +1,35 @@
+version: '3.1'
+
+services:
+
+  redis:
+    image: redislabs/rejson:1.0.4
+    restart: always
+    ports:
+      - 6379:6379
+    networks:
+      - qticket
+
+  db:
+    image: postgres:11.3-alpine
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres_admin
+      POSTGRES_PASSWORD: Yxy}Y/j3+f(D@
+    networks:
+      - qticket
+    volumes:
+      - ~/docker/qticket/postgres/=/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8081:8080
+    networks:
+      - qticket
+
+networks:
+  qticket:

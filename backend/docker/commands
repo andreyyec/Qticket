@@ -1,0 +1,33 @@
+################################
+###         Postgres         ###
+################################
+
+### Pulls Postgres's latest stable version
+
+    docker pull postgres:11.3-alpine
+
+### Creates volume on host to persist DB data
+
+    docker volume create qticket-postgres-data
+
+
+################################
+###          REDIS           ###
+################################
+
+### Pulls Postgres's latest stable version
+
+    docker pull redislabs/rejson:1.0.4
+
+
+################################
+###          STACK           ###
+################################
+
+### Creates directory for db data persistence
+    mkdir -p ~/docker/qticket/postgres/
+
+
+### Builds and runs the services on docker
+
+    docker-compose -f ~/Ex_Repos/Qticket/backend/docker/dev_qticket_services/stack.yml up -d
