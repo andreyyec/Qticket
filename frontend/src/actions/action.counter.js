@@ -5,11 +5,11 @@ export const addOne = () => {
     type: COUNT_PLUS_1,
     payload: null
   }
-}
+};
 
 export const minusOne = () => {
   return {
     type: COUNT_MINUS_1,
     payload: null
   }
-}
+};

@@ -1,5 +1,18 @@
-@import './components/component';
+@import 'global/colors';
 
 #root {
+  @import 'components/ticket';
+}
+
+#snackbars {
+  @import 'components/alert';
+}
+
+html {
+  touch-action: manipulation;
+}
+
+#root {
+  padding-top: 100px;
   min-height: 2000px;
 }

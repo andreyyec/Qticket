@@ -1,0 +1,17 @@
+.alert {
+  &--red {
+    background: $red-gradient;
+  }
+
+  &--green {
+    background: $green-gradient;
+  }
+
+  &--lightBlue {
+    background: $light-blue-gradient;
+  }
+
+  &--yellow {
+    backgorund: $yellow-gradient;
+  }
+}

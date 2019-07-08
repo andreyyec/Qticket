@@ -6,11 +6,10 @@ const rootReducer = combineReducers({
   reducer1
 });
 
-const enhancers = compose(
-  applyMiddleware(promiseMiddleware),
-  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
-)
-
-const store = createStore(rootReducer, enhancers);
+const middleware = applyMiddleware(promiseMiddleware);
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+const store = createStore(rootReducer, composeEnhancers(middleware));
 
 export default store;
+
+

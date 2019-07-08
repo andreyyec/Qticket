@@ -1,13 +1,18 @@
 import React from 'react';
-import Counter from "../components/counter/counter";
-import {Typography} from "@material-ui/core";
+import Ticket from "../components/ticket";
+import { Grid } from '@material-ui/core';
 
 const Home = () => {
   return (
-    <div>
-      <Typography variant="h3" gutterBottom>Home: Andy es un vegetal</Typography>
-      <Counter/>
-    </div>
+    <Grid container spacing={0}>
+      <Grid item xs={12}>
+        <Grid container justify="center" spacing={2}>
+          <Ticket disabled/>
+          <Ticket/>
+          <Ticket/>
+        </Grid>
+      </Grid>
+    </Grid>
   );
 }
 
